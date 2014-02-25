@@ -1,5 +1,9 @@
+Grrrr
+=====
+Uses Flask Boilerplate project as a base, removing the social login stuff. The install instructions for that will take you a long way to getting this installed. You will also need MongoDB and Solr running. (@todo: add Solr's schema.xml to this repo)
+
 Flask Boilerplate Project
-=========================
+-------------------------
 http://flask.pocoo.org/
 
 This project is meant to be helpful for those who want to quickly jump into a new flask project. Social Media Accounts, UserAccounts, Caching, Mail, User Registration, Roles, Python Script Commands, and Twitter Bootstrap are already configured. 
