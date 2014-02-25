@@ -1,0 +1,28 @@
+{% extends "security/index.html" %}
+{% from "security/_macros.html" import render_field_with_errors, render_field %}
+
+
+{% block title %}
+{{title}}
+{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-md-9">
+      <h2>{{title}}</h2>
+
+      <p class="text-info">
+      	The <strong>username</strong> is what is visible to the public. To be anonymous, just use "x".<br/>
+      	The <strong>email addess</strong> is what you use to log in to the site with. Also, if there are any site emails then they will be sent to that address. 
+      </p>
+
+				<form action="{{ url_for('user.edit_profile') }}" method="POST" name="user_profile_form">
+			  {{ form.hidden_tag() }}
+			  {{ render_field_with_errors(form.username) }}
+			  {{ render_field_with_errors(form.email) }}
+			  <p><button class="btn btn-primary" type="submit">Update</p>
+
+   
+    </div>
+</div>
+{% endblock %}

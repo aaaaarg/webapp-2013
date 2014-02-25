@@ -3,4 +3,9 @@
 .DS_Store
 flask_application/static/.webassets-cache
 flask_application/static/gen/
+flask_application/static/uploads/
 flask_application/test.db
+help/
+uploads/
+environment/
+

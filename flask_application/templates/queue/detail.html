@@ -1,0 +1,98 @@
+{% extends "bootstrap/layouts/base_navbar_responsive.html" %}
+{%- from "frontend/macros.html" import follow_toggle %}
+{%- from "queue/macros.html" import show_queued_thing with context %}
+
+{% block title %}
+{{queue.title}}
+{% endblock %}
+
+{% block content %}
+
+<div class="row">
+    <div class="col-md-9">
+        <h2>{{queue.title}}</h2>
+
+        <div class="btn-group btn-group-xs">
+            <a class="btn btn-default" href="{{ url_for('queue.edit', id=queue.id) }}">edit</a>
+            {{ follow_toggle(queue) }}
+        </div>
+        <p><br/></p>
+
+        <div><p>{{queue.short_description}}</p></div>
+
+        <div><p>{{queue.description}}</p></div>
+
+        <div>{{queue.creator.username}}</div>
+
+        <ul class="nav nav-tabs">
+          <li class="active"><a href="#upcoming" data-toggle="tab">Reading List</a></li>
+          <li><a href="#finished" data-toggle="tab">Finished</a></li>
+        </ul>
+
+        <div class="tab-content">
+            <table id="upcoming" class="sortable table table-bordered tab-pane active">
+    			{% for queued_thing in queue.things|selectattr("date_completed","none")|sort(attribute='weight') %}
+                <tr id="o_{{queued_thing.id}}">
+			    	<td class="table-sort-handle editable" style="display:none;"><span class="glyphicon glyphicon-sort"></span></td>
+			    	<td>{{ show_queued_thing(queued_thing)}}</td>
+			    	<td class="editable" style="display:none;">
+			    		<div class="btn-group-vertical btn-group-xs">
+			    			<a class="btn btn-default" href="{{ url_for('queue.edit_thing', id=queue.id, item_id=queued_thing.id) }}" data-toggle="tooltip" title="Add notes" rel="tooltip"><span class="glyphicon glyphicon-pencil"></span></a>
+			    			<a class="btn btn-success" href="{{ url_for('queue.finish_thing', id=queue.id, item_id=queued_thing.id) }}" data-toggle="tooltip" title="Mark as finished!" rel="tooltip"><span class="glyphicon glyphicon-ok"></span></a>
+                            <a class="btn btn-danger" href="{{ url_for('queue.remove_thing', id=queue.id, item_id=queued_thing.id) }}" data-toggle="tooltip" title="Delete from list" rel="tooltip"><span class="glyphicon glyphicon-remove"></span></a>
+				        </div>
+			    	</td>
+			    </tr>
+    			{% endfor %}	
+    		</table>
+
+            <table id="finished" class="table table-bordered tab-pane">
+                {% for queued_thing in queue.things|selectattr("date_completed")|sort(attribute='date_completed', reverse=True) %}
+                <tr id="o_{{queued_thing.id}}">
+                    <td>{{ show_queued_thing(queued_thing)}}</td>
+                    <td class="editable" style="display:none;">
+                        <div class="btn-group-vertical btn-group-xs">
+                            <a class="btn btn-default" href="{{ url_for('queue.edit_thing', id=queue.id, item_id=queued_thing.id) }}" data-toggle="tooltip" title="Edit notes" rel="tooltip"><span class="glyphicon glyphicon-pencil"></span></a>
+                            <a class="btn btn-default" href="{{ url_for('queue.unfinish_thing', id=queue.id, item_id=queued_thing.id) }}" data-toggle="tooltip" title="Mark as unfinished" rel="tooltip"><span class="glyphicon glyphicon-remove"></span></a>
+                        </div>
+                    </td>
+                </tr>
+                {% endfor %}    
+            </table>
+        </div>
+
+    </div>
+    <div class="col-md-3">
+    	<p>This is a reading list. You can quickly add things to it and then re-order the contents.</p>
+    	<p>If you want, you can also make notes/ responses/ summaries.</p>
+    	<p>Click <a class="btn btn-primary btn-xs" href="#" id="edit-toggle">here</a> to re-order, to mark something as read, or to add notes.</p>
+    </div>
+</div>
+
+{% endblock %}
+
+
+{% block js_footer %}
+<script>
+	// sorting the things
+    $(document).ready( function() {
+        $( ".sortable" ).sortable({
+          items: "tr:not(.ui-state-disabled)",
+          stop: function (event, ui) {
+            var data = $(this).sortable('serialize');
+            $.ajax({
+                data: data,
+                type: 'POST',
+                url: "{{ url_for('queue.rearrange', id=queue.id) }}"
+            });
+          }
+        }); 
+        $( ".sortable1 tr" ).disableSelection();
+        //
+        $('#edit-toggle').click(function() {
+        	$('.editable').toggle();
+        	return false;
+        });
+    });
+</script>
+{% endblock %}

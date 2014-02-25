@@ -1,0 +1,128 @@
+{%- from "bootstrap/macros.html" import popover %}
+{%- from "bootstrap/forms/macros.html" import render_field %}
+
+{% macro alphabet(letters, active_letter=None) %}
+	<ul class="nav nav-tabs">
+	{% for letter, count in letters.iteritems()|sort %}
+		{% if count > 0 %}
+			<li{%- if letter==active_letter %} class="active"{% endif -%}><a href="{{url_for('collection.list', letter=letter)}}">{{ letter }}</a></li>
+		{% endif %}
+	{% endfor %}
+	</ul>
+{% endmacro %}
+
+{% macro show_collected_things(collection) %}
+<div class="things list-group sortable">
+	{% for collected_thing in collection.things %}
+		<div class="list-group-item" 
+			data-sortmaker="{{collected_thing.thing.makers_sorted}}"
+			data-sortadded="{{collected_thing.created_at}}"
+			>
+			  <h5 class="list-group-item-heading">
+			  	<a href="{{url_for('thing.detail', id=collected_thing.thing.id)}}">{{collected_thing.thing.title}}</a>
+			  	<span class="maker text-muted">{{ collected_thing.thing.format_makers_string() }}</span>
+			  </h5>
+			  <div class="list-group-item-text">
+			  	{{collected_thing.thing.short_description}} 
+			  	{% if collected_thing.thing.short_description and collected_thing.note %} - {% endif %}
+			  	{{ collected_thing.note }} 
+	  			{{ popover('<small class="text-muted text-right">[re/move this]</small>', collected_thing.thing.title, move_thing_options(collection, collected_thing.thing)) }}
+	  		</div>
+		</div>
+	{% endfor %}
+</div>
+{% endmacro %}
+
+
+{% macro move_thing_options(collection, thing) %}
+		<ul class="list-unstyled">
+			<li>
+				<a class="text-danger" data-confirm="Are you sure you want to remove this from the collection?" href="{{ url_for('collection.remove', collection_id=collection.id, thing_id=thing.id) }}">remove from "{{collection.title}}"</a>
+			</li>
+			{% for c in collection.family(False) %}
+			<li>
+				<a href="{{ url_for('collection.move_thing', collection_id_from=collection.id, collection_id_to=c.id, thing_id=thing.id) }}">move to "{{c.title}}"</a>
+			</li>
+			{% endfor %}
+		</ul>
+{% endmacro %}
+
+
+{% macro show_collections_list(collections, thing=None, form=None) %}
+<div class="collections-list list-group">
+	{% for collection in collections %}
+		{{ show_collections_list_item(collection, thing) }}
+	{% endfor %}
+	{% if form %}
+		<div class="list-group-item">
+			<p class="list-group-item-text">
+	  		{{ form }}
+	  	</p>
+		</div>
+	{% endif %}
+</div>
+{% endmacro %}
+
+
+{% macro show_collections_list_item(collection, thing=None) %}
+	<div class="list-group-item">
+		{{ collection|format_collection_link(' &#65515; ')|safe }}
+  	<p class="list-group-item-text">
+  		{{collection.short_description}}
+  		{% if thing %}
+	  		{% set note = collection.get_note_for_thing(thing) %}
+	  		{% if note and collection.short_description %}
+  			 - 
+  			{% endif %}
+  			{{note}}
+  			{% if thing and can_remove_thing_from_collection(collection, thing) %}
+  				<a data-confirm="Are you sure you want to remove this from the collection?" href="{{ url_for('collection.remove', collection_id=collection.id, thing_id=thing.id) }}"><small>[&nbsp;x&nbsp;]</small></a>
+	  		{% endif %}
+	  	{% endif %}
+  	</p>
+	</div>
+{% endmacro %}
+
+{% macro add_to_collection_form(form) %}
+<form action="{{ url_for('collection.add_thing', thing_id=form.collection.thing.id) }}" method="post" name="sort-collection">
+    {{form.hidden_tag()}}
+    <p>
+	    Sort into collection:<br>
+	    {{ form.collection(class_='selectpicker', **{'data-width':'180px'}) }}
+    </p>
+    <div class="note-and-submit" style="display:none;">
+	    <small>short note: why this goes here?</small>
+	    {{render_field(form.note, size=255, cols=32, label_visible=False)}}
+	    <p><button class="btn btn-sm btn-primary" type="submit">Click to add to collection</button></p>
+	  </div>
+</form>
+{% endmacro %}
+
+
+{% macro collection_js() %}
+<script>
+	$('select.selectpicker').selectpicker();
+	$('form[name="sort-collection"]').submit(function() {
+		$f = $(this);
+		$.ajax({
+			type : "POST",
+			data: $f.serialize(),
+			url : $f.attr('action'),
+			success: function(data) {
+				if (data.message) {
+					$f.html(data.message);
+				}
+				if (data.collection) {
+					//$f.closest('.collections-list').prepend(data.collection);
+				}
+			}
+		});
+		return false;
+	});
+	$('form[name="sort-collection"] select').change(function() {
+		$ele = $(this).parent().next('.note-and-submit');
+		if ($(this).val()=="__None") $ele.slideUp();
+		else $ele.slideDown();
+	});
+</script>
+{% endmacro %}

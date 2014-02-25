@@ -2,37 +2,79 @@
 
 {% block css_bootstrap %}
     {{ super() }}
-    {# TODO: probably remove this and let the user set it manually? #}
-    <style>
-        body {
-            padding-top: 60px; /* 60px to make the container go all the way to the bottom of the topbar */
-        }
-    </style>
 {% endblock %}
 
 {% block navbar_wrapper %}
-<div class="navbar navbar-fixed-top">
-    <div class="navbar-inner">
-        <div class="container">
+<nav class="navbar navbar-default" role="navigation">
+    <div class="aaaaarg">AAAAARG.ORG</div>
+    <div class="container-fluid">
             {% block navbar_container %}
-                <a class="btn btn-navbar" data-toggle="collapse" data-target=".nav-collapse">
-                    <span class="icon-bar"></span>
-                    <span class="icon-bar"></span>
-                    <span class="icon-bar"></span>
-                </a>
+                <div class="collapse navbar-collapse" >
                 {% block navbar_links %}
-                    <a class="brand" href="/">{{ config['SITE_NAME'] }}</a>
-                    <div class="nav-collapse">
-                        <ul class="nav">
-                            <li><a href="#">Home</a></li>
-                            <li><a href="#">About</a></li>
-                            <li><a href="#">Contact</a></li>
-                        </ul>
-                    </div>
+                <ul class="nav navbar-nav">
+                    <!-- home -->
+                    <li><a href="{{ url_for('frontend.index') }}"><span class="glyphicon glyphicon-book"></span></a></li>
+                    {%- if current_user.is_authenticated() -%}
+                        <!-- library -->
+                        <li class="dropdown">
+                            <a class="dropdown-toggle" data-toggle="dropdown" href="#">
+                              Library <span class="caret"></span>
+                            </a>
+                            <ul class="dropdown-menu">
+                                <li><a href="{{ url_for('maker.list') }}">see catalog</a></li>
+                                <li><a href="{{ url_for('thing.list_requests') }}">see requests</a></li>
+                                <li><a href="{{ url_for('thing.add') }}">+ add something</a></li>
+                            </ul>
+                        </li>
+                        <!-- collections -->
+                        <li class="dropdown">
+                            <a class="dropdown-toggle" data-toggle="dropdown" href="#">
+                              Collections <span class="caret"></span>
+                            </a>
+                            <ul class="dropdown-menu">
+                                <li><a href="{{ url_for('collection.list') }}">see all</a></li>
+                                <li><a href="{{ url_for('collection.add') }}">+ start a new collection</a></li>
+                                <li class="divider"></li>
+                                {% for q in current_user_queues() %}
+                                <li><a href="{{ url_for('queue.detail', id=q.id) }}">{{q.title}}</a></li>
+                                {% endfor %}
+                                <li><a href="{{ url_for('queue.add') }}">+ start a new reading list</a></li>
+                            </ul>
+                        </li>
+                        <!-- discussions -->
+                        <li class="dropdown">
+                            <a class="dropdown-toggle" data-toggle="dropdown" href="#">
+                              Discussions <span class="caret"></span>
+                            </a>
+                            <ul class="dropdown-menu">
+                                <li><a href="{{ url_for('talk.list') }}">see all</a></li>
+                                <li><a href="{{ url_for('talk.add') }}">+ start discussion</a></li>
+                            </ul>
+                        </li>
+                    {%- else -%}
+                        <!-- library -->
+                        <li><a href="{{ url_for('maker.list') }}">Library</a></li>
+                        <!-- collections -->
+                        <li><a href="{{ url_for('collection.list') }}">Collections</a></li>
+                        <!-- discussions -->
+                        <li><a href="{{ url_for('talk.list') }}">Discussions</a></li>
+                    {%- endif -%}
+                </ul>
                 {% endblock %}
+                <div class="col-xs-5 col-sm-3 ">
+                    <form class="navbar-form" role="search" action="{{ url_for('frontend.search') }}">
+                        <div class="input-group">
+                            <input type="text" class="form-control" placeholder="Search" name="query" id="query">
+                            <div class="input-group-btn">
+                                <button class="btn btn-default" type="submit"><span class="glyphicon glyphicon-search"></span></button>
+                            </div>
+                        </div>
+                    </form>
+                </div>
                 {% include "security/_menu.html" %}
+                </div>
             {% endblock %}
         </div>
     </div>
-</div>
+</nav>
 {% endblock %}

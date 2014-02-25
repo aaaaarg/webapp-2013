@@ -1,0 +1,28 @@
+{% extends "bootstrap/layouts/base_navbar_responsive.html" %}
+{%- from "bootstrap/forms/macros.html" import render_field %}
+
+{% block title %}
+{{ title }}
+{% endblock %}
+
+{% block content %}
+<h1>{{ title }}</h1>
+<form action="" method="post" name="thing">
+    {{form.hidden_tag()}}
+    {{render_field(form.title, size=255)}}
+    {{render_field(form.makers_raw, size=1024, placeholder='Separate names with commas: Guy Davenport, Erik Reece (editor)')}}
+    {{render_field(form.short_description, size=255, placeholder='Just a sentence or two')}}
+    {{render_field(form.description, rows=10, **{"data-provide":"markdown"})}}
+    <p><input class="btn btn-default" type="submit" value="Save"></p>
+</form>
+{% endblock %}
+
+
+{% block css_extra %}
+<link rel="stylesheet" href="{{ url_for('static', filename='css/bootstrap-markdown.min.css') }}">
+{% endblock %}
+
+
+{% block js_footer %}
+<script src="{{ url_for('static', filename='js/bootstrap-markdown.js') }}"></script>
+{% endblock %}

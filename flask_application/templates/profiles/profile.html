@@ -1,24 +1,44 @@
-{% from "security/_macros.html" import render_field_with_errors, render_field %}
-
 {% extends "security/index.html" %}
 
-{% macro show_provider_button(provider_id, display_name, conn) %}
-    {% if conn %}
-    <form action="{{ url_for('social.remove_connection', provider_id=conn.provider_id, provider_user_id=conn.provider_user_id) }}" method="DELETE">
-      <input type="submit" class="btn" value="Disconnect {{ display_name }}" />
-    </form>
-    {% else %}
-    <form action="{{ url_for('social.connect', provider_id=provider_id) }}" method="POST">
-      <input type="submit" class="btn" value="Connect {{ display_name }}" />
-    </form>
-    {% endif %}
-{% endmacro %}
+{% from "security/_macros.html" import render_field_with_errors, render_field %}
+{%- from "collection/macros.html" import show_collections_list, add_to_collection_form, collection_js with context %}
+{%- from "thing/macros.html" import show_thing with context %}
+{%- from "bootstrap/macros.html" import render_pagination %}
+
 
 {% block title %}
-Profile Management
+{{title}}
 {% endblock %}
 
 {% block content %}
-<h1>Manage your social accounts</h1>
-{{ show_provider_button('twitter', 'Twitter', twitter_conn) }}
+<div class="row">
+    <div class="col-md-9">
+      <h2>{{title}}</h2>
+
+			{% set cdate = '' %}
+			{% for thing in things %}
+				{% set date = thing.created_at|datetimeformat %}
+				{% if date!=cdate %}
+				<h4 class="text-muted">{{ date }}</h4>
+				{% endif %}
+				{% set cdate = date %}
+				{{ show_thing(thing) }}
+			{% endfor %}
+
+			{{ render_pagination(pagination, 'thing.list') }}
+   
+    </div>
+    <div class="col-md-3">
+            {% if not public %}
+    		<p>
+    			Do you want to <a href="{{ url_for('user.edit_profile') }}">edit your profile</a>?
+    		</p>
+    		<p>
+    			Do you want to <a href="{{ url_for_security('change_password') }}">change your password</a>?
+    		</p>
+            {% endif %}
+        <small class="text-muted">COLLECTIONS</small>
+        {{ show_collections_list(collections|sort(attribute='title'), None) }}
+    </div>
+</div>
 {% endblock %}

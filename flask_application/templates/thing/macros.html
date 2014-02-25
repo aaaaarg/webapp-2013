@@ -1,0 +1,73 @@
+{%- from "bootstrap/macros.html" import popover %}
+
+{% macro show_thing(thing, show_maker=True, additional_text='') %}
+<dl class="sortable-thing">
+  <dt>
+  	<a href="{{url_for('thing.detail', id=thing.id)}}">{{thing.title}}</a> 
+  	{% if show_maker %}
+  	<span class="maker">{{ thing.format_makers_string() }}</span>
+  	{% endif %}
+  </dt>
+  <dd>
+  	{{thing.short_description}}{{additional_text}} 
+  	{% if current_user.has_role('contributor') or current_user.has_role('editor') or current_user.has_role('admin') %}
+  	{{ popover('+', thing.title, remote=url_for('thing.sort_actions', id=thing.id)) }}
+  	{% endif %}
+  </dd>
+</dl>
+{% endmacro %}
+
+
+{% macro show_things(things, show_maker=True) %}
+<div class="things list-group">
+	{% for thing in things %}
+		<div class="list-group-item">
+			<h4><a href="{{url_for('thing.detail', id=thing.id)}}">{{thing.title}}</a></h4>
+			{% if show_maker %}
+	  	<h5>{{ thing.format_makers_string() }}</h5>
+	  	{% endif %}
+	  	<p class="list-group-item-text">{{thing.short_description}} {{ popover('+', thing.title, remote=url_for('thing.sort_actions', id=thing.id)) }}</p>
+		</div>
+	{% endfor %}
+</div>
+{% endmacro %}
+
+
+{% macro sort_thing_js() %}
+<script>
+	// Ajax for adding things to queues
+	$('.sortable-thing').on('click', '.popover-content a.sort-queue', function() {
+		$ele = $(this);
+		var jqxhr = $.get( $ele.attr('href'))
+		  .done(function(data) {
+		    if (data.result=='success') {
+		    	$ele.closest('.popover-content').html(data.message);
+		    } else {
+		    	$ele.closest('.popover-content').html(data.message);
+		    }
+		  })
+		  .fail(function() {
+		    // do nothing
+		  });
+		return false;
+	});
+	// Ajax for adding things to collections
+	$('.sortable-thing').on('change', 'form[name="sort-collection"] select', function() {
+		$ele = $(this).parent().next('.note-and-submit');
+		if ($(this).val()=="__None") $ele.slideUp();
+		else $ele.slideDown();
+	});
+	$('.sortable-thing').on('submit', 'form[name="sort-collection"]', function() {
+		$f = $(this);
+		$.ajax({
+			type : "POST",
+			data: $f.serialize(),
+			url : $f.attr('action'),
+			success: function(data) {
+				$ele.closest('.popover-content').html(data.message);
+			}
+		});
+		return false;
+	});	
+</script>
+{% endmacro %}

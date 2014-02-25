@@ -1,0 +1,20 @@
+{% from "security/_macros.html" import render_field_with_errors, render_field %}
+
+{% extends "security/index.html" %}
+
+{% block title %}
+Invite Someone
+{% endblock %}
+
+{% block content %}
+
+<h1>Invite Someone</h1>
+<p>
+Any registered user can invite anyone else, but please don't invite the wrong people.
+</p>
+<form action="{{ url_for('user.invite') }}" method="POST" name="register_user_form">
+  {{ register_user_form.hidden_tag() }}
+  {{ render_field_with_errors(register_user_form.email) }}
+  <p><button class="btn btn-primary" type="submit">Invite</p>
+</form>
+{% endblock %}

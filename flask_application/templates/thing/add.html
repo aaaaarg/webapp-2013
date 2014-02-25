@@ -1,0 +1,41 @@
+{% extends "bootstrap/layouts/base_navbar_responsive.html" %}
+{%- from "bootstrap/forms/macros.html" import render_field %}
+{%- from "upload/macros.html" import upload_css, upload_js, uploader, uploads with context %}
+
+{% block css_extra %}
+    {{ upload_css() }}
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/bootstrap-markdown.min.css') }}">
+{% endblock %}
+
+{% block js_footer %}
+    {{ upload_js() }}
+    <script src="{{ url_for('static', filename='js/bootstrap-markdown.js') }}"></script>
+{% endblock %}
+
+
+{% block title %}
+{{ title }}
+{% endblock %}
+
+{% block content %}
+    {% if upload_form: %}
+        <h3>Upload a file</h3>
+        <div class="uploads">
+            {{ uploads() }}
+        </div>
+        <div class="upload">
+            {{ uploader(upload_form, thing.id) }}
+        </div>
+    {% else: %}
+        <h1>{{ title }}</h1>
+        <form action="" method="post" name="thing">
+            {{form.hidden_tag()}}
+            {{render_field(form.title, size=255)}}
+            {{render_field(form.makers_raw, size=1024, placeholder='Separate names with commas: Guy Davenport, Erik Reece (editor)')}}
+            {{render_field(form.short_description, size=255, placeholder='Just a sentence or two')}}
+            {{render_field(form.description, rows=10, **{"data-provide":"markdown"})}}
+
+            <p><button class="btn btn-primary" type="submit">Save</p>
+        </form>
+    {% endif %}
+{% endblock %}

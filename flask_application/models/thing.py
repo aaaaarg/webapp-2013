@@ -1,0 +1,109 @@
+import re, datetime
+
+from flask.ext.security import current_user 
+
+from . import db, CreatorMixin, SolrMixin
+from .user import User
+from .maker import Maker, Name
+from .upload import Upload
+
+
+class MakerWithRole(db.EmbeddedDocument):
+    """
+    In the context of a Thing, a Maker might have a special role (ie. "editor")
+    This class allows us to store the Maker with the role
+    """
+    maker = db.ReferenceField(Maker)
+    role = db.StringField(max_length=32)
+
+
+class Thing(SolrMixin, CreatorMixin, db.Document):
+    """
+    Thing model
+    """
+    meta = {
+        'ordering': ['title'],
+        'indexes': ['creator','makers']
+    }
+
+    title = db.StringField(max_length=255)
+    makers = db.ListField(db.EmbeddedDocumentField(MakerWithRole))
+    makers_sorted = db.StringField()
+    short_description = db.StringField(max_length=512)
+    description = db.StringField()
+    modified_at = db.DateTimeField()
+    files = db.ListField(db.ReferenceField(Upload))
+
+    def __init__(self, *args, **kwargs):
+        super(Thing, self).__init__(*args, **kwargs)
+        if self.modified_at is None:
+             self.modified_at = self.created_at
+
+    def add_file(self, f):
+        self.update(add_to_set__files=f)
+        self.update(set__modified_at=datetime.datetime.now)
+
+    def remove_file(self, f):
+        self.update(pull__files=f)
+
+    def format_makers_string(self):
+        names = []
+        for m in self.makers:
+            names.append(m.maker.format_name(m.role))
+        return ', '.join(names)
+
+    def update_makers_sorted(self):
+        names = []
+        for m in self.makers:
+            names.append(m.maker.sort_by)
+        self.makers_sorted = '| '.join(names)
+
+    def parse_makers_string(self, raw):
+        """
+        If the makers are provided as a raw string, then the Maker class provides 
+        a way for the name string to be parsed into a structure. 
+        Roles might be specified in parentheses after the name:
+        Saul Bellow, J. M. Coetzee (Introduction)
+        """
+        self.makers = []
+        raw_names = raw.split(',')
+        for s in raw_names:
+            raw_name = str(s).strip()
+            pattern = r'(.*)\s?\((.*)\)$'
+            match = re.search(pattern, raw_name)
+            if match is None:
+                n = raw_name
+                role = ""
+            else:
+                (n, role) = match.group(1,2)
+            name = Name()
+            name.parse(n)
+            m = Maker.objects(name=name)
+            if m.count() > 0:
+                maker = m.first()
+            else:
+                maker = Maker()
+                maker.init_with_name(name)
+                maker.save()
+            self.makers.append(MakerWithRole(maker=maker, role=role))
+        self.update_makers_sorted()
+
+    def format_for_filename(self):
+        for m in self.makers:
+            return "%s %s" % (m.maker.sort_by, self.title)
+        # otherwise...
+        return self.title
+
+    def build_solr(self):
+        from .collection import Collection
+        return {
+            '_id' : self.id,
+            'content_type' : 'thing',
+            'title': self.title,
+            'short_description': self.short_description,
+            'description': self.description,
+            'makers': [m.maker.id for m in self.makers],
+            'makers_string': self.format_makers_string(),
+            'makers_sorted': self.makers_sorted,
+            'collections' : [c.id for c in Collection.objects.filter(things__thing=self)]
+        }

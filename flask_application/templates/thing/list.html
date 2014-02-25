@@ -1,0 +1,53 @@
+{% extends "bootstrap/layouts/base_navbar_responsive.html" %}
+{%- from "thing/macros.html" import show_thing, sort_thing_js with context %}
+{%- from "bootstrap/macros.html" import render_pagination %}
+
+
+{% block title %}
+{{ title }}
+{% endblock %}
+
+{% block content %}
+
+<div class="row">
+	<div class="col-md-9">
+
+	<h2>
+		{{ title }} 
+		{% if can_add_thing() %}
+		<a href="{{ url_for('thing.add') }}" title="Add something">+</a>
+		{% endif %}
+	</h2>
+
+	{% set cdate = '' %}
+	{% for thing in things %}
+		{% set date = thing.modified_at|datetimeformat %}
+		{% if date!=cdate %}
+		<h4 class="text-muted">{{ date }}</h4>
+		{% endif %}
+		{% set cdate = date %}
+		{{ show_thing(thing) }}
+	{% endfor %}
+
+	{{ render_pagination(pagination, 'thing.list') }}
+
+	</div>
+	<div class="col-md-3">
+
+		<p>For <a href="{{ url_for('thing.list_requests') }}">all requests</a></p>
+		<p>Or <a href="{{ url_for('thing.list_nonrequests') }}">no requests</a></p>
+		<p>Or just <a href="{{ url_for('thing.list') }}">everything</a></p>
+		<p>Everyone wants <a href="{{ url_for('thing.recent_feed') }}">an RSS feed</a>
+		<p>
+			{% include "frontend/info_block.html" ignore missing %}
+		</p>
+	</div>
+
+<div>
+{% endblock %}
+
+
+
+{% block js_footer %}
+	{{ sort_thing_js() }}
+{% endblock %}

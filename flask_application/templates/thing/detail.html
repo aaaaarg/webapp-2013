@@ -1,0 +1,78 @@
+{% extends "bootstrap/layouts/base_navbar_responsive.html" %}
+{%- from "bootstrap/macros.html" import popover %}
+{%- from "thing/macros.html" import sort_thing_js with context %}
+{%- from "upload/macros.html" import upload_css, upload_js, uploader, uploads with context %}
+{%- from "collection/macros.html" import show_collections_list, add_to_collection_form, collection_js with context %}
+{%- from "maker/macros.html" import show_makers_with_roles with context %}
+{%- from "talk/macros.html" import show_threads_list with context %}
+
+{% block css_extra %}
+    {{ upload_css() }}
+{% endblock %}
+
+{% block js_footer %}
+    {{ upload_js() }}
+    {{ collection_js() }}
+    {{ sort_thing_js() }}
+{% endblock %}
+
+{% block title %}
+{{thing.title}}
+{% endblock %}
+
+{% block content %}
+
+<div class="row">
+    <div class="col-md-9">
+        {% if can_edit_thing(thing) %}
+        <div class="btn-group btn-group-xs">
+            <a class="btn btn-default" href="{{ url_for('thing.edit', id=thing.id) }}">edit</a>
+        </div>
+        {% endif %}
+        <h2>{{thing.title}}</h2>
+
+        <h5>{{ show_makers_with_roles(thing.makers) }}</h5>
+
+        
+        <p><br/></p>
+
+        <div><p class="lead">{{thing.short_description}}</p></div>
+
+        <div><p>{{thing.description}}</p></div>
+
+        <p><small class="text-muted"><a href="{{ url_for('user.public_profile', id=thing.creator.id|trim) }}">{{thing.creator.username}}</a></small></p>
+
+        {% if can_view_file_for_thing(thing) %}
+        <div class="panel panel-default uploads-panel">
+            <div class="panel-body">
+            {{ uploads(thing.files) }}
+            {% if can_add_file_to_thing(thing) %}
+            <div class="upload">
+                {{ uploader(upload_form, thing.id) }}
+            </div>
+            {% endif %}
+            </div>
+        </div>
+        {% endif %}
+    </div>
+    <div class="col-md-3">
+        <div class="sortable-thing">
+            {{ popover('<h3>+</h3>', thing.title, remote=url_for('thing.sort_actions', id=thing.id, hide='collections')) }}
+        </div>
+        <small class="text-muted">
+            DISCUSSIONS 
+            {% if can_create_thread() %}
+            <a href="{{url_for('talk.add', type='Thing', id=thing.id)}}">start another</a>
+            {% endif %}
+        </small>
+        {{ show_threads_list(threads) }}
+        <small class="text-muted">COLLECTIONS</small>
+        {% if can_add_thing_to_collections() %}
+        {{ show_collections_list(collections, thing, add_to_collection_form(collection_form)) }}
+        {% else %}
+        {{ show_collections_list(collections, thing) }}
+        {% endif %}
+    </div>
+</div>
+
+{% endblock %}

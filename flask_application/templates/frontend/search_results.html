@@ -1,0 +1,30 @@
+{% extends "bootstrap/layouts/base_navbar_responsive.html" %}
+{%- from "frontend/macros.html" import follow_toggle %}
+
+{% block title %}
+{{title}}: {{query}}
+{% endblock %}
+
+{% block content %}
+
+<h2>{{title}}: {{query}}</h2>
+
+<div class="row">
+  <form class="form-search" action="{{ url_for('frontend.search') }}" method="get">
+    <div class="input-group">
+      <input type="text" name="query" class="form-control search-query" placeholder="{{query}}">
+      <div class="input-group-btn">
+        <button type="submit" class="btn btn-default"><i class="glyphicon glyphicon-search"></i></button>
+      </div>
+    </div>
+  </form>
+</div>
+
+<div class="row">
+  <div class="panel panel-default" id="things">
+    <div class="panel-heading">results <a class="pull-right" href="{{ url_for('frontend.search', type=type, query=query, page=page_next) }}">see more?</a></div>
+    {{ content }}
+  </div>
+</div>
+
+{% endblock %}

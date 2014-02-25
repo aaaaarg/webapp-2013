@@ -1,0 +1,17 @@
+{% extends "bootstrap/layouts/base_navbar_responsive.html" %}
+{%- from "bootstrap/forms/macros.html" import render_field %}
+
+
+{% block title %}
+{{ title }}
+{% endblock %}
+
+{% block content %}
+<form action="" method="post" name="thing">
+    {{form.hidden_tag()}}
+    {{render_field(form.title, size=255)}}
+    {{render_field(form.short_description, size=255, placeholder='Just a sentence or two')}}
+    {{render_field(form.description, rows=10)}}
+    <p><button class="btn btn-primary" type="submit">Save</p>
+</form>
+{% endblock %}

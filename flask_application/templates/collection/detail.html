@@ -1,0 +1,115 @@
+{% extends "bootstrap/layouts/base_navbar_responsive.html" %}
+{%- from "collection/macros.html" import show_collected_things with context %}
+{%- from "frontend/macros.html" import follow_toggle %}
+{%- from "talk/macros.html" import show_threads_list with context %}
+
+{% block title %}
+{{collection.title}}
+{% endblock %}
+
+{% block content %}
+<div class="row">
+	<div class="col-md-9">
+		
+		<div class="btn-group btn-group-xs">
+			{% if can_edit_collection(collection) %}
+			<div class="btn-group btn-group-xs">
+  			<button type="button" class="btn btn-default dropdown-toggle" data-toggle="dropdown">
+    			Edit <span class="caret"></span>
+  			</button>
+			  <ul class="dropdown-menu" role="menu">
+			    <li><a href="{{ url_for('collection.edit', id=collection.id) }}">edit title & description</a></li>
+					<li class="divider"></li>
+					<li><a href="{{ url_for('collection.add_subcollection', id=collection.id) }}">add subcollection</a></li>
+					<li><a href="{{ url_for('collection.rearrange', id=collection.id) }}">re-order subcollections</a></li> 
+			  </ul>
+			</div>
+			{% endif %}
+			{% if can_add_thing_to_collection(collection) %}
+			<a class="btn btn-default" href="{{ url_for('thing.add', collection=collection.id|trim) }}">add new thing to this collection</a>
+			{% endif %}
+			{%- if current_user.is_authenticated() -%}
+			{{ follow_toggle(collection) }}
+			{%- endif %}
+		</div>
+
+
+		<h2>
+			{% if collection.supercollection is defined and collection.supercollection != None %}
+				{{collection.supercollection|format_collection_link|safe}} > 
+			{% endif %}	
+			{{collection.title}}
+		</h2>
+
+
+		<div class="lead">{{collection.short_description}}</div>
+
+		<div><small><a href="{{ url_for('user.public_profile', id=collection.creator.id|trim) }}">{{collection.creator.username}}</a></small></div>
+
+		<div><p>{{collection.description|markdown}}</p></div>
+
+		{{ show_collected_things(collection) }}
+		
+		<div class="subcollections sortable">
+		{% for subcollection in collection.subcollections|sort(attribute='weight') %}
+			
+			<div class="subcollection panel panel-default">
+			  <div class="panel-heading">
+			    <h3 class="panel-title">{{subcollection.title}}</h3>
+			  </div>
+			  <div class="panel-body">
+			    <p class="lead">{{subcollection.short_description}}</p>
+			    <p>{{subcollection.description}}</p>
+			  </div>
+			</div>
+			{{ show_collected_things(subcollection) }}			
+		{% endfor %}		
+		</div>
+	</div>
+	<div class="col-md-3">
+		<p>
+			<div class="btn-group">
+			  <button type="button" class="btn btn-default dropdown-toggle" data-toggle="dropdown">
+			    sort contents by <span class="caret"></span>
+			  </button>
+			  <ul class="dropdown-menu" role="menu">
+					<li><a class="sort-toggle text-success" data-sort="date" href="#sort-date">new additions to collection</a></li>
+					<li><a class="sort-toggle text-success" data-sort="maker" href="#sort-maker">maker name</a></li>
+					<li><a class="sort-toggle text-success" data-sort="title" href="#sort-title">title</a></li>
+			  </ul>
+			</div>
+		</p>
+		<hr>
+	  <small class="text-muted">
+	      DISCUSSIONS 
+	      {% if can_create_thread() %}
+	      <a href="{{url_for('talk.add', type='Collection', id=collection.id)}}">start another</a>
+	      {% endif %}
+	  </small>
+	  {{ show_threads_list(threads) }}
+	</div>
+</div>
+
+{% endblock %}
+
+
+{% block js_footer %}
+<script src="{{ url_for('static', filename='js/jquery.tinysort.min.js') }}"></script>
+<script>
+	$(document).ready( function() {
+		// Tinysort sorting
+		$('a.sort-toggle').click(function() {
+			type = $(this).attr('data-sort');
+			if (type=='date') {
+				$('div.sortable>.list-group-item').tsort({attr:'data-sortadded', order:'desc'});
+			} else if (type=='maker') {
+				$('div.sortable>.list-group-item').tsort({attr:'data-sortmaker'});
+			} else {
+				$('div.sortable>.list-group-item').tsort('h5 a');
+			}
+			return false;
+		});
+		$('div.sortable>.list-group-item').tsort({attr:'data-sortmaker'});
+	});
+</script>
+{% endblock %}

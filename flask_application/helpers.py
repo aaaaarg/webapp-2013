@@ -1,8 +1,8 @@
+import dateutil.parser
 import datetime
 import math
-from flask import abort 
+from flask import abort, Blueprint
 from functools import wraps
-
 
 # Caching
 def cached(app, timeout=5 * 60, key='view/%s'):
@@ -20,7 +20,6 @@ def cached(app, timeout=5 * 60, key='view/%s'):
         return decorated_function
     return decorator
 
-
 # Custom Template Filters
 def datetimeformat(value):
     delta = datetime.datetime.now() - value
@@ -31,9 +30,9 @@ def datetimeformat(value):
     elif delta.days < 28:
         formatting = '{0} weeks ago'.format(int(math.ceil(delta.days/7.0)))
     elif value.year == datetime.datetime.now().year:
-        formatting = 'on %d %b'
+        formatting = '%d %b'
     else:
-        formatting = 'on %d %b %Y'
+        formatting = '%d %b %Y'
     return value.strftime(formatting)
 
 keyspace = "wf59eorpma2vnxb07kiqt83_u6lgzs41-ycdjh"

@@ -1,0 +1,39 @@
+{% extends "bootstrap/layouts/base_navbar_responsive.html" %}
+{%- from "thing/macros.html" import show_thing with context %}
+
+{% block title %}
+{{title}}
+{% endblock %}
+
+{% block content %}
+
+<div class="row">
+    <div class="col-md-9">
+        <h2>{{title}}</h2>
+
+        <div class="btn-group">
+            <a class="btn btn-xs btn-default" href="{{ url_for('queue.edit_thing', id=queue.id, item_id=queued_thing.id) }}">edit</a>
+        </div>
+        <p><br/></p>
+
+        <div><strong>{{queued_thing.short_description}}</strong></div>
+
+        <div><p>{{queued_thing.description|markdown}}</p></div>
+
+        <div>
+            <em>
+                {{queued_thing.creator.username}}
+                {% if queued_thing.date_completed %}
+                , {{ queued_thing.date_completed|datetimeformat}}
+                {% endif %}
+            </em>
+        </div>
+
+    </div>
+    <div class="col-md-3">
+    	...
+    </div>
+</div>
+
+{% endblock %}
+

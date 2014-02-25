@@ -2,6 +2,7 @@
 <html lang="{% block html_lang %}en{% endblock %}">
 <head>
 {% from "bootstrap/macros.html" import debugmin %}
+{% from "frontend/macros.html" import frontend_js %}
 {% block head %}
     <title>{% block title %}{% endblock %} | {{ config['SITE_NAME'] }}</title>
     {% block meta %}
@@ -12,12 +13,15 @@
     {% endblock %}
 
     {% block css_bootstrap %}
-    {% assets filters="cssmin", output="gen/packed.css", "css/bootstrap.css", "css/bootstrap-responsive.css", "css/site.css" %}
+    {% assets filters="cssmin", output="gen/packed.css", "css/bootstrap.min.css", "css/bootstrap-theme.min.css", "css/site.css" %}
           <link rel="stylesheet" href="{{ ASSET_URL }}"/>
     {% endassets %}
     {% endblock %}
 
     {% block css_site %}
+        <link rel="stylesheet" href="{{ url_for('static', filename='css/bootstrap-select.min.css') }}">
+        <link rel="stylesheet" href="{{ url_for('static', filename='css/site.css') }}">
+
     {% endblock %}
     {% block css_extra %}
     {% endblock %}
@@ -69,14 +73,16 @@
 
     {% block js_jquery %}
         {# Grab Google CDN's jQuery, with a protocol relative URL; fall back to local if offline #}
-        <script src="//ajax.googleapis.com/ajax/libs/jquery/1.7.1/jquery.min.js"></script>
+        <script src="//ajax.googleapis.com/ajax/libs/jquery/1.9.1/jquery.min.js"></script>
         <script>window.jQuery || document.write('<script src="{{ url_for('static', filename='js/jquery-1.7.1.min.js') }}"><\/script>')</script>
+        <script src="{{ url_for('static', filename='js/jquery-ui-custom.min.js') }}"></script>
     {% endblock %}
 
     {% block js_bootstrap %}
-        <script src="{{ url_for('static', filename='js/bootstrap.js') }}"></script>
+        <script src="{{ url_for('static', filename='js/bootstrap.min.js') }}"></script>
+        <script src="{{ url_for('static', filename='js/bootstrap-select.min.js') }}"></script>
+        {{ frontend_js() }}
     {% endblock %}
-
 
     {% block js_footer %}
         {# Add your javascript here #}

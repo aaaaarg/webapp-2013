@@ -1,0 +1,52 @@
+{% extends "bootstrap/layouts/base_navbar_responsive.html" %}
+{%- from "bootstrap/forms/macros.html" import render_field %}
+{%- from "frontend/macros.html" import follow_toggle %}
+{%- from "talk/macros.html" import show_comment with context %}
+
+{% block title %}
+{{thread.title}}
+{% endblock %}
+
+{% block content %}
+
+<h2>{{thread.title}}</h2>
+
+{% if thread.origin %}
+<h4><span class="text-muted"> in <a href="{{thread|thread_origin_url}}">{{ thread.origin_title() }}</a></h4>
+{% endif %}
+
+{{ follow_toggle(thread) }}
+
+<ul class="list-group">
+{% if not comments %}
+  <li class="list-group-item text-warning">
+    no comments yet 
+  </li>
+{% endif %}
+{% for comment in comments %}
+  <li class="list-group-item">
+    {{ show_comment(comment) }}	
+  </li>
+{% endfor %}	
+{% if can_create_comment(thread) %}
+	<li class="list-group-item">
+		<form action="{{url_for('talk.add_comment', id=thread.id)}}" method="post" name="comment">
+        {{form.hidden_tag()}}
+        {{render_field(form.text, rows=7, **{"data-provide":"markdown"})}}
+        <p><button class="btn btn-primary" type="submit">Add comment</p>
+    </form>
+	</li>	
+{% endif %}
+</ul>
+
+{% endblock %}
+
+
+{% block css_extra %}
+<link rel="stylesheet" href="{{ url_for('static', filename='css/bootstrap-markdown.min.css') }}">
+{% endblock %}
+
+
+{% block js_footer %}
+<script src="{{ url_for('static', filename='js/bootstrap-markdown.js') }}"></script>
+{% endblock %}

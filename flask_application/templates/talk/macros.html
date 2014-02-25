@@ -1,0 +1,54 @@
+{%- from "bootstrap/forms/macros.html" import render_field %}
+
+{% macro show_thread(thread) %}
+	{% if thread.title=="General discussion" and thread.origin %}
+		<a href="{{url_for('talk.thread', id=thread.id)}}">{{thread.origin_title()|truncate}}</a>
+	{% elif thread.origin %}
+		<a href="{{url_for('talk.thread', id=thread.id)}}">{{thread.title}}</a> {{ thread.origin_title()|truncate }}
+	{% else %}
+		<a href="{{url_for('talk.thread', id=thread.id)}}">{{thread.title}}</a> 
+	{% endif %}
+	<br />
+	<small><span class="text-muted">{{ thread.last_comment_text|truncate}}</span></small>
+{% endmacro %}
+
+
+{% macro show_comment(comment) %}
+<p>
+		<div class="text-muted">{{ comment.created_at|datetimeformat}} by <a href="{{ url_for('user.public_profile', id=comment.creator.id|trim) }}">{{ comment.creator.username}}</a></div>
+  	<p>{{ comment.text|markdown }}</p> 
+</p>
+{% endmacro %}
+
+{% macro show_threads_list(threads, form=None) %}
+<div class="things list-group">
+	{% if threads.count()==0 %}
+	 	<div class="list-group-item">
+			no discussions yet
+		</div>
+	{% endif %}
+	{% for thread in threads %}
+		<div class="list-group-item">
+			<a href="{{url_for('talk.thread', id=thread.id)}}">{{thread.title}}</a>
+	  	<p class="list-group-item-text">
+	  		<small class="text-muted">{{thread.last_comment_text|truncate(60)}}</small>
+	  	</p>
+		</div>
+	{% endfor %}
+	{% if form %}
+		<div class="list-group-item">
+			<p class="list-group-item-text">
+				<div id="new-thread-form" class="hidden">
+		  		<form action="" method="post" name="thread">
+				    {{form.hidden_tag()}}
+				    {{render_field(form.title, size=255)}}
+				    {{render_field(form.text, rows=rows)}}
+				    <p><button class="btn btn-primary" type="submit">Create Discussion</p>
+				  </form>
+				</div>
+	  	</p>
+		</div>
+	{% endif %}
+</div>
+{% endmacro %}
+

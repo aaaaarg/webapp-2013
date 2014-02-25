@@ -1,0 +1,26 @@
+{% macro alphabet(letters, active_letter=None) %}
+	<ul class="nav nav-tabs">
+	{% for letter, count in letters.iteritems()|sort %}
+		{% if count > 0 %}
+			<li{%- if letter==active_letter %} class="active"{% endif -%}><a href="{{url_for('maker.list', letter=letter)}}">{{ letter }}</a></li>
+		{% endif %}
+	{% endfor %}
+	</ul>
+{% endmacro %}
+
+
+{% macro show_maker(maker, role) %}
+	{% if role %}
+	{% set role_str=" (%s)" % role %}
+	{% endif %}
+	<a href="{{url_for('maker.detail', id=maker.id)}}">{{ maker.display_name }}</a>{{role}}
+{% endmacro %}
+
+
+{% macro show_makers_with_roles(makers) %}
+	<ul class="list-unstyled list-inline">
+	{% for maker in makers %}
+		{{ show_maker(maker.maker, maker.role)}}
+	{% endfor %}
+	</ul>
+{% endmacro %}

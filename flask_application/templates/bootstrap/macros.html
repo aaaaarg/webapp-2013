@@ -5,9 +5,10 @@
     <div class="alert
                 {%- if alert_header %} alert-block{% endif -%}
                 {%- if type %} alert-{{ type }}{% endif -%}
-                {%- if close_button %} fade in{% endif %}">
+                {%- if not type %} alert-info{% endif -%}
+                {%- if close_button %} alert-dismissable{% endif %}">
         {% if close_button -%}
-            <a class="close" data-dismiss="alert">&times;</a>
+            <button type="button" class="close" data-dismiss="alert" aria-hidden="true">&times;</button>
         {%- endif %}
         {% if alert_header -%}
             <h4 class="alert-heading">{{ alert_header|safe }}</h4>
@@ -20,6 +21,79 @@
 
 {% macro label(content, type='warning') -%}
     <span class="label label-{{ type }}">{{ content|safe }}</span>
+{%- endmacro %}
+
+{% macro render_pagination(pagination, endpoint) %}
+    <ul class="pagination">
+        {%- for page in pagination.iter_pages() %}
+            {% if page %}
+                {% if page != pagination.page %}
+                    <li><a href="{{ url_for(endpoint, page=page) }}">{{ page }}</a></li>
+                {% else %}
+                    <li class="disabled"><a href="#" >{{ page }}</a></li>
+                {% endif %}
+            {% else %}
+                <li class="disabled"><span class="ellipsis">…</span></li>
+            {% endif %}
+        {%- endfor %}
+    </ul>
+{% endmacro %}
+
+{% macro popover(trigger, popover_title, popover_content='Loading', remote=None) -%}
+        {% if remote %}
+        <span class="popover-trigger remote" data-poload="{{remote}}" data-title="{{popover_title}}">
+            {{trigger|safe}}
+        </span>
+        {% else %}
+        <span class="popover-trigger not-remote">
+            {{trigger|safe}}
+        </span>
+        <div class="popover-element hide" data-title="{{popover_title}}">
+            {{ popover_content }}
+        </div>
+        {% endif %}
+{%- endmacro %}
+
+{% macro popovers_js() -%}
+    <script>
+    $(".popover-trigger.remote").click(function() {
+        el = $(this);
+        $.get(el.attr('data-poload'), function(response) {
+            el.unbind('click').popover({
+                content: response,
+                title: el.attr('data-title'),
+                html: true,
+                delay: {show: 500, hide: 100}
+            }).popover('show');
+        });
+    });
+    $('.popover-trigger.not-remote').popover({
+        html: true,
+        title: function() {
+            return $(this).next('.popover-element').attr('data-title');
+        },
+        content: function() {
+          return $(this).next('.popover-element').html();
+        }
+    });
+    // dismiss popovers
+    $('body').on('click', function (e) {
+        $('.popover-trigger').each(function () {
+            if (!$(this).is(e.target) && $(this).has(e.target).length === 0 && $('.popover').has(e.target).length === 0) {
+                $(this).popover('hide');
+            }
+        });
+    });
+    </script>
+{%- endmacro %}
+
+
+{% macro tooltips_js() -%}
+    <script>
+    $(document).ready(function(){
+        $("[rel=tooltip]").tooltip({ placement: 'right', container:'body'});
+    });
+    </script>
 {%- endmacro %}
 
 

@@ -1,0 +1,44 @@
+.table-sort-handle {
+	border-right: none;
+}
+.table-sort-handle span {
+    vertical-align: middle;
+    cursor: pointer;
+}
+
+/* no logos! aaaaarg, ok, just one */
+.aaaaarg {
+	font-size: 200px;
+	position: absolute;
+	font-weight:bold;
+	top:-195px;
+	color: #DDD;
+}
+
+
+/* progress bar */
+.bar {
+    height: 18px;
+    background: green;
+}
+
+.popover-trigger {
+	display: inline-block;
+}
+
+.popover-trigger:hover {
+	cursor: pointer;
+}
+
+.popover select#collection {
+	width: 180px;
+}
+
+.panel.subcollection {
+	margin-bottom: 0px;
+	margin-top: 30px;
+}
+
+.uploads-panel {
+	margin-top: 30px;
+}

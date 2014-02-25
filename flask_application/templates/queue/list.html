@@ -1,0 +1,25 @@
+{% extends "bootstrap/layouts/base_navbar_responsive.html" %}
+{%- from "bootstrap/macros.html" import render_pagination %}
+
+
+{% block title %}
+{{ title }}
+{% endblock %}
+
+{% block content %}
+<h1>{{ title }}</h1>
+
+
+{% set cdate = '' %}
+{% for q in queues %}
+	{% set date = q.created_at|datetimeformat %}
+	{% if date!=cdate %}
+	<h4 class="text-muted">{{ date }}</h4>
+	{% endif %}
+	{% set cdate = date %}
+	<a href="{{ url_for('queue.detail', id=q.id) }}">{{ q.title }}</a><br />
+{% endfor %}
+
+{{ render_pagination(pagination, 'queue.list') }}
+
+{% endblock %}

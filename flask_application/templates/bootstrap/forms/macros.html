@@ -11,53 +11,63 @@
     {% endif %}
 {% endmacro %}
 
-{% macro label(field) -%}
-    <label class="control-label"{% if field.auto_id %} for="{{ field.auto_id|safe }}"{% endif %}>{{ field.label|safe }}</label>
-{%- endmacro %}
-
-{% macro input(field, prepend_content=None, append_content=None) -%}
-    {# Helper macro for rendering the input itself #}
-
-    {% if prepend_content %}
-    <div class="input-prepend">
-    {% elif append_content %}
-    <div class="input-append">
-    {% endif %}
-    {%- if prepend_content -%}
-        <span class="add-on">{{ prepend_content }}</span>
-    {%- endif -%}
-
-    {{ field|safe }}
-
-    {%- if append_content -%}
-        <span class="add-on">{{ append_content }}</span>
-    {%- endif -%}
-
-    {% if field.errors %}
-        <span class="help-inline">{{ field.errors|join(' ')|safe }}</span>
-    {% endif %}
-
-    {% if append_content or prepend_content %}
+{# Renders field for bootstrap 3 standards.
+ 
+    Params:
+        field - WTForm field
+        kwargs - pass any arguments you want in order to put them into the html attributes.
+        There are few exceptions: for - for_, class - class_, class__ - class_
+ 
+    Example usage:
+        {{ macros.render_field(form.email, placeholder='Input email', type='email') }}
+#}
+{% macro render_field(field, label_visible=true) -%}
+ 
+    <div class="form-group {% if field.errors %}has-error{% endif %} {{ kwargs.pop('class_', '') }}">
+        {% if (field.type != 'HiddenField' or field.type !='CSRFTokenField') and label_visible %}
+            <label for="{{ field.id }}" class="control-label">{{ field.label }}</label>
+        {% endif %}
+        {{ field(class_='form-control', **kwargs) }}
+        {% if field.errors %}
+            {% for e in field.errors %}
+                <p class="help-block">{{ e }}</p>
+            {% endfor %}
+        {% endif %}
     </div>
-    {% endif %}
 {%- endmacro %}
-
-{% macro field(field, classes=None, prepend_content=None, append_content=None, hide_label=False, inline=False) -%}
-    {% if field.is_hidden %}
-        {{ field|safe }}
-    {% else %}
-        <div class="control-group{% if field.errors %} error{% endif -%}{%- if classes %} {{ classes }}{% endif %}">
-            {% if not hide_label %}
-                {{ label(field) }}
-            {% endif %}
-            <div class="controls">
-
-                {{ input(field, prepend_content, append_content) }}
-
-                {% if field.help_text %}
-                    <p class="help-block">{{ field.help_text|safe }}</p>
-                {% endif %}
-            </div>
+ 
+{# Renders checkbox fields since they are represented differently in bootstrap
+    Params:
+        field - WTForm field (there are no check, but you should put here only BooleanField.
+        kwargs - pass any arguments you want in order to put them into the html attributes.
+        There are few exceptions: for - for_, class - class_, class__ - class_
+ 
+    Example usage:
+        {{ macros.render_checkbox_field(form.remember_me) }}
+ #}
+{% macro render_checkbox_field(field) -%}
+    <div class="checkbox">
+        <label>
+            {{ field(type='checkbox', **kwargs) }} {{ field.label }}
+        </label>
+    </div>
+{%- endmacro %}
+ 
+{# Renders radio field
+    Params:
+        field - WTForm field (there are no check, but you should put here only BooleanField.
+        kwargs - pass any arguments you want in order to put them into the html attributes.
+        There are few exceptions: for - for_, class - class_, class__ - class_
+ 
+    Example usage:
+        {{ macros.render_radio_field(form.answers) }}
+ #}
+{% macro render_radio_field(field) -%}
+    {% for value, label, _ in field.iter_choices() %}
+        <div class="radio">
+            <label>
+                <input type="radio" name="{{ field.id }}" id="{{ field.id }}" value="{{ value }}">{{ label }}
+            </label>
         </div>
-    {% endif %}
+    {% endfor %}
 {%- endmacro %}

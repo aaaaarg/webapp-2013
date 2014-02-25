@@ -1,0 +1,70 @@
+{% from "bootstrap/macros.html" import tooltips_js, popovers_js %}
+
+{% macro follow(model, label='Follow') %}
+	<a class="follow-toggle follow" href="{{url_for('frontend.follow', type=model._get_collection_name(), id=model.id)}}">{{label}}</a>
+{% endmacro %}
+
+
+{% macro unfollow(model, label='Following') %}
+	<a class="follow-toggle unfollow" href="{{url_for('frontend.unfollow', type=model._get_collection_name(), id=model.id)}}">{{label}}</a>
+{% endmacro %}
+
+
+{% macro follow_toggle(model, classes='btn btn-default') %}
+	{% if model.is_follower() %}
+		<span class="follow-wrapper {{classes}}">{{ unfollow(model) }}</span>
+	{% else %}
+		<span class="follow-wrapper {{classes}}">{{ follow(model) }}</span>
+	{% endif %}
+{% endmacro %}
+
+
+{% macro search_results(results, endpoint) %}
+	{% if results %}
+	<ul class="list-group results">
+	{% for result in results %}
+		<li class="list-group-item">
+			<a href="{{ url_for(endpoint, id=result._id) }}">{{ result.title }}</a>
+		</li>
+	{% endfor %}
+	</ul>
+	{% endif %}
+{% endmacro %}
+
+
+{% macro frontend_js() %}
+{{ tooltips_js() }}
+{{ popovers_js() }}
+<script>
+	// Following
+	function follow($ele) {
+		$ele.html('...');
+		var jqxhr = $.get( $ele.attr('href'))
+		  .done(function(data) {
+		    if (data.result=='success') {
+		    	$ele.parent().html(data.message);
+		    } else {
+		    	alert(data.message);
+		    }
+		  })
+		  .fail(function() {
+		    // do nothing
+		  });
+	}
+	$('.follow-wrapper').on('click', '.follow-toggle', function() {
+		follow($(this));
+		return false;
+	});
+	// Confirmation of clicks
+	$('a[data-confirm]').click(function(ev) {
+			var href = $(this).attr('href');
+			if (!$('#dataConfirmModal').length) {
+				$('body').append('<div id="dataConfirmModal" class="modal fade" role="dialog" aria-labelledby="dataConfirmLabel" aria-hidden="true"><div class="modal-dialog"><div class="modal-content"><div class="modal-header"><button type="button" class="close" data-dismiss="modal" aria-hidden="true">×</button><h3 id="dataConfirmLabel">Please Confirm</h3></div><div class="modal-body"></div><div class="modal-footer"><button class="btn" data-dismiss="modal" aria-hidden="true">Cancel</button><a class="btn btn-primary" id="dataConfirmOK">OK</a></div></div></div></div>');
+			} 
+			$('#dataConfirmModal').find('.modal-body').text($(this).attr('data-confirm'));
+			$('#dataConfirmOK').attr('href', href);
+			$('#dataConfirmModal').modal({show:true});
+			return false;
+		});
+</script>
+{% endmacro %}

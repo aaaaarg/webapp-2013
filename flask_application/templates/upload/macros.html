@@ -1,0 +1,125 @@
+{% macro upload_css() %}
+	<link rel="stylesheet" href="{{ url_for('static', filename='css/jquery.fileupload.css') }}">
+	<link rel="stylesheet" href="{{ url_for('static', filename='css/jquery.fileupload-ui.css') }}">
+{% endmacro %}
+
+{% macro uploader(form, thing_id) %}
+{% set upload_url = url_for('upload.handle_upload',thing_id=thing_id) %}
+{% for field in form %}
+	{% if field.type == 'HiddenField' %}
+		{{ field(class_='extra-upload-field') }}
+	{% endif %}
+{% endfor %}
+	<div class="container-fluid">
+		<div class="row">
+			<div class="col-md-3">
+				<span class="btn btn-xs btn-default fileinput-button">
+	        <span>Add file...</span>
+	        {{ form.files(id='fileupload', **{'data-url':upload_url}) }}
+	      </span>
+      </div>
+			<div class="col-md-5">{{form.short_description(id='upload_short_description', placeholder='Short description of this file', size=40)}}</div>
+			<div class="col-md-4">
+				<div id="progress" class="progress">
+			    <div class="bar" style="width: 0%;"></div>
+				</div>
+			</div>
+		</div>
+	</div>
+{% endmacro %}
+
+{% macro uploads(files) %}
+	<table id="fileuploads" class="table table-hover">
+		<caption class="text-left text-muted"><small>Uploaded versions</small></caption>  
+	  <thead>
+	  <tr {% if files|length==0 %}class="hidden"{% endif %}>
+	      <th class="col-md-5">Filename</th>
+	      <th class="col-md-4">Short description</th>
+	      <th class="col-md-2">Mimetype</th>
+	      <th class="col-md-1">Size</th>
+	  </tr>
+	  </thead>
+	  {% for file in files %}
+	  <tr>
+	      <td><a href="{{url_for('upload.serve_upload', filename=file.structured_file_name)}}">{{file.structured_file_name}}</a></td>
+	      <td>{{file.short_description}}</td>
+	      <td>{{file.mimetype}}</td>
+	      <td>{{(file.file_size/1000000)|round(1)}}mb</td>
+	  </tr>
+	  {% endfor %}
+	</table>	
+{% endmacro %}
+
+{% macro upload_js() %}
+  <script src="{{ url_for('static', filename='js/jquery.ui.widget.js') }}"></script>
+  <script src="{{ url_for('static', filename='js/jquery.iframe-transport.js') }}"></script>
+  <script src="{{ url_for('static', filename='js/jquery.fileupload.js') }}"></script>
+  <script>
+	$(function () {
+			uploadButton = $('<button/>')
+        .addClass('btn btn-success')
+        .prop('disabled', true)
+        .text('Processing...')
+        .on('click', function () {
+        		var $this = $(this),
+                data = $this.data();
+            $this
+                .off('click')
+                .text('Abort')
+                .on('click', function () {
+                    $this.remove();
+                    data.abort();
+                });
+            input = $('#upload_short_description');
+		    		data.formData = {short_description: input.val()};
+            data.submit().always(function () {
+                $this.remove();
+            });
+        });
+        $('#progress').hide();
+        $('#upload_short_description').hide();
+	    $('#fileupload').fileupload({
+	        dataType: 'json',
+	        replaceFileInput: false,
+	        add: function (e, data) {
+	        	file = data.files[0];
+	        	data.context = $('#fileupload').parent().parent();
+	        	data.context.find('.upload-button').hide();
+	        	node = $('<div/>').addClass('upload-button').append($('<small/>').text(file.name));
+	        	b = uploadButton.clone(true).data(data);
+	        	b.appendTo(node);
+	        	node.appendTo(data.context);
+	        	b.text('Upload');
+	        	b.prop('disabled',false);
+	        	$('#progress').show();
+		        $('#upload_short_description').show();
+	        },
+	        done: function (e, data) {
+        		$('#upload_short_description').val('');
+        		$('#progress .bar').css('width','0%');
+        		$('#progress').hide();
+		        $('#upload_short_description').hide();
+        		data.context.find('.upload-button').hide();
+        		$.each(data.result.files, function (index, file) {
+            		var s = parseInt(file.file_size)/1000000;
+            		$row = $('<tr>')
+            			.append($('<td>').append($('<a>').attr('href', file.url).text(file.structured_file_name)).append('  uploaded!'))
+            			.append($('<td>').append(file.short_description))
+            			.append($('<td>').append(file.mimetype))
+            			.append($('<td>').append(s.toFixed(1) + 'mb'));
+            		$('#fileuploads').append($row);
+            		$('#fileuploads thead tr.hidden').removeClass('hidden');
+            });
+	        },
+	        progressall: function (e, data) {
+		        var progress = parseInt(data.loaded / data.total * 100, 10);
+		        $('#progress .bar').css(
+		            'width',
+		            progress + '%'
+		        );
+			    }
+	    });
+	});
+	</script>
+{% endmacro %}
+

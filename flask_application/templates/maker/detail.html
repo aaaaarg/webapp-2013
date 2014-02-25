@@ -1,0 +1,44 @@
+{% extends "bootstrap/layouts/base_navbar_responsive.html" %}
+{%- from "frontend/macros.html" import follow_toggle %}
+{%- from "thing/macros.html" import show_thing with context %}
+{%- from "talk/macros.html" import show_threads_list with context %}
+
+
+{% block title %}
+{{maker.display_name}}
+{% endblock %}
+
+{% block content %}
+<div class="row">
+	<div class="col-md-9">
+
+		<div class="btn-group btn-group-xs">
+				{% if can_add_thing() %}
+		    <a class="btn btn-default" href="{{ url_for('thing.add', maker=maker.display_name|trim) }}">Add something</a>
+		    {% endif %}
+		    {%- if current_user.is_authenticated() -%}
+			  {{ follow_toggle(maker) }}
+			  {%- endif %}
+		</div>
+
+		<h2>{{maker.display_name}}</h2>
+
+		<ul class="things unstyled">
+		{% for thing in things %}
+		    {{ show_thing(thing, False) }}	
+		{% endfor %}	
+		</ul>
+
+	</div>
+
+	<div class="col-md-3">
+	  <small class="text-muted">
+	      DISCUSSIONS 
+	      {% if can_create_thread() %}
+	      <a href="{{url_for('talk.add', type='Maker', id=maker.id)}}">start another</a>
+	      {% endif %}
+	  </small>
+	  {{ show_threads_list(threads) }}
+	</div>
+</div>
+{% endblock %}

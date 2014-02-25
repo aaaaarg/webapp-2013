@@ -1,0 +1,64 @@
+{% extends "bootstrap/layouts/base_navbar_responsive.html" %}
+{%- from "collection/macros.html" import show_collected_things with context %}
+{%- from "frontend/macros.html" import follow_toggle %}
+{%- from "talk/macros.html" import show_threads_list with context %}
+
+{% block title %}
+{{collection.title}}
+{% endblock %}
+
+{% block content %}
+<div class="row">
+	<div class="col-md-9">
+		
+		<div class="btn-group btn-group-xs">
+			<a class="btn btn-default" href="{{ url_for('collection.detail', id=collection.id) }}">view collection</a>
+		</div>
+
+
+		<h2>
+			{% if collection.supercollection is defined and collection.supercollection != None %}
+				{{collection.supercollection|format_collection_link|safe}} > 
+			{% endif %}	
+			{{collection.title}}
+		</h2>
+		
+		<table class="sortable table table-bordered">
+			{% for subcollection in collection.subcollections|sort(attribute='weight') %}
+			<tr id="o_{{subcollection.id}}">
+	    	<td class="table-sort-handle"><span class="glyphicon glyphicon-sort"></span></td>
+	    	<td><h4>{{ subcollection.title }}</h4></td>
+	    </tr>
+			{% endfor %}	
+		</table>
+
+	</div>
+	<div class="col-md-3">
+	  <p>
+	  	Just drag and drop to re-order the subcollections. Changes will be saved automatically.
+	  </p>
+	</div>
+</div>
+
+{% endblock %}
+
+
+{% block js_footer %}
+<script>
+	// sorting the things
+    $(document).ready( function() {
+        $( ".sortable" ).sortable({
+          items: "tr:not(.ui-state-disabled)",
+          stop: function (event, ui) {
+          	console.log('stopping');
+            var data = $(this).sortable('serialize');
+            $.ajax({
+                data: data,
+                type: 'POST',
+                url: "{{ url_for('collection.rearrange', id=collection.id) }}"
+            });
+          }
+        }); 
+    });
+</script>
+{% endblock %}

@@ -1,0 +1,19 @@
+{% extends "bootstrap/layouts/base_navbar_responsive.html" %}
+{%- from "bootstrap/forms/macros.html" import render_field %}
+
+
+{% block title %}
+{{ title }} {{ thing.title}}
+{% endblock %}
+
+{% block content %}
+<h2>{{ title }} <a href="{{ url_for('thing.detail', id=thing.id) }}">{{ thing.title }}</a></h2>
+<form action="" method="post" name="queued_thing">
+    {{form.hidden_tag()}}
+    {{render_field(form.description, rows=20, label_visible=False)}}
+    {{render_field(form.subtitle, size=255)}}
+    {{render_field(form.short_description, size=255, placeholder='Just a sentence or two')}}
+    {{render_field(form.accessibility)}}
+    <p><button class="btn btn-primary" type="submit">Save</p>
+</form>
+{% endblock %}

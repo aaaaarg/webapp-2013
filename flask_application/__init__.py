@@ -63,6 +63,12 @@ assets_output_dir = os.path.join(FLASK_APP_DIR, 'static', 'gen')
 if not os.path.exists(assets_output_dir):
     os.mkdir(assets_output_dir)
 
+# Ensure uploads directory exists
+assets_upload_dir = app.config['UPLOADS_DIR']
+if not os.path.exists(assets_upload_dir):
+    os.mkdir(assets_upload_dir)
+
+
 # Email
 from flask.ext.mail import Mail
 mail = Mail(app)
@@ -85,25 +91,36 @@ app.cache.fetch = cache_fetch
 from flask_application.helpers import datetimeformat
 app.jinja_env.filters['datetimeformat'] = datetimeformat
 
+# Markdown
+from flaskext.markdown import Markdown
+Markdown(app)
+
 # Business Logic
 # http://flask.pocoo.org/docs/patterns/packages/
 # http://flask.pocoo.org/docs/blueprints/
-from flask_application.controllers.frontend import frontend
-app.register_blueprint(frontend)
-
-from flask.ext.security import Security, MongoEngineUserDatastore
-from flask_application.models import db, User, Role, Connection
-from flask_application.security_extras import ExtendedRegisterForm
+from flask_application.controllers import frontend, thing, maker, collection, queue, talk, user, upload, admin
+app.register_blueprint(frontend.frontend)
+app.register_blueprint(thing.thing)
+app.register_blueprint(collection.collection)
+app.register_blueprint(queue.queue)
+app.register_blueprint(upload.upload)
+app.register_blueprint(maker.maker)
+app.register_blueprint(talk.talk)
+app.register_blueprint(user.user)
+#app.register_blueprint(admin.admin)
 
 # Setup Flask-Security
+from flask.ext.security import Security, MongoEngineUserDatastore, current_user
+from flask_application.models import db, User, Role
+from flask_application.security_extras import ExtendedRegisterForm
+
 user_datastore = MongoEngineUserDatastore(db, User, Role)
 app.security = Security(app, user_datastore,
          register_form=ExtendedRegisterForm)
 
-# Setup Flask-Social
-from flask.ext.social import Social
-from flask.ext.social.datastore import MongoEngineConnectionDatastore
-app.social = Social(app, MongoEngineConnectionDatastore(db, Connection))
+#from flask_application.controllers.admin import admin
+#app.register_blueprint(admin)
 
-from flask_application.controllers.admin import admin
-app.register_blueprint(admin)
+# Info block
+app.jinja_env.globals['info_block'] = app.config['INFO_BLOCK']
+

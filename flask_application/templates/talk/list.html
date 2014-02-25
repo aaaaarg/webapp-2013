@@ -1,0 +1,50 @@
+{% extends "bootstrap/layouts/base_navbar_responsive.html" %}
+{%- from "bootstrap/macros.html" import render_pagination %}
+{%- from "talk/macros.html" import show_thread %}
+
+{% block title %}
+{{ title }}
+{% endblock %}
+
+{% block content %}
+
+<div class="btn-group pull-right">
+	<button type="button" class="btn btn-default dropdown-toggle" data-toggle="dropdown">
+	  show <span class="caret"></span>
+	</button>
+	<ul class="dropdown-menu" role="menu">
+		<li><a href="{{ url_for('talk.list') }}">all</a></li>
+		<li><a href="{{ url_for('talk.list_pure') }}">discussion only</a></li>
+	</ul>
+</div>
+
+<h2>
+	{{ title }}
+	{% if can_create_thread() %}
+	<a href="{{ url_for('talk.add') }}" title="Start a discussion">+</a>
+	{% endif %}
+</h2>
+
+<table class="table table-hover">
+	<thead>
+		<th>title</th>
+		<th>last commented</th>
+	</thead>
+{% for thread in threads %}
+	<tr>
+	<td>
+		{{ show_thread(thread) }}
+	</td>
+	<td>
+		<small>
+			{{ thread.last_comment|datetimeformat }}<br />
+			<span class="text-muted">{{ thread.last_comment_by.username}}</span>
+		</small>
+	</td>
+	</tr>
+{% endfor %}
+</table>
+
+{{ render_pagination(pagination, 'talk.list') }}
+
+{% endblock %}

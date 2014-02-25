@@ -1,0 +1,65 @@
+{% extends "bootstrap/layouts/base_navbar_responsive.html" %}
+{%- from "maker/macros.html" import alphabet with context %}
+
+{% block title %}
+{{ title }}
+{% endblock %}
+
+{% block content %}
+<h2>{{ title }}</h2>
+
+<p>
+{{ alphabet(letters, active) }}
+</p>
+
+<div class="row">
+	{% for column in makers|sort(attribute='sort_by')|slice(3) %}
+	<div class="col-md-4">
+		<ul class="makers list-unstyled">
+			{%- for maker in column -%}
+			<li>
+				<!-- <a class="maker-toggle closed" href="{{ url_for('maker.things', id=maker.id) }}"><h3>{{maker.display_name}}</h3></a> <div class="things"></div>-->
+				<a  href="{{ url_for('maker.detail', id=maker.id) }}">{{maker.display_name}}</a>
+			</li>
+			{% endfor %}
+		</ul>
+	</div>
+	{% endfor %}
+</div>
+
+{% endblock %}
+
+{% block js_footer %}
+<script>
+	$(document).ready( function() {
+		function sl_up($ele) {
+			$ele.next('.things').slideUp();
+			$ele.addClass('closed');
+			$ele.removeClass('open');
+		}
+		function sl_own($ele) {
+			$things = $ele.next('.things');
+			if ($things.html()=='') {
+				var jqxhr = $.get( $ele.attr('href'))
+				  .done(function(data) {
+				    $things.html(data);
+				  })
+				  .fail(function() {
+				    $things.html('Error! Sorry.');
+				  });
+			}
+			$things.slideDown();
+			$ele.addClass('open');
+			$ele.removeClass('closed');
+		}
+		$('ul.makers').on('click', 'a.maker-toggle.open', function() {
+			sl_up($(this));
+			return false;
+		});
+		$('ul.makers').on('click', 'a.maker-toggle.closed', function() {
+			sl_own($(this));
+			return false;
+		});
+	});
+</script>
+{% endblock %}

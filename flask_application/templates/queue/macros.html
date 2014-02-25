@@ -1,0 +1,9 @@
+{%- from "thing/macros.html" import show_thing with context %}
+
+{% macro show_queued_thing(queued_thing, show_maker=True, additional_text='') %}
+	{{ show_thing(queued_thing.thing, show_maker, additional_text) }}
+	{% if queued_thing.description %}
+	<small><a href="{{ url_for('queue.detail_thing', id=queue.id, item_id=queued_thing.id) }}">[see notes]</a></small>
+	{% endif %}
+	
+{% endmacro %}

@@ -1,38 +1,27 @@
+import datetime
+
+from sunburnt import SolrInterface
+
 from flask_application import app
 
+from flask.ext.security import current_user 
 from flask.ext.mongoengine import MongoEngine
-from flask.ext.security import UserMixin, RoleMixin
 
+# Create db, which is used across all models
 db = MongoEngine(app)
 
-# Define models
-class Role(db.Document, RoleMixin):
-    name = db.StringField(max_length=80, unique=True)
-    description = db.StringField(max_length=255)
+# Create solr interface
+solr = SolrInterface(app.config['SOLR_SERVER_URL'])
 
-class User(db.Document, UserMixin):
-    email = db.StringField(max_length=255)
-    username = db.StringField(max_length=255)
-    password = db.StringField(max_length=255)
-    active = db.BooleanField(default=True)
-    confirmed_at = db.DateTimeField()
-    roles = db.ListField(db.ReferenceField(Role), default=[])
-    
-    @property
-    def connections(self):
-        return Connection.objects(user_id=str(self.id))
-
-class Connection(db.Document):
-    user_id = db.ObjectIdField()
-    provider_id = db.StringField(max_length=255)
-    provider_user_id = db.StringField(max_length=255)
-    access_token = db.StringField(max_length=255)
-    secret = db.StringField(max_length=255)
-    display_name = db.StringField(max_length=255)
-    profile_url = db.StringField(max_length=512)
-    image_url = db.StringField(max_length=512)
-    rank = db.IntField(default=1)
-
-    @property
-    def user(self):
-        return User.objects(id=self.user_id).first()
+# Import user models here, before mixins
+from .user import User, Role
+# Import rest of models here
+from .base import CreatorMixin, FollowersMixin, EditorsMixin, SolrMixin
+from .user import User, Role
+from .thing import Thing
+from .collection import Collection, SuperCollection, CollectedThing, CollectionIndex
+from .maker import Maker, Name, MakerIndex
+from .upload import Upload, TextUpload
+from .talk import Thread, Comment
+from .queue import Queue, QueuedThing
+from .cache import Cache
