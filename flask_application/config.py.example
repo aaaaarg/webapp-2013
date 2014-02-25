@@ -1,0 +1,58 @@
+class Config(object):
+    SECRET_KEY = '{SECRET_KEY}'
+    SITE_NAME = 'Flask Site'
+    SITE_ROOT_URL = 'http://example.com'
+    MEMCACHED_SERVERS = ['localhost:11211']
+    SYS_ADMINS = ['foo@example.com']
+    UPLOADS_DIR = '/home/xyz/uploads/'
+
+    # Mongodb support
+    MONGODB_DB = 'testing'
+    MONGODB_HOST = 'localhost'
+    MONGODB_PORT = 27017
+
+    # Configured for GMAIL
+    MAIL_SERVER = 'smtp.gmail.com'
+    MAIL_PORT = 465
+    MAIL_USE_SSL = True
+    MAIL_USERNAME = 'email@example.com'
+    MAIL_PASSWORD = '******'
+    DEFAULT_MAIL_SENDER = 'someone < email@example.com >'
+    
+    # Flask-Security setup
+    SECURITY_LOGIN_WITHOUT_CONFIRMATION = True
+    SECURITY_REGISTERABLE = False
+    SECURITY_RECOVERABLE = True
+    SECURITY_CHANGEABLE = True
+    SECURITY_URL_PREFIX = '/auth'
+    SECUIRTY_POST_LOGIN = '/'
+    #SECURITY_PASSWORD_HASH = 'pbkdf2_sha512'
+    #SECURITY_PASSWORD_SALT = 'jsdhfljkshdfljkhdsf'
+
+    # Solr
+    SOLR_SERVER_URL = 'http://localhost:8983/solr/core3'
+    
+    # For showing on the front page
+    INFO_BLOCK = '''
+    piddle paddle puddle
+    '''
+
+class ProductionConfig(Config):
+    DEBUG = False
+    TESTING = False
+    #SECURITY_CONFIRMABLE = True
+    #SECURITY_LOGIN_WITHOUT_CONFIRMATION = False
+    
+    MONGO_DB = 'production'
+
+class TestConfig(Config):
+    SITE_ROOT_URL = 'http://localhost:5000'
+    DEBUG = False
+    TESTING = True
+
+class DevelopmentConfig(Config):
+    SITE_ROOT_URL = 'http://localhost:5000'
+    '''Use "if app.debug" anywhere in your code, that code will run in development code.'''
+    DEBUG = True
+    TESTING = True
+
