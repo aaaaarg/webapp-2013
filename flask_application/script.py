@@ -61,15 +61,18 @@ class MigrateUsers(Command):
 		db = client.aaaart
 		count = 0
 		for u in db.people.find(timeout=False):
+			if not 'email' in u:
+				continue
 			try:
 				roles = ['admin'] if u['email'].encode('utf-8').strip()=='someone@aaaarg.org' else ['contributor']
 				display_name = u['display_name'].encode('utf-8').strip() if 'display_name' in u else 'x'
+				password = u['pass'].encode('utf-8').strip() if 'pass' in u else u['email'].encode('utf-8').strip()
 				user_datastore.create_user(
 					id=u['_id'],
 					username=display_name, 
 					email=u['email'].encode('utf-8').strip(), 
 					#password=encrypt_password(u['email'].encode('utf-8').strip()),
-					password=u['pass'].encode('utf-8').strip(),
+					password=password,
 					roles=roles, 
 					active=True)
 				# create a queue
