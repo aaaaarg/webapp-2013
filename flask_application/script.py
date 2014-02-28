@@ -117,12 +117,22 @@ class MigrateMakers(Command):
 	def run(self, **kwargs):
 		client = MongoClient()
 		db = client.aaaart
+		count = 0
 		for old_thing in db.images.find(timeout=False):
+			if Thing.objects(id=id).first():
+				continue
 			try:
+				if 'metadata' in old_thing:
+					description = old_thing['metadata']['description'].encode('utf-8').strip() if 'description' in old_thing['metadata'] else ""
+					short_description = old_thing['metadata']['one_liner'].encode('utf-8').strip() if 'description' in old_thing['metadata'] else ""
+				else:
+					description = ''
+					short_description = ''
+				
 				thing = Thing(
 					title=old_thing['title'].encode('utf-8').strip(), 
-					short_description=old_thing['metadata']['one_liner'].encode('utf-8').strip(),
-					description=old_thing['metadata']['description'].encode('utf-8').strip(),
+					short_description=short_description,
+					description=description,
 					id=old_thing['_id'],
 					created_at=datetime.datetime.fromtimestamp(float(old_thing['created'])))
 				thing.set_creator(User.objects(id=old_thing['owner']).first())
@@ -134,7 +144,7 @@ class MigrateMakers(Command):
 					q = Queue.objects(creator=u).first()
 					if q and str(old_thing['owner'])!=str(old_thing['saved_by']):
 						q.add_thing(thing)
-				print 'saved %s' % old_thing['title'].encode('utf-8').strip()
+				print '(%s) saved %s' % (count, old_thing['title'].encode('utf-8').strip())
 			except:
 				print "Unexpected error:", sys.exc_info()[0]
 				print traceback.print_tb(sys.exc_info()[2])

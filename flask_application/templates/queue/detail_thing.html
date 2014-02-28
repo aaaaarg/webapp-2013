@@ -9,13 +9,12 @@
 
 <div class="row">
     <div class="col-md-9">
-        <h2>{{title}}</h2>
-
         <div class="btn-group">
             <a class="btn btn-xs btn-default" href="{{ url_for('queue.edit_thing', id=queue.id, item_id=queued_thing.id) }}">edit</a>
         </div>
-        <p><br/></p>
 
+        <h2>{{title}}</h2>
+        
         <div><strong>{{queued_thing.short_description}}</strong></div>
 
         <div><p>{{queued_thing.description|markdown}}</p></div>
@@ -31,7 +30,22 @@
 
     </div>
     <div class="col-md-3">
-    	...
+        <p><a href="{{ url_for('thing.detail', id=queued_thing.thing.id) }}">see text</a></p>
+        <hr>
+        <small class="text-muted">
+        {{ queue.title|upper}} NOTES
+        </small>
+        <ul class="list-group">
+        {% for qt in queue.things|selectattr("description")|sort(attribute='date_completed', reverse=True) %}
+        <li class="list-group-item">
+        {% if not qt.id==queued_thing.id %}<a href="{{ url_for('queue.detail_thing', id=queue.id, item_id=qt.id) }}">{% endif %}
+        {{qt.thing.title}}
+        {% if qt.subtitle %}: {% endif %} 
+        {{ qt.subtitle }}
+        {% if not qt.id==queued_thing.id %}</a>{% endif %}
+        </li>
+        {% endfor %}
+        </ul>
     </div>
 </div>
 
