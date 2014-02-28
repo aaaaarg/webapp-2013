@@ -84,8 +84,10 @@ class MigrateUsers(Command):
 					print "%s completed " % count 
 			except:
 				print "Unexpected error:", sys.exc_info()
-				if 'email' in u:
+				try:
 					print "ERROR: %s" % u['email'].encode('utf-8').strip()
+				except:
+					print "ERROR"
 
 
 class MigrateInvitations(Command):
