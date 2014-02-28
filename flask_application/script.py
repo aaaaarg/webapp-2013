@@ -122,7 +122,7 @@ class MigrateMakers(Command):
 		for old_thing in db.images.find(timeout=False):
 			if Thing.objects(id=old_thing['_id']).first():
 				continue
-			if old_thing['owner'] is not None:
+			if old_thing['owner'] and old_thing['owner'] is not None:
 				owner = User.objects(id=old_thing['owner']).first()
 			if not owner:
 				owner = default_user	
