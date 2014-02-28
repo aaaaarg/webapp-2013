@@ -118,13 +118,17 @@ class MigrateMakers(Command):
 		client = MongoClient()
 		db = client.aaaart
 		count = 0
+		default_user = User.objects(email='someone@aaaarg.org').first()
 		for old_thing in db.images.find(timeout=False):
 			if Thing.objects(id=old_thing['_id']).first():
 				continue
+			owner = User.objects(id=old_thing['owner']).first()
+			if not owner:
+				owner = default_user	
 			try:
 				if 'metadata' in old_thing:
 					description = old_thing['metadata']['description'].encode('utf-8').strip() if 'description' in old_thing['metadata'] else ""
-					short_description = old_thing['metadata']['one_liner'].encode('utf-8').strip() if 'description' in old_thing['metadata'] else ""
+					short_description = old_thing['metadata']['one_liner'].encode('utf-8').strip() if 'short_description' in old_thing['metadata'] else ""
 				else:
 					description = ''
 					short_description = ''
@@ -134,8 +138,8 @@ class MigrateMakers(Command):
 					short_description=short_description,
 					description=description,
 					id=old_thing['_id'],
+					creator=owner,
 					created_at=datetime.datetime.fromtimestamp(float(old_thing['created'])))
-				thing.set_creator(User.objects(id=old_thing['owner']).first())
 				thing.parse_makers_string(old_thing['makers_display'].encode('utf-8').strip())
 				# @todo: files!
 				thing.save()
