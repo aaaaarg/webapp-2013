@@ -278,7 +278,7 @@ class MigrateFiles(Command):
 						if not owner:
 							owner = default_user	
 
-						processed_file = db.lookup.find_one({"thing":old_thing['_id'], "file":f['name'].encode('utf-8')}):
+						processed_file = db.lookup.find_one({"thing":old_thing['_id'], "file":f['name'].encode('utf-8')})
 						# If we've already processed the file, then it's just a matter of 
 						if processed_file:
 							p = processed_file['path'].encode('utf-8').strip()
