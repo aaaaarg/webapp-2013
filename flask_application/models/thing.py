@@ -39,9 +39,12 @@ class Thing(SolrMixin, CreatorMixin, db.Document):
         if self.modified_at is None:
              self.modified_at = self.created_at
 
-    def add_file(self, f):
+    def add_file(self, f, calibre_move=True):
         self.update(add_to_set__files=f)
         self.update(set__modified_at=datetime.datetime.now)
+        # This may not be for everyone... make it an option?
+        if calibre_move:
+            f.apply_calibre_folder_structure(self.get_maker_and_title())
 
     def remove_file(self, f):
         self.update(pull__files=f)
@@ -93,6 +96,18 @@ class Thing(SolrMixin, CreatorMixin, db.Document):
             return "%s %s" % (m.maker.sort_by, self.title)
         # otherwise...
         return self.title
+
+
+    def get_maker_and_title(self):
+        for m in self.makers:
+            return (m.maker.display_name, self.title)
+        # otherwise...
+        return ('', self.title)
+
+    def save(self, *args, **kwargs):
+        super(Thing, self).save(*args, **kwargs)
+        for f in self.files:
+            f.apply_calibre_folder_structure(self.get_maker_and_title())
 
     def build_solr(self):
         from .collection import Collection

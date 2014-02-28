@@ -5,6 +5,7 @@ class Config(object):
     MEMCACHED_SERVERS = ['localhost:11211']
     SYS_ADMINS = ['foo@example.com']
     UPLOADS_DIR = '/home/xyz/uploads/'
+    UPLOADS_SUBDIR = 'processed'
 
     # Mongodb support
     MONGODB_DB = 'testing'

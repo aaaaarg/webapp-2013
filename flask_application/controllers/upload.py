@@ -1,6 +1,6 @@
+import os
 
-
-from flask import Blueprint, render_template, flash, request, redirect, url_for, abort, jsonify, send_from_directory
+from flask import Blueprint, render_template, flash, request, redirect, url_for, abort, jsonify, send_file
 from flask.ext.security import (login_required, roles_required, roles_accepted)
 
 from flask_application import app
@@ -42,7 +42,7 @@ def handle_upload(thing_id=None):
 		uploaded_files = []
 		for key, file in files.iteritems():
 			u = Upload(short_description=request.form.get("short_description"))
-			u.set_file(file)
+			u.set_uploaded_file(file)
 			if Upload.objects(sha1=u.sha1).first():
 				app.logger.info("File already exists: %s" % u.file_name)
 			else:
@@ -50,7 +50,7 @@ def handle_upload(thing_id=None):
 				if thing:
 					thing.add_file(u)
 				uploaded_files.append({
-					'url': url_for('upload.serve_upload', filename=u.structured_file_name), 
+					'url': '#', #url_for('upload.serve_upload', filename=u.structured_file_name), 
 					'structured_file_name': u.structured_file_name,
 					'short_description': u.short_description,
 					'file_size': u.file_size,
@@ -69,6 +69,9 @@ def serve_upload(filename):
 	"""
 	u = Upload.objects(structured_file_name=filename).first()
 	if u:
-		return send_from_directory(app.config['UPLOADS_DIR'], u.file_name)
-	else:
-		abort(404)
+		path = u.full_path()
+		print path
+		if os.path.exists(path):
+			return send_file(u.full_path())
+	
+	abort(404)

@@ -5,7 +5,7 @@ from mongoengine.errors import ValidationError
 
 from flask.ext.script import Command, Option
 from flask.ext.security.utils import encrypt_password
-from flask_application import user_datastore
+from flask_application import user_datastore, app
 from flask_application.populate import populate_data
 from flask_application.models import db, solr, User, Role, Thing, Maker, Collection, SuperCollection, CollectedThing, Thread, Comment, Queue, TextUpload
 
@@ -264,26 +264,52 @@ class MigrateComments(Command):
 class MigrateFiles(Command):
 	"""Migrates old files into new structure"""
 	def run(self, **kwargs):
+		old_base_dir = '/mess/aaaarg'
+		old_base_subdir = 'texts/text'
 		client = MongoClient()
 		db = client.aaaart
+		default_user = User.objects(email='someone@aaaarg.org').first()
 		for old_thing in db.images.find(timeout=False):
 			thing = Thing.objects(id=old_thing['_id']).first()
 			if thing:
 				for f in old_thing['files']:
 					try:
-						upload = TextUpload(
-							file_name= f['name'].encode('utf-8').strip(),
-							structured_file_name=f['name'].encode('utf-8').strip(),
-							file_size= f['size'],
-							mimetype= f['type'].encode('utf-8').strip(),
-							short_description= f['comment'].encode('utf-8').strip(),
-							sha1= f['sha1'].encode('utf-8').strip(),
-							md5= f['sha1'].encode('utf-8').strip(),
-						)
-						upload.compute_hashes()
-						upload.save()
-						upload.set_structured_file_name(thing.format_for_filename())
-						thing.add_file(upload)
+						owner = User.objects(id=f['uploader']).first()
+						if not owner:
+							owner = default_user	
+
+						processed_file = db.lookup.find_one({"thing":old_thing['_id'], "file":f['name'].encode('utf-8')}):
+						# If we've already processed the file, then it's just a matter of 
+						if processed_file:
+							p = processed_file['path'].encode('utf-8').strip()
+							upload = TextUpload(
+								short_description= f['comment'].encode('utf-8').strip(),
+								sha1= f['sha1'].encode('utf-8').strip(),
+								creator = owner,
+								created_at = datetime.datetime.fromtimestamp(float(f['upload_date']))
+							)
+							upload.set_file(p)
+							# the name has already been rewritten, so don't do it again
+							thing.add_file(upload, False)
+						
+						else:
+							# get local path
+							if 'full_path' in f:
+								cur_path = f['full_path'].encode('utf-8').strip().replace(old_base_dir, app.config['UPLOADS_DIR'])
+							else:
+								cur_path = os.path.join(app.config['UPLOADS_DIR'], old_base_subdir, f['name'].encode('utf-8').strip())
+							# If we have a valid file, then let's add the upload
+							if os.path.exists(cur_path):
+								upload = TextUpload(
+									short_description= f['comment'].encode('utf-8').strip(),
+									sha1= f['sha1'].encode('utf-8').strip(),
+									creator = owner,
+									created_at = datetime.datetime.fromtimestamp(float(f['upload_date']))
+								)
+								upload.set_file(cur_path)
+								print 'saving',cur_path,'as',upload.file_path
+								# allow the name to be rewritten
+								thing.add_file(upload)
 					except:
 						print "Unexpected error:", sys.exc_info()[0]
 						print traceback.print_tb(sys.exc_info()[2])

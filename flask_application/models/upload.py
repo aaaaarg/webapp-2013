@@ -6,6 +6,18 @@ from werkzeug import secure_filename
 
 from . import db, CreatorMixin
 
+"""
+
+Uploads will be stored in the directory specified by the UPLOADS_DIR configuration.
+The UPLOADS_SUBDIR is for organization, within this specific application.
+It means that the filename and directory structure have been done in Calibre-style.
+Therefore, the file_path will not include UPLOADS_DIR (which is what can be moved around)
+and it will include the UPLOADS_SUBDIR.
+
+So when constructing paths to the file, use the UPLOADS_DIR plus the file_path.
+But when moving the file, construct the path with UPLOADS_DIR, UPLOADS_SUBDIR, and any additional path.
+
+"""
 
 class Upload(CreatorMixin, db.Document):
 	"""
@@ -18,7 +30,7 @@ class Upload(CreatorMixin, db.Document):
 	# this is a filename that is based on other application metadata to standardize filenames for users
 	structured_file_name = db.StringField(max_length=255, unique=True)
 	# if the file is being saved to an alternative uploads location it can be specified here
-	file_dir = db.StringField(max_length=255)
+	file_path = db.StringField(max_length=255)
 	file_size = db.IntField()
 	mimetype = db.StringField(max_length=255)
 	mimetype_params = db.DictField()
@@ -28,7 +40,22 @@ class Upload(CreatorMixin, db.Document):
 	md5 = db.StringField(max_length=255)
 
 
-	def set_file(self, file):
+	def full_path(self):
+		"""
+		This is the full path to the file, as determined by configured application UPLOADS_DIR, 
+		as well as the file_path and/ or name specific to this upload.
+		"""
+		if self.file_name is None or self.file_name.strip() == '':
+			return None
+		if self.file_path is None or self.file_path.strip() == '':
+			return os.path.join(app.config['UPLOADS_DIR'], self.file_name)
+		if self.file_path.strip()[0:1]=='/':
+			# in the rare case that the file_path is absolute, we drop the configured UPLOADS_DIR
+			return os.path.join(self.file_path, self.file_name)
+		return os.path.join(app.config['UPLOADS_DIR'], self.file_path)
+
+
+	def set_uploaded_file(self, file):
 		"""
 		Assumes properties described in werkzeug.datastructures.FileStorage
 		Attempts to set all fields
@@ -42,6 +69,41 @@ class Upload(CreatorMixin, db.Document):
 		self.file_size = os.path.getsize(p)
 		self.compute_hashes()
 
+
+	def set_file(self, path):
+		"""
+		Path to a file already on disk somewhere.
+		If it isn't within the configured upload directory, then we move it there.
+		"""
+		# Helps split up path
+		def splitpath(path, maxdepth=20):
+			( head, tail ) = os.path.split(path)
+			return splitpath(head, maxdepth - 1) + [ tail ] if maxdepth and head and head != path else [ head or tail ]
+
+		if os.path.exists(path):
+			file_name = os.path.basename(path)
+			if app.config['UPLOADS_DIR'] in path:
+				# file is already in uploads directory, so don't bother moving it
+				file_path = path
+			else:
+				# file is outside of uploads directory, so we should move it
+				new_path = os.path.join(app.config['UPLOADS_DIR'], file_name)
+				os.rename(path, new_path)
+				file_path = new_path
+			# Now set attributes from the file
+			self.file_name = os.path.basename(file_path)
+			self.structured_file_name = self.slugify(self.file_name)
+			self.file_path = os.path.join(*splitpath(file_path)[len(splitpath(app.config['UPLOADS_DIR'])):])
+			if not self.file_size:
+				self.file_size = os.path.getsize(file_path)
+			if not self.mimetype:
+				import urllib, mimetypes
+				url = urllib.pathname2url(file_path)
+				self.mimetype, encoding = mimetypes.guess_type(url)
+			self.compute_hashes()
+			# save all this new information
+			self.save()
+
 	def set_structured_file_name(self, value, appendage=0):
 		from . import Upload
 		orig_path, ext = os.path.splitext(self.file_name)
@@ -52,12 +114,43 @@ class Upload(CreatorMixin, db.Document):
 		else:
 			self.set_structured_file_name(value, appendage+1)
 
-	def full_path(self):
-		if self.file_name is None or self.file_name.strip() == '':
-			return None
-		if self.file_dir is None or self.file_dir.strip() == '':
-			return os.path.join(app.config['UPLOADS_DIR'], self.file_name)
-		return os.path.join(self.file_dir, self.file_name)
+
+
+	def apply_calibre_folder_structure(self, data):
+		"""
+		Calibre names things in this way: Author Name/Title of Book/Title of Book.xyz
+		"""
+		def safe_name(str):
+			return "".join([c for c in str if c.isalpha() or c.isdigit() or c==' ']).rstrip()
+
+		author, title = data
+		# Get the original extension
+		orig_path, ext = os.path.splitext(self.file_name)
+		# Get the parts of the new path
+		directory1 = safe_name(author)
+		directory2 = safe_name(title)
+		filename = "%s%s" % (directory2, ext)
+		# put together the new path
+		new_path = os.path.join(app.config['UPLOADS_DIR'], app.config['UPLOADS_SUBDIR'], directory1, directory2, filename)
+		# Check if there will be a file collision
+		incrementer = 1
+		while os.path.exists(new_path):
+			filename = "%s-%s%s" % (directory2, incrementer, ext)
+			new_path = os.path.join(app.config['UPLOADS_DIR'], app.config['UPLOADS_SUBDIR'], directory1, directory2, filename)
+			incrementer = incrementer + 1
+		# rename to move
+		try:
+			new_dir = os.path.join(app.config['UPLOADS_DIR'], app.config['UPLOADS_SUBDIR'], directory1, directory2)
+			if not os.path.exists(new_dir):
+				os.makedirs(new_dir)
+			os.rename(self.full_path(), new_path)
+			self.file_name = filename
+			self.file_path = os.path.join(directory1, directory2, filename)
+			self.set_structured_file_name(directory1+" "+directory2)
+			self.save()
+			# @todo: clean up / delete empty directories
+		except:
+			print "Error: Failed to move file from",self.full_path(),"to",new_path
 
 
 	def compute_hashes(self):
