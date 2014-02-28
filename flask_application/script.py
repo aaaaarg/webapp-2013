@@ -119,7 +119,7 @@ class MigrateMakers(Command):
 		db = client.aaaart
 		count = 0
 		for old_thing in db.images.find(timeout=False):
-			if Thing.objects(id=id).first():
+			if Thing.objects(id=old_thing['_id']).first():
 				continue
 			try:
 				if 'metadata' in old_thing:
