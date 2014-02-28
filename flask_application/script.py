@@ -63,9 +63,10 @@ class MigrateUsers(Command):
 		for u in db.people.find(timeout=False):
 			try:
 				roles = ['admin'] if u['email'].encode('utf-8').strip()=='someone@aaaarg.org' else ['contributor']
+				display_name = u['display_name'].encode('utf-8').strip() if 'display_name' in u else 'x'
 				user_datastore.create_user(
 					id=u['_id'],
-					username=u['display_name'].encode('utf-8').strip(), 
+					username=display_name, 
 					email=u['email'].encode('utf-8').strip(), 
 					#password=encrypt_password(u['email'].encode('utf-8').strip()),
 					password=u['pass'].encode('utf-8').strip(),
