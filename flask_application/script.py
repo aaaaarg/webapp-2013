@@ -7,7 +7,7 @@ from flask.ext.script import Command, Option
 from flask.ext.security.utils import encrypt_password
 from flask_application import user_datastore, app
 from flask_application.populate import populate_data
-from flask_application.models import db, solr, User, Role, Thing, Maker, Collection, SuperCollection, CollectedThing, Thread, Comment, Queue, TextUpload
+from flask_application.models import db, solr, User, Role, Thing, Maker, Upload, Collection, SuperCollection, CollectedThing, Thread, Comment, Queue, TextUpload
 
 
 class ResetDB(Command):
