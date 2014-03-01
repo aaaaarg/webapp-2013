@@ -292,6 +292,7 @@ class MigrateComments(Command):
 			except:
 				print 'An error occurred and an entire thread could not be saved: %s' % t
 
+
 class ProcessFiles(Command):
 	""" Makes sure all files end up in their proper processed location, Calibre style """
 	def run(self, **kwargs):
@@ -314,7 +315,8 @@ class MigrateFiles(Command):
 			if thing:
 				for f in old_thing['files']:
 					sha1 = f['sha1'].encode('utf-8').strip() if 'sha1' in f else ''
-					if Upload.objects(sha1=sha1).first():
+					existing = Upload.objects(sha1=sha1).first()
+					if existing:
 						continue
 					try:
 						try:

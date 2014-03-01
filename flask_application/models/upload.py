@@ -30,7 +30,7 @@ class Upload(CreatorMixin, db.Document):
 	# this is a filename that is based on other application metadata to standardize filenames for users
 	structured_file_name = db.StringField(max_length=255, unique=True)
 	# if the file is being saved to an alternative uploads location it can be specified here
-	file_path = db.StringField(max_length=255)
+	file_path = db.StringField(max_length=512)
 	file_size = db.IntField()
 	mimetype = db.StringField(max_length=255)
 	mimetype_params = db.DictField()
@@ -121,6 +121,7 @@ class Upload(CreatorMixin, db.Document):
 		Calibre names things in this way: Author Name/Title of Book/Title of Book.xyz
 		"""
 		def safe_name(str):
+			#return "".join([c for c in str if c.isalpha() or c.isdigit() or c==' ']).rstrip()[:64]
 			return "".join([c for c in str if c.isalpha() or c.isdigit() or c==' ']).rstrip()
 
 		author, title = data
@@ -132,6 +133,14 @@ class Upload(CreatorMixin, db.Document):
 		filename = "%s%s" % (directory2, ext)
 		# put together the new path
 		new_path = os.path.join(app.config['UPLOADS_DIR'], app.config['UPLOADS_SUBDIR'], directory1, directory2, filename)
+		# A quick sanity check - is the currently stored path broken, and this new path already existing?
+		if not os.path.exists(self.file_path) and os.path.exists(new_path):
+			self.file_name = filename
+			self.file_path = os.path.join(app.config['UPLOADS_SUBDIR'], directory1, directory2, filename)
+			self.set_structured_file_name(directory1+" "+directory2)
+			self.save()
+			print "Recovered a broken link:",self.file_name
+			return
 		# Check if there will be a file collision
 		incrementer = 1
 		while os.path.exists(new_path):
@@ -145,7 +154,7 @@ class Upload(CreatorMixin, db.Document):
 				os.makedirs(new_dir)
 			os.rename(self.full_path(), new_path)
 			self.file_name = filename
-			self.file_path = os.path.join(directory1, directory2, filename)
+			self.file_path = os.path.join(app.config['UPLOADS_SUBDIR'], directory1, directory2, filename)
 			self.set_structured_file_name(directory1+" "+directory2)
 			self.save()
 			# @todo: clean up / delete empty directories
