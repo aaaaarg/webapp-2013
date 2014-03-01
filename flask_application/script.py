@@ -292,6 +292,14 @@ class MigrateComments(Command):
 			except:
 				print 'An error occurred and an entire thread could not be saved: %s' % t
 
+class ProcessFiles(Command):
+	""" Makes sure all files end up in their proper processed location, Calibre style """
+	def run(self, **kwargs):
+		things = Thing.objects(files__0__exists=True)
+		for t in things:
+			for f in t.files:
+				f.apply_calibre_folder_structure(t.get_maker_and_title())
+
 
 class MigrateFiles(Command):
 	"""Migrates old files into new structure"""
@@ -325,7 +333,7 @@ class MigrateFiles(Command):
 							)
 							upload.set_file(p)
 							# the name has already been rewritten, so don't do it again
-							thing.add_file(upload, False)
+							thing.add_file(upload)
 						
 						else:
 							# get local path
