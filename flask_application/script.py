@@ -165,6 +165,7 @@ class MigrateCollections(Command):
 		for old_coll in db.collections.find(timeout=False):
 			if Collection.objects(id=old_coll['_id']).first():
 				continue
+			owner = None
 			if old_coll['owner'] and old_coll['owner'] is not None:
 				owner = User.objects(id=old_coll['owner']).first()
 			if not owner:
