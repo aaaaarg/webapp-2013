@@ -313,6 +313,9 @@ class MigrateFiles(Command):
 			thing = Thing.objects(id=old_thing['_id']).first()
 			if thing:
 				for f in old_thing['files']:
+					sha1 = f['sha1'].encode('utf-8').strip() if sha1 in f else ''
+					if Upload.objects(sha1=sha1).first():
+						continue
 					try:
 						try:
 							owner = User.objects(id=f['uploader']).first()
@@ -327,7 +330,7 @@ class MigrateFiles(Command):
 							p = processed_file['path'].encode('utf-8').strip()
 							upload = TextUpload(
 								short_description= f['comment'].encode('utf-8').strip(),
-								sha1= f['sha1'].encode('utf-8').strip(),
+								sha1= sha1,
 								creator = owner,
 								created_at = datetime.datetime.fromtimestamp(float(f['upload_date']))
 							)
