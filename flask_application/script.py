@@ -313,7 +313,7 @@ class MigrateFiles(Command):
 			thing = Thing.objects(id=old_thing['_id']).first()
 			if thing:
 				for f in old_thing['files']:
-					sha1 = f['sha1'].encode('utf-8').strip() if sha1 in f else ''
+					sha1 = f['sha1'].encode('utf-8').strip() if 'sha1' in f else ''
 					if Upload.objects(sha1=sha1).first():
 						continue
 					try:
