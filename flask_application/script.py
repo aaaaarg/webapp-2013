@@ -161,53 +161,62 @@ class MigrateCollections(Command):
 	def run(self, **kwargs):
 		client = MongoClient()
 		db = client.aaaart
+		default_user = User.objects(email='someone@aaaarg.org').first()
 		for old_coll in db.collections.find(timeout=False):
+			if Collection.objects(id=old_coll['_id']).first():
+				continue
+			if old_coll['owner'] and old_coll['owner'] is not None:
+				owner = User.objects(id=old_coll['owner']).first()
+			if not owner:
+				owner = default_user	
 			try:
-				collection = User.objects(id=old_coll['_id']).first()
-				if not collection:
-					collection = SuperCollection(
-						id = old_coll['_id'],
-						title = old_coll['title'].encode('utf-8').strip(),
-						short_description = old_coll['short_description'].encode('utf-8').strip(),
-						description=old_coll['metadata']['description'].encode('utf-8').strip(),
-						accessibility = old_coll['type'].encode('utf-8').strip(),
-						creator = User.objects(id=old_coll['owner']).first(),
-						created_at=datetime.datetime.fromtimestamp(float(old_coll['created'])))
-					collection.save()
-					#print 'saved %s' % old_coll['title'].encode('utf-8').strip()
+				if 'metadata' in old_coll:
+					description = old_coll['metadata']['description'].encode('utf-8').strip() if 'description' in old_coll['metadata'] else ""
+				else:
+					description = ''
+				collection = SuperCollection(
+					id = old_coll['_id'],
+					title = old_coll['title'].encode('utf-8').strip(),
+					short_description = old_coll['short_description'].encode('utf-8').strip(),
+					description=description,
+					accessibility = old_coll['type'].encode('utf-8').strip(),
+					creator = owner,
+					created_at=datetime.datetime.fromtimestamp(float(old_coll['created'])))
+				collection.save()
+				#print 'saved %s' % old_coll['title'].encode('utf-8').strip()
 
-					if 'sections' in old_coll:
-						subcollections = {}
-						for section in old_coll['sections']:
-							try:
-								subcollection = SuperCollection(
-									id = section['_id'],
-									supercollection = collection,
-									title = section['title'].encode('utf-8').strip(),
-									description=section['description'].encode('utf-8').strip(),
-									accessibility = old_coll['type'].encode('utf-8').strip(),
-									creator = User.objects(id=section['owner']).first(),
-									created_at=datetime.datetime.fromtimestamp(float(section['created'])))
-								subcollection.save()
-								subcollections[str(section['_id'])] = subcollection
-								collection.add_subcollection(subcollection)
-								print '- subcollection: %s' % section['title'].encode('utf-8').strip()
-							except:
-								print ' - bad subcollection - could not save it'
-
-					for old_thing in old_coll['contents']:
+				if 'sections' in old_coll:
+					subcollections = {}
+					for section in old_coll['sections']:
 						try:
-							t = Thing.objects(id=old_thing['object'].id).first()
-							if t:
-								ct = CollectedThing(thing=t, note=old_thing['notes'].encode('utf-8').strip())
-								ct.set_creator(User.objects(id=old_thing['adder']).first())
-								if 'section' in old_thing and old_thing['section'].encode('utf-8').strip() in subcollections:
-									subcollections[old_thing['section'].encode('utf-8').strip()].add_thing(ct)
-								else:
-									collection.add_thing(ct)
+							subcollection = SuperCollection(
+								id = section['_id'],
+								supercollection = collection,
+								title = section['title'].encode('utf-8').strip(),
+								description=section['description'].encode('utf-8').strip(),
+								accessibility = old_coll['type'].encode('utf-8').strip(),
+								creator = User.objects(id=section['owner']).first(),
+								created_at=datetime.datetime.fromtimestamp(float(section['created'])))
+							subcollection.save()
+							subcollections[str(section['_id'])] = subcollection
+							collection.add_subcollection(subcollection)
+							print '- subcollection: %s' % section['title'].encode('utf-8').strip()
 						except:
-							print ' - - bad thing - could not save it'
-							#print '-- added: %s' % t.title
+							print ' - bad subcollection - could not save it'
+
+				for old_thing in old_coll['contents']:
+					try:
+						t = Thing.objects(id=old_thing['object'].id).first()
+						if t:
+							ct = CollectedThing(thing=t, note=old_thing['notes'].encode('utf-8').strip())
+							ct.set_creator(User.objects(id=old_thing['adder']).first())
+							if 'section' in old_thing and old_thing['section'].encode('utf-8').strip() in subcollections:
+								subcollections[old_thing['section'].encode('utf-8').strip()].add_thing(ct)
+							else:
+								collection.add_thing(ct)
+					except:
+						print ' - - bad thing - could not save it'
+						#print '-- added: %s' % t.title
 			except Exception,e:
 				if 'title' in old_coll:
 					print 'failed: %s' % old_coll['title'].encode('utf-8').strip()
