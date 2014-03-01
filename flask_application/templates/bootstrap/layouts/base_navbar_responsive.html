@@ -33,6 +33,7 @@
                             </a>
                             <ul class="dropdown-menu">
                                 <li><a href="{{ url_for('collection.list') }}">see all</a></li>
+                                <li><a href="{{ url_for('user.collections') }}">your collections</a></li>
                                 <li><a href="{{ url_for('collection.add') }}">+ start a new collection</a></li>
                                 <li class="divider"></li>
                                 {% for q in current_user_queues() %}

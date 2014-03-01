@@ -306,7 +306,10 @@ class MigrateFiles(Command):
 			if thing:
 				for f in old_thing['files']:
 					try:
-						owner = User.objects(id=f['uploader']).first()
+						try:
+							owner = User.objects(id=f['uploader']).first()
+						except:
+							owner = default_user
 						if not owner:
 							owner = default_user	
 

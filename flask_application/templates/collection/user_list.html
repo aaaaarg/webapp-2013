@@ -1,0 +1,48 @@
+{% extends "bootstrap/layouts/base_navbar_responsive.html" %}
+{%- from "collection/macros.html" import alphabet with context %}
+
+{% block title %}
+{{ title }}
+{% endblock %}
+
+{% block content %}
+<h2>
+	{{ title }}
+	{% if can_add_collection() %}
+	<a href="{{ url_for('collection.add') }}" title="Start a collection">+</a>
+	{% endif %}
+</h2>
+
+
+<div class="row">
+	<div class="col-md-6">
+		{% if following %}
+		<h4>... you're following</h4>
+		{% endif %}
+		<ul class="collections list-unstyled">
+			{%- for collection in following -%}
+				<li><a href="{{ url_for('collection.detail', id=collection.id) }}">{{collection.title}}</a>: <em>{{collection.short_description}} <span class="text-muted">{{ collection.things|length }}</span></em></li>
+			{% endfor %}
+		</ul>
+	</div>
+	<div class="col-md-6">
+		{% if created %}
+		<h4>... you've created</h4>
+		{% endif %}
+		<ul class="collections list-unstyled">
+			{%- for collection in created -%}
+				<li><a href="{{ url_for('collection.detail', id=collection.id) }}">{{collection.title}}</a>: <em>{{collection.short_description}} <span class="text-muted">{{ collection.things|length }}</span></em></li>
+			{% endfor %}
+		</ul>
+		{% if contributing %}
+		<h4>... you're editing</h4>
+		{% endif %}
+		<ul class="collections list-unstyled">
+			{%- for collection in contributing -%}
+				<li><a href="{{ url_for('collection.detail', id=collection.id) }}">{{collection.title}}</a>: <em>{{collection.short_description}} <span class="text-muted">{{ collection.things|length }}</span></em></li>
+			{% endfor %}
+		</ul>
+	</div>
+</div>
+
+{% endblock %}

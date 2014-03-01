@@ -107,3 +107,21 @@ def invite():
 		flash("An account has been created for %s and an email has been sent. You may want to let them know that it is coming." % form.email.data)
 	return render_template('profiles/invite.html',
 		register_user_form = form)
+
+
+
+@user.route('/collections')
+def collections(letter=None):
+	"""
+	See a list of collections the user has created or is following
+	"""
+	following = Collection.objects.filter(supercollection__exists=False, followers=current_user.get_id()).order_by('title')
+	contributing = Collection.objects.filter(supercollection__exists=False, editors=current_user.get_id()).order_by('title')
+	created = Collection.objects.filter(supercollection__exists=False, creator=current_user.get_id()).order_by('title')
+	
+	return render_template('collection/user_list.html',
+		title = 'Collections',
+		following = following,
+		contributing = contributing,
+		created = created)
+

@@ -26,7 +26,7 @@
 
         <ul class="nav nav-tabs">
           <li class="active"><a href="#upcoming" data-toggle="tab">Reading List</a></li>
-          <li><a href="#finished" data-toggle="tab">Finished</a></li>
+          <li><a href="#finished" id="tab-finished" data-toggle="tab">Finished</a></li>
         </ul>
 
         <div class="tab-content">
@@ -93,6 +93,13 @@
         	$('.editable').toggle();
         	return false;
         });
+        //
+        if(window.location.hash) {
+          var hash = window.location.hash.substring(1);
+          if (hash=='finished') {
+            $('#tab-finished').tab('show');
+          }
+        }
     });
 </script>
 {% endblock %}

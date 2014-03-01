@@ -33,7 +33,7 @@
         <p><a href="{{ url_for('thing.detail', id=queued_thing.thing.id) }}">see text</a></p>
         <hr>
         <small class="text-muted">
-        {{ queue.title|upper}} NOTES
+        <a href="{{ url_for('queue.detail', id=queue.id) }}#finished">{{ queue.title|upper}}</a> NOTES
         </small>
         <ul class="list-group">
         {% for qt in queue.things|selectattr("description")|sort(attribute='date_completed', reverse=True) %}
