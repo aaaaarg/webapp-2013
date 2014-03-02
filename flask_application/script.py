@@ -302,7 +302,7 @@ class ProcessFiles(Command):
 			for f in t.files:
 				if f.md5 in md5s:
 					t.remove_file(f)
-					f.remove()
+					f.delete()
 				md5s.append(f.md5)
 
 class ProcessUploads(Command):
@@ -317,7 +317,7 @@ class ProcessUploads(Command):
 			if thing:
 				has_file = False
 				for f in thing.files:
-					if f.full_path==p:
+					if f.full_path in p:
 						has_file = True
 				try:
 					if not has_file:
