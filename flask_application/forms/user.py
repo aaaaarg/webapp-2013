@@ -32,7 +32,7 @@ InviteForm = model_form(User, base_class=Form, only=['email'], field_args={
         'validators' : [Required(), Email(), unique_username]
     }})
 
-UserForm = model_form(User, base_class=BaseUserForm, field_args={
+UserForm = model_form(User, base_class=BaseUserForm, only=['email', 'username'], field_args={
 		'email' : {
         'validators' : [Required(), Email(), same_or_unique_username]
     },
