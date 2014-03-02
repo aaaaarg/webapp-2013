@@ -296,10 +296,14 @@ class MigrateComments(Command):
 class ProcessFiles(Command):
 	""" Makes sure all files end up in their proper processed location, Calibre style """
 	def run(self, **kwargs):
-		things = Thing.objects(files__0__exists=True)
+		things = Thing.objects(files__1__exists=True)
 		for t in things:
+			md5s = []
 			for f in t.files:
-				f.apply_calibre_folder_structure(t.get_maker_and_title())
+				if f.md5 in md5s:
+					t.remove_file(f)
+					f.remove()
+				md5s.append(f.md5)
 
 class ProcessUploads(Command):
 	""" Makes sure all files end up in their proper processed location, Calibre style """
