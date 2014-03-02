@@ -315,6 +315,7 @@ class ProcessUploads(Command):
 				for f in thing.files:
 					if f.full_path==p:
 						has_file = True
+				try:
 					if not has_file:
 						upload = TextUpload(
 							short_description= '',
@@ -326,6 +327,8 @@ class ProcessUploads(Command):
 						# the name has already been rewritten, so don't do it again
 						thing.add_file(upload)
 						print "Added:",p
+				except:
+					print "Failed:",p
 
 class MigrateFiles(Command):
 	"""Migrates old files into new structure"""
