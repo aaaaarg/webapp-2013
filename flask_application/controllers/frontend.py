@@ -12,7 +12,7 @@ frontend = Blueprint('frontend', __name__)
 
 @frontend.route('/')
 def index():
-	return redirect(url_for("thing.list"))
+	return redirect(url_for("thing.list_nonrequests"))
 	return render_template(
 		'index.html',
 		config=app.config,

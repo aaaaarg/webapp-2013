@@ -134,7 +134,8 @@ class Upload(CreatorMixin, db.Document):
 		# put together the new path
 		new_path = os.path.join(app.config['UPLOADS_DIR'], app.config['UPLOADS_SUBDIR'], directory1, directory2, filename)
 		# A quick sanity check - is the currently stored path broken, and this new path already existing?
-		if not os.path.exists(self.file_path) and os.path.exists(new_path):
+		current_path_is_broken = self.file_path is None or not os.path.exists(self.file_path)
+		if current_path_is_broken and os.path.exists(new_path):
 			self.file_name = filename
 			self.file_path = os.path.join(app.config['UPLOADS_SUBDIR'], directory1, directory2, filename)
 			self.set_structured_file_name(directory1+" "+directory2)

@@ -301,6 +301,31 @@ class ProcessFiles(Command):
 			for f in t.files:
 				f.apply_calibre_folder_structure(t.get_maker_and_title())
 
+class ProcessUploads(Command):
+	""" Makes sure all files end up in their proper processed location, Calibre style """
+	def run(self, **kwargs):
+		client = MongoClient()
+		db = client.aaaart
+		default_user = User.objects(email='someone@aaaarg.org').first()
+		for lookup in db.lookup.find(timeout=False):
+			p = lookup['path'].encode('utf-8').strip()
+			thing = Thing.objects(id=lookup['thing']).first()
+			if thing:
+				has_file = False
+				for f in thing.files:
+					if f.full_path==p:
+						has_file = True
+					if not has_file:
+						upload = TextUpload(
+							short_description= '',
+							sha1= '',
+							creator = default_user,
+							created_at = datetime.datetime.now
+						)
+						upload.set_file(p)
+						# the name has already been rewritten, so don't do it again
+						thing.add_file(upload)
+						print "Added:",p
 
 class MigrateFiles(Command):
 	"""Migrates old files into new structure"""

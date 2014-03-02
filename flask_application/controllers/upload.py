@@ -70,7 +70,6 @@ def serve_upload(filename):
 	u = Upload.objects(structured_file_name=filename).first()
 	if u:
 		path = u.full_path()
-		print path
 		if os.path.exists(path):
 			return send_file(u.full_path())
 	
