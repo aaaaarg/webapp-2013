@@ -306,7 +306,7 @@ class FixShortDescriptions(Command):
 					if 'metadata' in old_thing:
 						short_description = old_thing['metadata']['one_liner'].encode('utf-8').strip() if 'one_liner' in old_thing['metadata'] else ""
 						if short_description != '':
-							thing.short_description = short_description
+							thing.short_description = short_description[:250] + (short_description[250:] and '..')
 							thing.save()
 							print 'updated',thing.title,'with',thing.short_description
 
