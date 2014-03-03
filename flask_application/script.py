@@ -299,13 +299,16 @@ class FixShortDescriptions(Command):
 		db = client.aaaart
 		for old_thing in db.images.find(timeout=False):
 			thing = Thing.objects(id=old_thing['_id']).first()
-			if thing and thing.short_description is None or thing.short_description=='':
-				if 'metadata' in old_thing:
-					short_description = old_thing['metadata']['one_liner'].encode('utf-8').strip() if 'one_liner' in old_thing['metadata'] else ""
-					if short_description != '':
-						thing.short_description = short_description
-						thing.save()
-						print 'updated',thing.title,'with',thing.short_description
+			if thing:
+				if thing.short_description and thing.short_description is not None and thing.short_description!='':
+					print 'skipping'
+				else:
+					if 'metadata' in old_thing:
+						short_description = old_thing['metadata']['one_liner'].encode('utf-8').strip() if 'one_liner' in old_thing['metadata'] else ""
+						if short_description != '':
+							thing.short_description = short_description
+							thing.save()
+							print 'updated',thing.title,'with',thing.short_description
 
 class ProcessFiles(Command):
 	""" Makes sure all files end up in their proper processed location, Calibre style """
