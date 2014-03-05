@@ -87,10 +87,6 @@ class MigrateUsers(Command):
 					print "%s completed " % count 
 			except:
 				print "Unexpected error:", sys.exc_info()
-				try:
-					print "ERROR: %s" % u['email'].encode('utf-8').strip()
-				except:
-					print "ERROR"
 
 
 class MigrateInvitations(Command):
@@ -136,10 +132,11 @@ class MigrateMakers(Command):
 				else:
 					description = ''
 					short_description = ''
-				
+				if description=='':
+					description = short_description
 				thing = Thing(
 					title=old_thing['title'].encode('utf-8').strip(), 
-					short_description=short_description,
+					short_description=short_description[:250] + (short_description[250:] and '..'),
 					description=description,
 					id=old_thing['_id'],
 					creator=owner,
