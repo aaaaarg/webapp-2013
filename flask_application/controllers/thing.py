@@ -34,7 +34,8 @@ def list(page=1):
 	return render_template('thing/list.html',
 		title = 'All things',
 		things = things.items,
-		pagination = things)
+		pagination = things,
+		endpoint = 'thing.list')
 
 
 @thing.route('/')
@@ -48,7 +49,8 @@ def list_requests(page=1):
 	return render_template('thing/list.html',
 		title = 'All requests',
 		things = things.items,
-		pagination = things)
+		pagination = things,
+		endpoint = 'thing.list_requests')
 
 
 @thing.route('/')
@@ -62,7 +64,8 @@ def list_nonrequests(page=1):
 	return render_template('thing/list.html',
 		title = 'All things (no requests)',
 		things = things.items,
-		pagination = things)
+		pagination = things,
+		endpoint = 'thing.list_nonrequests')
 
 @thing.route('/recent.atom')
 def recent_feed():
