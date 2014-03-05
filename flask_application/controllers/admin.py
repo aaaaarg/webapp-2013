@@ -51,7 +51,7 @@ class ThingView(ModelView):
 
 class CollectionView(ModelView):
 	column_filters = ['title']
-	column_searchable_list = ('title')
+	column_searchable_list = ('title',)
 	column_list = ('title')
 	form_excluded_columns = ('creator','followers','editors')
 
