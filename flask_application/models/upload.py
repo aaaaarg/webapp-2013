@@ -94,7 +94,7 @@ class Upload(CreatorMixin, db.Document):
 				file_path = new_path
 			# Now set attributes from the file
 			self.file_name = os.path.basename(file_path)
-			self.structured_file_name = self.set_structured_file_name(self.file_name)
+			self.structured_file_name = self.unique_structured_file_name()
 			self.file_path = os.path.join(*splitpath(file_path)[len(splitpath(app.config['UPLOADS_DIR'])):])
 			if not self.file_size:
 				self.file_size = os.path.getsize(file_path)
@@ -110,21 +110,29 @@ class Upload(CreatorMixin, db.Document):
 				print e.message
 				print e.errors
 
-	def set_structured_file_name(self, value, appendage=0):
+
+	def set_structured_file_name(self, value):
+		"""
+		Sets the structured file name
+		"""
+		usf = self.unique_structured_file_name(value)
+		self.update(set__structured_file_name=usf)
+		self.structured_file_name = usf
+		
+	def unique_structured_file_name(self, value=None, appendage=0):
+		"""
+		Generates a unique structured file name
+		"""
 		from . import Upload
 		orig_path, ext = os.path.splitext(self.file_name)
+		if value is None:
+			value = orig_path
 		to_slugify = "%s%s" % (value, ext) if appendage==0 else "%s-%s%s" % (value, appendage, ext)
 		slugified = self.slugify(to_slugify)
 		if not Upload.objects(structured_file_name=slugified).first():
-			try:
-				self.update(set__structured_file_name=slugified)
-				self.structured_file_name = slugified
-			except:
-				# if this hasn't been saved yet
-				self.structured_file_name = slugified
+			return slugified
 		else:
-			self.set_structured_file_name(value, appendage+1)
-
+			self.unique_structured_file_name(value, appendage+1)
 
 
 	def apply_calibre_folder_structure(self, data):
