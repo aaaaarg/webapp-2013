@@ -26,7 +26,9 @@
 			  	{{collected_thing.thing.short_description}} 
 			  	{% if collected_thing.thing.short_description and collected_thing.note %} - {% endif %}
 			  	{{ collected_thing.note }} 
+			  	{% if can_remove_thing_from_collection(collection, collected_thing.thing) %}
 	  			{{ popover('<small class="text-muted text-right">[re/move this]</small>', collected_thing.thing.title, move_thing_options(collection, collected_thing.thing)) }}
+	  			{% endif %}
 	  		</div>
 		</div>
 	{% endfor %}

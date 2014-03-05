@@ -1,7 +1,7 @@
 {%- from "bootstrap/macros.html" import popover %}
 
 {% macro show_thing(thing, show_maker=True, additional_text='') %}
-<dl class="sortable-thing">
+<dl class="listed-thing sortable-thing{% if thing.is_request %} request{% endif %}">
   <dt>
   	<a href="{{url_for('thing.detail', id=thing.id)}}">{{thing.title}}</a> 
   	{% if show_maker %}

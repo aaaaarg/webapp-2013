@@ -15,6 +15,9 @@
 	color: #DDD;
 }
 
+.listed-thing.request {
+	opacity: .5;
+}
 
 /* progress bar */
 .bar {

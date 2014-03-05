@@ -34,20 +34,28 @@ class Thing(SolrMixin, CreatorMixin, db.Document):
     modified_at = db.DateTimeField()
     files = db.ListField(db.ReferenceField(Upload))
 
+    is_request = True
+
     def __init__(self, *args, **kwargs):
         super(Thing, self).__init__(*args, **kwargs)
         if self.modified_at is None:
              self.modified_at = self.created_at
+        self._update_request_status()
+
+    def _update_request_status(self):
+        self.is_request = False if len(self.files)>0 else True
 
     def add_file(self, f, calibre_move=True):
         self.update(add_to_set__files=f)
         self.update(set__modified_at=datetime.datetime.now)
+        self._update_request_status()
         # This may not be for everyone... make it an option?
         if calibre_move:
             f.apply_calibre_folder_structure(self.get_maker_and_title())
 
     def remove_file(self, f):
         self.update(pull__files=f)
+        self._update_request_status()
 
     def format_makers_string(self):
         names = []
