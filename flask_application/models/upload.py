@@ -3,6 +3,7 @@ import os, hashlib, unicodedata, re
 from flask_application import app
 
 from werkzeug import secure_filename
+from mongoengine.base import ValidationError
 
 from . import db, CreatorMixin
 
@@ -103,7 +104,11 @@ class Upload(CreatorMixin, db.Document):
 				self.mimetype, encoding = mimetypes.guess_type(url)
 			self.compute_hashes()
 			# save all this new information
-			self.save()
+			try:
+				self.save()
+			except ValidationError as e:
+				print e.message
+				print e.errors
 
 	def set_structured_file_name(self, value, appendage=0):
 		from . import Upload
