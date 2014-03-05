@@ -70,7 +70,7 @@ if not os.path.exists(assets_upload_dir):
 
 
 # Email
-from .mail import Mail
+from flask.ext.mail import Mail
 mail = Mail(app)
 
 # Memcache
@@ -121,8 +121,10 @@ app.security = Security(app, user_datastore,
 # Flask security lets us override how the mail is sent
 @app.security.send_mail_task
 def sendmail_with_sendmail(msg):
-    msg.sender = 'someone@gr.aaaaarg.org'
-    msg.reply_to = 'aaaarg.org@gmail.com'
+    if 'DEFAULT_MAIL_SENDER' in app.config:
+        msg.sender = app.config['DEFAULT_MAIL_SENDER']
+    if 'DEFAULT_MAIL_REPLY_TO' in app.config:
+        msg.reply_to = app.config['DEFAULT_MAIL_REPLY_TO']
     mail.send(msg)
 
 #from flask_application.controllers.admin import admin
