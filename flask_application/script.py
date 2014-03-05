@@ -53,15 +53,18 @@ class SolrReindex(Command):
 
 class MigrateUsers(Command):
 	def run(self, **kwargs):
+		"""
 		for role in ('admin', 'editor', 'contributor'):
 			user_datastore.create_role(name=role, description=role)
 		user_datastore.commit()
-
+		"""
 		client = MongoClient()
 		db = client.aaaart
 		count = 0
 		for u in db.people.find(timeout=False):
 			if not 'email' in u:
+				continue
+			if User.objects(id=u['_id']).first():
 				continue
 			try:
 				roles = ['admin'] if u['email'].encode('utf-8').strip()=='someone@aaaarg.org' else ['contributor']
@@ -259,6 +262,8 @@ class MigrateComments(Command):
 		db = client.aaaart
 		default_user = User.objects(email='someone@aaaarg.org').first()
 		for t in db.comments.find(timeout=False):
+			if Thread.objects(id=t['_id']).first():
+				continue
 			try:
 				if len(t['posts'])>0:
 					owner = User.objects(id=t['owner']).first()
@@ -311,7 +316,7 @@ class FixShortDescriptions(Command):
 								thing.save()
 								print 'updated',thing.title,'with',thing.short_description
 							except:
-								print "failed:",thing.title
+								print "failed:",thing.title	
 
 class ProcessFiles(Command):
 	""" Makes sure all files end up in their proper processed location, Calibre style """
