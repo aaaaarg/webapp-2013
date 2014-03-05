@@ -70,7 +70,7 @@ if not os.path.exists(assets_upload_dir):
 
 
 # Email
-from flask.ext.mail import Mail
+from .mail import Mail
 mail = Mail(app)
 
 # Memcache
