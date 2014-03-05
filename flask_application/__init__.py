@@ -118,9 +118,10 @@ user_datastore = MongoEngineUserDatastore(db, User, Role)
 app.security = Security(app, user_datastore,
          register_form=ExtendedRegisterForm)
 
+# Flask security lets us override how the mail is sent, which is necessary to use flask-sendmail
 @app.security.send_mail_task
 def sendmail_with_sendmail(msg):
-    print msg
+    mail.send(msg)
 
 #from flask_application.controllers.admin import admin
 #app.register_blueprint(admin)
