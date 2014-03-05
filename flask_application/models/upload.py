@@ -88,7 +88,8 @@ class Upload(CreatorMixin, db.Document):
 			else:
 				# file is outside of uploads directory, so we should move it
 				new_path = os.path.join(app.config['UPLOADS_DIR'], file_name)
-				os.rename(path, new_path)
+				if not os.path.exists(new_path):
+					os.rename(path, new_path)
 				file_path = new_path
 			# Now set attributes from the file
 			self.file_name = os.path.basename(file_path)
