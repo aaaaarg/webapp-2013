@@ -338,9 +338,8 @@ class ProcessUploads(Command):
 			thing = Thing.objects(id=lookup['thing']).first()
 			if thing:
 				has_file = False
-				for f in thing.files:
-					if f.full_path in p:
-						has_file = True
+				if len(thing.files)>0:
+					has_file = True
 				try:
 					if not has_file:
 						upload = TextUpload(
