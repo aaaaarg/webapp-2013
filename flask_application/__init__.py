@@ -119,9 +119,11 @@ app.security = Security(app, user_datastore,
          register_form=ExtendedRegisterForm)
 
 # Flask security lets us override how the mail is sent
-#@app.security.send_mail_task
-#def sendmail_with_sendmail(msg):
-#    mail.send(msg)
+@app.security.send_mail_task
+def sendmail_with_sendmail(msg):
+    msg.sender = 'someone@gr.aaaaarg.org'
+    msg.reply_to = 'aaaarg.org@gmail.com'
+    mail.send(msg)
 
 #from flask_application.controllers.admin import admin
 #app.register_blueprint(admin)
