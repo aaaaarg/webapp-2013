@@ -31,6 +31,7 @@ def _handleUpload(files):
 
 @upload.route('/', methods= ['GET', 'POST'])
 @upload.route('/thing/<thing_id>', methods= ['GET', 'POST'])
+@login_required
 def handle_upload(thing_id=None):
 	"""
 	Upload handler
@@ -62,7 +63,8 @@ def handle_upload(thing_id=None):
 		return jsonify({'status': 'error'})	
 
 
-@upload.route('/<filename>')
+@upload.route('/<path:path>')
+@login_required
 def serve_upload(filename):
 	"""
 	The filename here is the structured filename
@@ -72,5 +74,9 @@ def serve_upload(filename):
 		path = u.full_path()
 		if os.path.exists(path):
 			return send_file(u.full_path())
-	
+	else:
+		try_path = os.path.join(app.config['UPLOADS_DIR'], filename)
+		if os.path.exists(try_path):
+			return send_file(try_path)
+
 	abort(404)
