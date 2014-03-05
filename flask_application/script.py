@@ -354,6 +354,8 @@ class ProcessUploads(Command):
 						print "Added:",p
 				except:
 					print "Failed:",p
+					print "Unexpected error:", sys.exc_info()[0]
+					print traceback.print_tb(sys.exc_info()[2])
 
 class MigrateFiles(Command):
 	"""Migrates old files into new structure"""
