@@ -123,7 +123,7 @@ app.security = Security(app, user_datastore,
 def sendmail_with_sendmail(msg):
     msg_copy = Message(msg.subject, recipients=msg.recipients, body=msg.body, html=msg.html,
                 sender=msg.sender, cc=msg.cc, bcc=msg.bcc, attachments=msg.attachments,
-                reply_to=msg.reply_to, charset=msg.charset)
+                reply_to=msg.reply_to)
     mail.send(msg_copy)
 
 #from flask_application.controllers.admin import admin
