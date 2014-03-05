@@ -24,6 +24,7 @@ class UserView(ModelView):
 			'fields': ['name']
 		}
 	}
+	form_excluded_columns = ('invited', 'invited_by')
 
 	def is_accessible(self):
 		return current_user.has_role('admin')
@@ -38,8 +39,31 @@ class MakerView(ModelView):
 		return current_user.has_role('editor') or current_user.has_role('admin')
 
 
+class ThingView(ModelView):
+	column_filters = ['title']
+	column_searchable_list = ('title','makers_sorted')
+	column_list = ('title', 'makers_sorted')
+	form_excluded_columns = ('creator')
+
+	def is_accessible(self):
+		return current_user.has_role('editor') or current_user.has_role('admin')
+
+
+class CollectionView(ModelView):
+	column_filters = ['title']
+	column_searchable_list = ('title')
+	column_list = ('title')
+	form_excluded_columns = ('creator','followers','editors')
+
+	def is_accessible(self):
+		return current_user.has_role('editor') or current_user.has_role('admin')
+
+
+
 admin = admin.Admin(app, 'Admin')
 admin.add_view(RoleView(Role))
 admin.add_view(UserView(User))
 admin.add_view(MakerView(Maker, endpoint='makeradmin'))
-#admin.add_view(fileadmin.FileAdmin(assets_upload_dir, '/uploads/', name='Files'))
+admin.add_view(ThingView(Thing))
+admin.add_view(CollectionView(Collection))
+admin.add_view(fileadmin.FileAdmin(assets_upload_dir, '/uploads/', name='Files'))
