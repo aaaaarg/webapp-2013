@@ -32,7 +32,7 @@ logging.basicConfig(
 if not app.debug and not app.testing:
     import logging.handlers
     mail_handler = logging.handlers.SMTPHandler(
-                        'localhost',
+                        app.config['MAIL_SERVER'],
                         os.getenv('USER'),
                         app.config['SYS_ADMINS'],
                         '{0} error'.format(app.config['SITE_NAME'],
@@ -119,9 +119,9 @@ app.security = Security(app, user_datastore,
          register_form=ExtendedRegisterForm)
 
 # Flask security lets us override how the mail is sent
-@app.security.send_mail_task
-def sendmail_with_sendmail(msg):
-    mail.send(msg)
+#@app.security.send_mail_task
+#def sendmail_with_sendmail(msg):
+#    mail.send(msg)
 
 #from flask_application.controllers.admin import admin
 #app.register_blueprint(admin)
