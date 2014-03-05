@@ -70,7 +70,7 @@ if not os.path.exists(assets_upload_dir):
 
 
 # Email
-from flask.ext.sendmail import Mail
+from flask.ext.sendmail import Mail, Message
 mail = Mail(app)
 
 # Memcache
@@ -121,7 +121,10 @@ app.security = Security(app, user_datastore,
 # Flask security lets us override how the mail is sent, which is necessary to use flask-sendmail
 @app.security.send_mail_task
 def sendmail_with_sendmail(msg):
-    mail.send(msg)
+    msg_copy = Message(msg.subject, recipients=msg.recipients, body=msg.body, html=msg.html,
+                sender=msg.sender, cc=msg.cc, bcc=msg.bcc, attachments=msg.attachments,
+                reply_to=msg.reply_to, charset=msg.charset)
+    mail.send(msg_copy)
 
 #from flask_application.controllers.admin import admin
 #app.register_blueprint(admin)
