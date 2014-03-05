@@ -11,8 +11,13 @@
 	font-size: 200px;
 	position: absolute;
 	font-weight:bold;
-	top:-195px;
-	color: #DDD;
+	top:-200px;
+	color: #666;
+}
+
+.navbar.navbar-inverse a,
+.navbar-inverse .navbar-nav > li > a {
+	color: #ddd;
 }
 
 .listed-thing.request {

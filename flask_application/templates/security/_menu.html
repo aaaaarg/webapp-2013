@@ -1,5 +1,4 @@
 <ul class="nav navbar-nav navbar-right">
-  
   {%- if current_user.is_authenticated() -%}
   <li><a href="{{ url_for('user.profile') }}">Hello {{ current_user.username }} (Profile)</a></li>
   <li><a href="{{ url_for('user.invite') }}">Invite</a></li>
@@ -9,14 +8,14 @@
   <li><a href="{{ url_for('admin.index') }}">Admin</a></li>
   {% endif -%}
     
-    {%- if current_user.is_authenticated() -%}
-      <li><a href="{{ url_for_security('logout') }}">Logout</a></li>
-    {%- else -%}
-      {% if security.recoverable %}
-      <li><a href="{{ url_for_security('forgot_password') }}">Forgot password</a><br/></li>
-      {% endif %}
-      <li>
-          <a href="{{ url_for_security('login') }}">Login</a>
-      </li>
-    {%- endif -%}
+  {%- if current_user.is_authenticated() -%}
+    <li><a href="{{ url_for_security('logout') }}">Logout</a></li>
+  {%- else -%}
+    {% if security.recoverable %}
+    <li><a href="{{ url_for_security('forgot_password') }}">Forgot password</a><br/></li>
+    {% endif %}
+    <li>
+        <a href="{{ url_for_security('login') }}">Login</a>
+    </li>
+  {%- endif -%}
 </ul>
