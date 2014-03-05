@@ -7,7 +7,7 @@ sys.path.insert(0, os.getcwd())
 from flask_application import app
 from flask.ext.script import Manager, Server
 
-from flask_application.script import ResetDB, PopulateDB, SolrReindex, MigrateMakers, MigrateUsers, MigrateInvitations, MigrateCollections, MigrateFollowers, MigrateComments, MigrateFiles, ProcessFiles, ProcessUploads, FixShortDescriptions
+from flask_application.script import ResetDB, PopulateDB, SolrReindex, MigrateMakers, MigrateUsers, MigrateInvitations, MigrateCollections, MigrateFollowers, MigrateComments, MigrateQueues, MigrateFiles, ProcessFiles, ProcessUploads, FixShortDescriptions
 
 from flask.ext.security.script import (CreateUserCommand , AddRoleCommand,
         RemoveRoleCommand, ActivateUserCommand, DeactivateUserCommand)
@@ -26,6 +26,7 @@ manager.add_command("migrate_invitations", MigrateInvitations())
 manager.add_command("migrate_collections", MigrateCollections())
 manager.add_command("migrate_followers", MigrateFollowers())
 manager.add_command("migrate_comments", MigrateComments())
+manager.add_command("migrate_queues", MigrateQueues())
 manager.add_command("migrate_files", MigrateFiles())
 manager.add_command("process_files", ProcessFiles())
 manager.add_command("process_uploads", ProcessUploads())

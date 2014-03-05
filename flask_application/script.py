@@ -156,6 +156,7 @@ class MigrateMakers(Command):
 				print traceback.print_tb(sys.exc_info()[2])
 				print "ERROR: %s" % old_thing['title'].encode('utf-8').strip()
 
+
 class MigrateCollections(Command):
 	"""Migrates old collections table into new structure"""
 	def run(self, **kwargs):
@@ -294,6 +295,20 @@ class MigrateComments(Command):
 			except:
 				print 'An error occurred and an entire thread could not be saved: %s' % t
 
+class MigrateQueues(Command):
+	def run(self, **kwargs):
+		client = MongoClient()
+		db = client.aaaart
+		for u in User.objects():
+			q = Queue(title='reading list', description='This reading list was automatically created', creator=u)
+			q.save()
+		for old_thing in db.images.find(timeout=False):
+			thing = Thing.objects(id=old_thing['_id']).first()
+			if thing:
+				for u in old_thing['saved_by']:
+					q = Queue.objects(creator=u).first()
+					if q and str(old_thing['owner'])!=str(u):
+						q.add_thing(thing)
 
 class FixShortDescriptions(Command):
 	def run(self,**kwargs):
