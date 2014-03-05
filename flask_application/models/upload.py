@@ -93,7 +93,7 @@ class Upload(CreatorMixin, db.Document):
 				file_path = new_path
 			# Now set attributes from the file
 			self.file_name = os.path.basename(file_path)
-			self.structured_file_name = self.slugify(self.file_name)
+			self.structured_file_name = self.set_structured_file_name(self.file_name)
 			self.file_path = os.path.join(*splitpath(file_path)[len(splitpath(app.config['UPLOADS_DIR'])):])
 			if not self.file_size:
 				self.file_size = os.path.getsize(file_path)
@@ -111,7 +111,12 @@ class Upload(CreatorMixin, db.Document):
 		to_slugify = "%s%s" % (value, ext) if appendage==0 else "%s-%s%s" % (value, appendage, ext)
 		slugified = self.slugify(to_slugify)
 		if not Upload.objects(structured_file_name=slugified).first():
-			self.update(set__structured_file_name=slugified)
+			try:
+				self.update(set__structured_file_name=slugified)
+				self.structured_file_name = slugified
+			except:
+				# if this hasn't been saved yet
+				self.structured_file_name = slugified
 		else:
 			self.set_structured_file_name(value, appendage+1)
 
