@@ -1,3 +1,4 @@
+import datetime
 from bson import ObjectId
 
 from flask import abort
@@ -60,6 +61,12 @@ class Collection(SolrMixin, CreatorMixin, EditorsMixin, FollowersMixin, db.Dynam
                 return collected_thing
         return False
 
+
+    def recent_things(self, days=5):
+        d=datetime.datetime.now()-datetime.timedelta(days=days)
+        for collected_thing in self.things:
+            if collected_thing.created_at > d:
+                yield collected_thing
 
     def add_thing(self, collected_thing=None, thing=None, note=''):
         if thing and not collected_thing:

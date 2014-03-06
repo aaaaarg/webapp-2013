@@ -1,0 +1,77 @@
+{% extends "bootstrap/layouts/base_navbar_responsive.html" %}
+{%- from "thing/macros.html" import show_thing, sort_thing_js with context %}
+{%- from "bootstrap/macros.html" import render_pagination %}
+{%- from "talk/macros.html" import show_thread %}
+
+{% block title %}
+{{ title }}
+{% endblock %}
+
+{% block content %}
+
+<div class="row">
+	<div class="col-md-9">
+
+	<h2>
+		{{ title }} 
+		{% if can_add_thing() %}
+		<a href="{{ url_for('thing.add') }}" title="Add something">+</a>
+		{% endif %}
+	</h2>
+
+	{% set cdate = '' %}
+	{% for thing in things %}
+		{% set date = thing.modified_at|datetimeformat %}
+		{% if date!=cdate %}
+		<h4 class="text-muted">{{ date }}</h4>
+		{% endif %}
+		{% set cdate = date %}
+		{{ show_thing(thing) }}
+	{% endfor %}
+
+	{{ render_pagination(pagination, endpoint) }}
+
+	</div>
+	<div class="col-md-3">
+		<div class="alt-views">
+			<a href="{{ url_for('thing.list_requests') }}">see requests</a> | 
+			<a href="{{ url_for('thing.recent_feed') }}">rss</a>
+		</div>	
+		<p>
+			{% include "frontend/info_block.html" ignore missing %}
+		</p>
+		<hr>
+
+		<small class="text-muted">RECENT COMMENTS</small>
+		<div class="list-group">
+		{% for thread in comments %}
+			<div class="list-group-item">
+			<small>{{ show_thread(thread) }}</small>
+			</div>
+		{% endfor %}
+		</div>
+
+		<small class="text-muted">RECENTLY SORTED</small>
+		<div class="list-group">
+		{% for collection in collections %}
+			<div class="list-group-item">
+			<h5><a href="">{{ collection.title}}</a></h5>
+			{% for ct in collection.recent_things(days=10) %}
+				<small>
+				<a href="">{{ ct.thing.title }}</a><br/>
+		  	{{ ct.note }}
+		  </small>
+			{% endfor %}
+			</div>
+		{% endfor %}
+		</div>
+	</div>
+
+<div>
+{% endblock %}
+
+
+
+{% block js_footer %}
+	{{ sort_thing_js() }}
+{% endblock %}

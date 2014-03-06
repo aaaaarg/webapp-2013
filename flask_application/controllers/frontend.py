@@ -12,12 +12,16 @@ frontend = Blueprint('frontend', __name__)
 
 @frontend.route('/')
 def index():
-	return redirect(url_for("thing.list_nonrequests"))
-	return render_template(
-		'index.html',
-		config=app.config,
-		now=datetime.datetime.now,
-	)
+	recent_collections = Collection.objects(accessibility__ne='private').limit(5).order_by('-things.created_at')
+	recent_comments = Thread.objects(origin__exists=False).exclude('comments').limit(5)
+	recent_things = Thing.objects(files__0__exists=True).order_by('-modified_at', '-created_at').paginate(page=1, per_page=10)
+	return render_template('frontend/home.html',
+		title = app.config['SITE_NAME'],
+		things = recent_things.items,
+		collections = recent_collections,
+		comments = recent_comments,
+		pagination = recent_things,
+		endpoint = 'home.list_nonrequests')
 
 
 @frontend.route('/follow/<type>/<id>')
