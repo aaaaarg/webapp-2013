@@ -75,7 +75,7 @@ class Collection(SolrMixin, CreatorMixin, EditorsMixin, FollowersMixin, db.Dynam
             self.update(add_to_set__things=collected_thing)
             self.tell_followers(self.title, '''
                 <a href="%s">%s</a> has been added to the collection <a href="%s">%s</a> (%s)
-                ''' % (url_for('thing.detail', id=collected_thing.thing.id), collected_thing.thing.title, url_for('collection.detail', id=self.id), self.title, note))
+                ''' % (url_for('thing.detail', id=collected_thing.thing.id, _external=True), collected_thing.thing.title, url_for('collection.detail', id=self.id, _external=True), self.title, note))
 
     def remove_thing(self, thing, return_collected_thing=False):
         if return_collected_thing:

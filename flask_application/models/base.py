@@ -76,14 +76,14 @@ class FollowersMixin(object):
     def tell_followers(self, subject, content):
         msg = Message(subject,
             sender=app.config['DEFAULT_MAIL_SENDER'],
-            recipients=[app.config['DEFAULT_MAIL_SENDER']])
+            recipients=[app.config['DEFAULT_MAIL_REPLY_TO']])
         # add followers
         if 'SEND_NOTIFICATIONS' in app.config and app.config['SEND_NOTIFICATIONS']:
             for u in self.followers:
                 if u.active:
                     msg.bcc.append(u.email)
         # add body and then send
-        msg.body = content
+        msg.html = content
         try:
             mail.send(msg)
         except:

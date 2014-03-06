@@ -45,7 +45,7 @@ class Thread(SolrMixin, CreatorMixin, FollowersMixin, db.Document):
 			
 			%s
 			- %s
-			''' % (url_for('talk.thread', id=self.id), self.title, text, comment.creator.username))
+			''' % (url_for('talk.thread', id=self.id, _external=True), self.title, text, comment.creator.username))
 
 
 	# Sets the origin
