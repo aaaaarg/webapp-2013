@@ -3,6 +3,8 @@ import datetime, sys, traceback
 from unidecode import unidecode
 from sunburnt.schema import SolrError
 
+from flask_application import app, mail
+from flask.ext.mail import Message
 from flask.ext.security import current_user 
 
 from . import db, solr, User
@@ -69,6 +71,23 @@ class FollowersMixin(object):
     # current user is following?
     def is_follower(self):
         return self.has_follower(current_user_obj())
+
+    # broadcasts a message to all followers
+    def tell_followers(self, subject, content):
+        msg = Message(subject,
+            sender=app.config['DEFAULT_MAIL_SENDER'],
+            recipients=[app.config['DEFAULT_MAIL_SENDER']])
+        # add followers
+        if 'SEND_NOTIFICATIONS' in app.config and app.config['SEND_NOTIFICATIONS']:
+            for u in self.followers:
+                if u.active:
+                    msg.bcc.append(u.email)
+        # add body and then send
+        msg.body = content
+        try:
+            mail.send(msg)
+        except:
+            print 'Failed to tell followers:',content
 
 # Mixes in editor fields
 class EditorsMixin(object):

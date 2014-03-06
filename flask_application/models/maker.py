@@ -54,7 +54,6 @@ class Maker(SolrMixin, CreatorMixin, FollowersMixin, db.Document):
     disambiguation = db.StringField(max_length=256)
     display_name = db.StringField(max_length=256)
     sort_by = db.StringField(max_length=256)
-    followers = db.ListField(db.ReferenceField(User))
 
     def format_name(self, role=None):
         if role is None or role=="":
@@ -68,11 +67,6 @@ class Maker(SolrMixin, CreatorMixin, FollowersMixin, db.Document):
             self.display_name = name.full_name()
         self.sort_by = name.sort_name()
 
-    def add_follower(self, user):
-        self.update(add_to_set__followers=user)
-
-    def remove_follower(self, user):
-        self.update(pull__followers=user)
 
     def build_solr(self):
         from .thing import Thing

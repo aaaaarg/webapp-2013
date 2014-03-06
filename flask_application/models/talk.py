@@ -2,6 +2,7 @@ import re, datetime
 
 from bson import ObjectId
 
+from flask import url_for
 from flask.ext.security import current_user 
 
 from . import *
@@ -39,6 +40,13 @@ class Thread(SolrMixin, CreatorMixin, FollowersMixin, db.Document):
 		self.last_comment_by = comment.creator
 		self.last_comment_text = text
 		self.save()
+		self.tell_followers('New comment: %s' % self.title, '''
+			A new comment has been posted to <a href="%s">%s</a>:
+			
+			%s
+			- %s
+			''' % (url_for('talk.thread', id=self.id), self.title, text, comment.creator.username))
+
 
 	# Sets the origin
 	def set_origin(self, type, id):

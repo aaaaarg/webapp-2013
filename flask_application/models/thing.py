@@ -1,5 +1,6 @@
 import re, datetime
 
+from flask import url_for
 from flask.ext.security import current_user 
 
 from . import db, CreatorMixin, FollowersMixin, SolrMixin
@@ -52,6 +53,9 @@ class Thing(SolrMixin, CreatorMixin, FollowersMixin, db.Document):
         # This may not be for everyone... make it an option?
         if calibre_move:
             f.apply_calibre_folder_structure(self.get_maker_and_title())
+        self.tell_followers(self.title, '''
+            A new file has been added - <a href="%s">%s</a>
+            ''' % (url_for('thing.detail', id=self.id), self.title))
 
     def remove_file(self, f):
         self.update(pull__files=f)
@@ -76,6 +80,7 @@ class Thing(SolrMixin, CreatorMixin, FollowersMixin, db.Document):
         Roles might be specified in parentheses after the name:
         Saul Bellow, J. M. Coetzee (Introduction)
         """
+        makers_before = self.makers
         self.makers = []
         raw_names = raw.split(',')
         for s in raw_names:
@@ -98,6 +103,7 @@ class Thing(SolrMixin, CreatorMixin, FollowersMixin, db.Document):
                 maker.save()
             self.makers.append(MakerWithRole(maker=maker, role=role))
         self.update_makers_sorted()
+        # @todo tell_followers() - also refactor this code
 
     def format_for_filename(self):
         for m in self.makers:

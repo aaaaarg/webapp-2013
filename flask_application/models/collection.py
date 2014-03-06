@@ -1,7 +1,7 @@
 import datetime
 from bson import ObjectId
 
-from flask import abort
+from flask import abort, url_for
 from flask.ext.security import current_user 
 
 from . import db, CreatorMixin, EditorsMixin, FollowersMixin, SolrMixin
@@ -73,6 +73,9 @@ class Collection(SolrMixin, CreatorMixin, EditorsMixin, FollowersMixin, db.Dynam
             collected_thing = CollectedThing(thing=thing, note=note)
         if not self.has_thing(collected_thing.thing):
             self.update(add_to_set__things=collected_thing)
+            self.tell_followers(self.title, '''
+                <a href="%s">%s</a> has been added to the collection <a href="%s">%s</a> (%s)
+                ''' % (url_for('thing.detail', id=collected_thing.thing.id), collected_thing.thing.title, url_for('collection.detail', id=self.id), self.title, note))
 
     def remove_thing(self, thing, return_collected_thing=False):
         if return_collected_thing:
