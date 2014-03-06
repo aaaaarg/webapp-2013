@@ -21,7 +21,7 @@ def index():
 		collections = recent_collections,
 		comments = recent_comments,
 		pagination = recent_things,
-		endpoint = 'home.list_nonrequests')
+		endpoint = 'thing.list_nonrequests')
 
 
 @frontend.route('/follow/<type>/<id>')
