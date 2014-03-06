@@ -34,8 +34,8 @@
 	</div>
 	<div class="col-md-3">
 		<div class="alt-views">
-			<a href="{{ url_for('thing.list_requests') }}">see requests</a> | 
-			<a href="{{ url_for('thing.recent_feed') }}">rss</a>
+			<a class="yo" href="{{ url_for('thing.list_requests') }}">new requests</a> | 
+			<a class="yo" href="{{ url_for('thing.recent_feed') }}">rss</a>
 		</div>	
 		<p>
 			{% include "frontend/info_block.html" ignore missing %}

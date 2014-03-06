@@ -32,19 +32,19 @@
             {% if public and (current_user.has_role('admin') or current_user.has_role('editor')) -%}
             <span class="text-success">{{ user.email }}</span>
             {% if user.invited_by %}
-                <p>invited by: <a href="{{ url_for('user.profile', id=user.invited_by.id) }}">{{ user.invited_by.username }}</a></p>
+                <p>invited by: <a class="yo" href="{{ url_for('user.public_profile', id=user.invited_by.id) }}">{{ user.invited_by.username }}</a></p>
             {% endif %}
 
             {% for u in user.invited %}
-                <p>invited: <a href="{{ url_for('user.profile', id=u.id) }}">{{ u.username }}</a></p>
+                <p>invited: <a class="yo" href="{{ url_for('user.public_profile', id=u.id) }}">{{ u.username }}</a></p>
             {% endfor %}
             {% endif -%}
             {% if not public %}
     		<p>
-    			Do you want to <a href="{{ url_for('user.edit_profile') }}">edit your profile</a>?
+    			Do you want to <a class="yo" href="{{ url_for('user.edit_profile') }}">edit your profile</a>?
     		</p>
     		<p>
-    			Do you want to <a href="{{ url_for_security('change_password') }}">change your password</a>?
+    			Do you want to <a class="yo" href="{{ url_for_security('change_password') }}">change your password</a>?
     		</p>
             {% endif %}
         <small class="text-muted">COLLECTIONS</small>

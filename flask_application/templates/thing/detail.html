@@ -5,6 +5,8 @@
 {%- from "collection/macros.html" import show_collections_list, add_to_collection_form, collection_js with context %}
 {%- from "maker/macros.html" import show_makers_with_roles with context %}
 {%- from "talk/macros.html" import show_threads_list with context %}
+{%- from "frontend/macros.html" import follow_toggle %}
+
 
 {% block css_extra %}
     {{ upload_css() }}
@@ -24,11 +26,15 @@
 
 <div class="row">
     <div class="col-md-9">
-        {% if can_edit_thing(thing) %}
         <div class="btn-group btn-group-xs">
+            {% if can_edit_thing(thing) %}
             <a class="btn btn-default" href="{{ url_for('thing.edit', id=thing.id) }}">edit</a>
+            {% endif %}
+            {%- if current_user.is_authenticated() -%}
+            {{ follow_toggle(thing) }}
+            {%- endif %}
         </div>
-        {% endif %}
+
         <h2>{{thing.title}}</h2>
 
         <h5>{{ show_makers_with_roles(thing.makers) }}</h5>

@@ -34,10 +34,10 @@
 	</div>
 	<div class="col-md-3">
 
-		<p>For <a href="{{ url_for('thing.list_requests') }}">all requests</a></p>
-		<p>Or <a href="{{ url_for('thing.list_nonrequests') }}">no requests</a></p>
-		<p>Or just <a href="{{ url_for('thing.list') }}">everything</a></p>
-		<p>Everyone wants <a href="{{ url_for('thing.recent_feed') }}">an RSS feed</a>
+		<p>For <a class="yo" href="{{ url_for('thing.list_requests') }}">all requests</a>, <a class="yo" href="{{ url_for('thing.list_most_requested') }}">most requested</a></p>
+		<p>Or <a class="yo" href="{{ url_for('thing.list_nonrequests') }}">no requests</a></p>
+		<p>Or just <a class="yo" href="{{ url_for('thing.list') }}">everything</a></p>
+		<p>Everyone wants <a class="yo" href="{{ url_for('thing.recent_feed') }}">an RSS feed</a>
 		<p>
 			{% include "frontend/info_block.html" ignore missing %}
 		</p>

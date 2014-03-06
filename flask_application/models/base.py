@@ -50,12 +50,15 @@ class FollowersMixin(object):
     List of users designated as follower
     """
     followers = db.ListField(db.ReferenceField(User))
+    num_followers = db.IntField()
 
     def add_follower(self, user):
         self.update(add_to_set__followers=user)
+        self.update(set__num_followers=len(self.followers))
 
     def remove_follower(self, user):
         self.update(pull__followers=user)
+        self.update(set__num_followers=len(self.followers))
 
     def has_follower(self, user):
         for u in self.followers:

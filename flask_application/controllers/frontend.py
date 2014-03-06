@@ -38,6 +38,8 @@ def follow(type, id):
 		model = Maker.objects.get_or_404(id=id)
 	elif type=='thread':
 		model = Thread.objects.get_or_404(id=id)
+	elif type=='thing':
+		model = Thing.objects.get_or_404(id=id)
 	else:
 		abort(404)
 
@@ -63,6 +65,8 @@ def unfollow(type, id):
 		model = Maker.objects.get_or_404(id=id)
 	elif type=='thread':
 		model = Thread.objects.get_or_404(id=id)
+	elif type=='thing':
+		model = Thing.objects.get_or_404(id=id)
 	else:
 		abort(404)
 

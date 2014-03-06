@@ -38,7 +38,6 @@ def list(page=1):
 		endpoint = 'thing.list')
 
 
-@thing.route('/')
 @thing.route('/request/list')
 @thing.route('/request/list/<int:page>')
 def list_requests(page=1):
@@ -53,7 +52,20 @@ def list_requests(page=1):
 		endpoint = 'thing.list_requests')
 
 
-@thing.route('/')
+@thing.route('/request/priority')
+@thing.route('/request/priority/<int:page>')
+def list_most_requested(page=1):
+	"""
+	See a list of most requested things
+	"""
+	things = Thing.objects(files__size=0).order_by('-num_followers').paginate(page=page, per_page=10)
+	return render_template('thing/list.html',
+		title = 'Most requested',
+		things = things.items,
+		pagination = things,
+		endpoint = 'thing.list_most_requested')
+
+
 @thing.route('/list/no-requests')
 @thing.route('/list/no-requests/<int:page>')
 def list_nonrequests(page=1):

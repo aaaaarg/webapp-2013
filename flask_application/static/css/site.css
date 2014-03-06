@@ -2,6 +2,10 @@ body a {
 	color: #000;
 }
 
+body a.yo {
+	background-color: #ffff00;
+}
+
 h4.text-muted {
 	color: #CCC;
 }

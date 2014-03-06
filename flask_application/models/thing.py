@@ -2,7 +2,7 @@ import re, datetime
 
 from flask.ext.security import current_user 
 
-from . import db, CreatorMixin, SolrMixin
+from . import db, CreatorMixin, FollowersMixin, SolrMixin
 from .user import User
 from .maker import Maker, Name
 from .upload import Upload
@@ -17,7 +17,7 @@ class MakerWithRole(db.EmbeddedDocument):
     role = db.StringField(max_length=32)
 
 
-class Thing(SolrMixin, CreatorMixin, db.Document):
+class Thing(SolrMixin, CreatorMixin, FollowersMixin, db.Document):
     """
     Thing model
     """
