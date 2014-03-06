@@ -44,7 +44,8 @@ def list(page=1):
 	return render_template('talk/list.html',
 		title = 'All discussion',
 		threads = threads.items,
-		pagination = threads)
+		pagination = threads,
+		endpoint = 'talk.list')
 
 
 @talk.route('/list/discussiononly')
@@ -57,7 +58,23 @@ def list_pure(page=1):
 	return render_template('talk/list.html',
 		title = 'All discussion',
 		threads = threads.items,
-		pagination = threads)
+		pagination = threads,
+		endpoint = 'talk.list_pure')
+
+
+@talk.route('/list/mine')
+@talk.route('/list/mine/<int:page>')
+def list_mine(page=1):
+	"""
+	See a list of comment threads
+	"""
+	threads = Thread.objects(comments__creator=current_user.get_id()).paginate(page=page, per_page=10)
+	return render_template('talk/list.html',
+		title = 'Discussions with you',
+		threads = threads.items,
+		pagination = threads,
+		endpoint = 'talk.list_mine')
+
 
 
 @talk.route('/<id>')
