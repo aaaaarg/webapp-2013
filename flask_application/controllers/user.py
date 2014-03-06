@@ -21,12 +21,13 @@ def profile(page=1):
 	"""
 	A person's own profile
 	"""
-	things = Thing.objects.filter(creator=current_user.get_id()).order_by('-created_at').paginate(page=page, per_page=10)
-	collections = Collection.objects.filter(creator=current_user.get_id(), supercollection__exists=False)
+  uploads = Upload.objects.filter(creator=current_user.get_id()).order_by('-created_at').paginate(page=page, per_page=10)
+  things = [Thing.objects(files=u)[0] for u in uploads]
+  collections = Collection.objects.filter(creator=current_user.get_id(), supercollection__exists=False)
 	
 	return render_template('profiles/profile.html',
 		title = 'Uploads',
-		things = things.items,
+		things = things,
 		pagination = things,
 		collections = collections,
 		public=False)
@@ -66,6 +67,7 @@ def public_profile(id, page=1):
 		things = things.items,
 		pagination = things,
 		collections = collections,
+		user = user,
 		public=True)
 
 
