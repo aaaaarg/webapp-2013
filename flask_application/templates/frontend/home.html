@@ -55,10 +55,10 @@
 		<div class="list-group">
 		{% for collection in collections %}
 			<div class="list-group-item">
-			<h5><a href="">{{ collection.title}}</a></h5>
+			<h5><a href="{{ url_for('collection.detail', id=collection.id) }}">{{ collection.title}}</a></h5>
 			{% for ct in collection.recent_things(days=3) %}
 				<small>
-				<a href="">{{ ct.thing.title }}</a><br/>
+				<a href="{{ url_for('thing.detail', id=ct.thing.id) }}">{{ ct.thing.title }}</a><br/>
 		  	{{ ct.note }}
 		  </small>
 			{% endfor %}
