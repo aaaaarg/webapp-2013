@@ -56,7 +56,7 @@
 		{% for collection in collections %}
 			<div class="list-group-item">
 			<h5><a href="">{{ collection.title}}</a></h5>
-			{% for ct in collection.recent_things(days=10) %}
+			{% for ct in collection.recent_things(days=3) %}
 				<small>
 				<a href="">{{ ct.thing.title }}</a><br/>
 		  	{{ ct.note }}
