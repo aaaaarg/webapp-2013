@@ -42,7 +42,7 @@ def handle_upload(thing_id=None):
 		files = request.files
 		uploaded_files = []
 		for key, file in files.iteritems():
-			u = Upload(short_description=request.form.get("short_description"))
+			u = Upload(short_description=request.form.get("short_description")[:255])
 			u.set_uploaded_file(file)
 			if Upload.objects(sha1=u.sha1).first():
 				app.logger.info("File already exists: %s" % u.file_name)

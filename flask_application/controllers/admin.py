@@ -43,7 +43,7 @@ class ThingView(ModelView):
 	column_filters = ['title']
 	column_searchable_list = ('title','makers_sorted')
 	column_list = ('title', 'makers_sorted')
-	form_excluded_columns = ('creator')
+	form_excluded_columns = ('creator', 'followers','makers','files')
 
 	def is_accessible(self):
 		return current_user.has_role('editor') or current_user.has_role('admin')
@@ -53,11 +53,20 @@ class CollectionView(ModelView):
 	column_filters = ['title']
 	column_searchable_list = ('title',)
 	column_list = ('title',)
-	form_excluded_columns = ('creator','followers','editors')
+	form_excluded_columns = ('creator','followers','editors','things')
 
 	def is_accessible(self):
 		return current_user.has_role('editor') or current_user.has_role('admin')
 
+
+class UploadView(ModelView):
+	column_filters = ['structured_file_name']
+	column_searchable_list = ('structured_file_name',)
+	column_list = ('id', 'structured_file_name')
+	form_excluded_columns = ('creator','sha1','md5')
+
+	def is_accessible(self):
+		return current_user.has_role('editor') or current_user.has_role('admin')
 
 
 admin = admin.Admin(app, 'Admin')
@@ -66,4 +75,5 @@ admin.add_view(UserView(User))
 admin.add_view(MakerView(Maker, endpoint='makeradmin'))
 admin.add_view(ThingView(Thing))
 admin.add_view(CollectionView(Collection))
+admin.add_view(UploadView(Upload))
 admin.add_view(fileadmin.FileAdmin(assets_upload_dir, '/upload/', name='Files'))
