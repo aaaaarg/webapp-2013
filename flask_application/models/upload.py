@@ -62,7 +62,7 @@ class Upload(CreatorMixin, db.Document):
 		Attempts to set all fields
 		"""
 		self.file_name = secure_filename(file.filename)
-		self.structured_file_name = self.slugify(self.file_name)
+		self.structured_file_name = self.unique_structured_file_name()
 		self.mimetype = file.mimetype
 		self.mimetype_params = file.mimetype_params
 		p = self.full_path()
@@ -115,7 +115,7 @@ class Upload(CreatorMixin, db.Document):
 		"""
 		Sets the structured file name
 		"""
-		usf = self.unique_structured_file_name(value)
+		usf = self.unique_structured_file_name(value=value)
 		self.update(set__structured_file_name=usf)
 		self.structured_file_name = usf
 		
@@ -132,7 +132,7 @@ class Upload(CreatorMixin, db.Document):
 		if not Upload.objects(structured_file_name=slugified).first():
 			return slugified
 		else:
-			self.unique_structured_file_name(value, appendage+1)
+			return self.unique_structured_file_name(value=value, appendage=appendage+1)
 
 
 	def apply_calibre_folder_structure(self, data):
@@ -142,6 +142,10 @@ class Upload(CreatorMixin, db.Document):
 		def safe_name(str):
 			#return "".join([c for c in str if c.isalpha() or c.isdigit() or c==' ']).rstrip()[:64]
 			return "".join([c for c in str if c.isalpha() or c.isdigit() or c==' ']).rstrip()
+
+		def splitpath(path, maxdepth=20):
+			( head, tail ) = os.path.split(path)
+			return splitpath(head, maxdepth - 1) + [ tail ] if maxdepth and head and head != path else [ head or tail ]
 
 		author, title = data
 		# Get the original extension
@@ -174,8 +178,8 @@ class Upload(CreatorMixin, db.Document):
 				os.makedirs(new_dir)
 			os.rename(self.full_path(), new_path)
 			self.file_name = filename
-			self.file_path = os.path.join(app.config['UPLOADS_SUBDIR'], directory1, directory2, filename)
-			self.set_structured_file_name(directory1+" "+directory2)
+			self.file_path = os.path.join(*splitpath(new_path)[len(splitpath(app.config['UPLOADS_DIR'])):])
+			self.set_structured_file_name("%s %s" % (directory1, directory2))
 			self.save()
 			# @todo: clean up / delete empty directories
 		except:

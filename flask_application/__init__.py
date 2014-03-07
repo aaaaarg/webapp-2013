@@ -33,7 +33,7 @@ if not app.debug and not app.testing:
     import logging.handlers
     mail_handler = logging.handlers.SMTPHandler(
                         app.config['MAIL_SERVER'],
-                        os.getenv('USER'),
+                        app.config['DEFAULT_MAIL_SENDER'],
                         app.config['SYS_ADMINS'],
                         '{0} error'.format(app.config['SITE_NAME'],
                         ),

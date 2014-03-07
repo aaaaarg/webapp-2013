@@ -61,15 +61,6 @@
         $.get(el.attr('data-poload'), function(response) {
             el.attr('data-content', response);
             el.popover('show');
-            //el.data('popover').tip.find('.popover-content').empty().append(response);
-            /*
-            el.unbind('click').popover({
-                content: response,
-                title: el.attr('data-title'),
-                html: true,
-                delay: {show: 500, hide: 100}
-            }).popover('show');
-            */
         });
     });
     $('.popover-trigger.not-remote').popover({
