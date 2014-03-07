@@ -1,7 +1,7 @@
 from flask import Blueprint, render_template, flash, request, redirect, url_for, abort
 from flask.ext.security import (login_required, roles_required, roles_accepted, current_user)
 from flask.ext import admin
-from flask.ext.admin.contrib import fileadmin
+from flask.ext.admin.contrib.fileadmin import FileAdmin
 from flask.ext.admin.contrib.mongoengine import ModelView
 
 
@@ -69,11 +69,26 @@ class UploadView(ModelView):
 		return current_user.has_role('editor') or current_user.has_role('admin')
 
 
+class ThreadView(ModelView):
+	column_filters = ['title','last_comment','priority']
+	column_searchable_list = ('title','last_comment_text',)
+	column_list = ('title','last_comment_text','last_comment','priority')
+	form_excluded_columns = ('creator','last_comment_by','followers', 'comments','origin')
+
+	def is_accessible(self):
+		return current_user.has_role('editor') or current_user.has_role('admin')
+
+
+class FileView(FileAdmin):
+	def is_accessible(self):
+		return current_user.has_role('editor') or current_user.has_role('admin')
+
 admin = admin.Admin(app, 'Admin')
 admin.add_view(RoleView(Role))
 admin.add_view(UserView(User))
 admin.add_view(MakerView(Maker, endpoint='makeradmin'))
 admin.add_view(ThingView(Thing))
 admin.add_view(CollectionView(Collection))
+admin.add_view(ThreadView(Thread))
 admin.add_view(UploadView(Upload))
-admin.add_view(fileadmin.FileAdmin(assets_upload_dir, '/upload/', name='Files'))
+admin.add_view(FileView(assets_upload_dir, '/upload/', name='Files'))

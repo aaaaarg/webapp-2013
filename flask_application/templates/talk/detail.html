@@ -9,13 +9,19 @@
 
 {% block content %}
 
+<div class="btn-group btn-group-xs">
+    {%- if current_user.is_authenticated() -%}
+    {{ follow_toggle(thread) }}
+    {%- endif %}
+</div>
+
 <h2>{{thread.title}}</h2>
 
 {% if thread.origin %}
 <h4><span class="text-muted"> in <a href="{{thread|thread_origin_url}}">{{ thread.origin_title() }}</a></h4>
 {% endif %}
 
-{{ follow_toggle(thread) }}
+
 
 <ul class="list-group">
 {% if not comments %}

@@ -40,7 +40,7 @@ def list(page=1):
 	"""
 	See a list of comment threads
 	"""
-	threads = Thread.objects.paginate(page=page, per_page=10)
+	threads = Thread.objects.order_by('-priority','-last_comment').paginate(page=page, per_page=10)
 	return render_template('talk/list.html',
 		title = 'All discussion',
 		threads = threads.items,

@@ -13,7 +13,7 @@ frontend = Blueprint('frontend', __name__)
 @frontend.route('/')
 def index():
 	recent_collections = Collection.objects(accessibility__ne='private').limit(3).order_by('-things.created_at')
-	recent_comments = Thread.objects(origin__exists=False).exclude('comments').limit(3)
+	recent_comments = Thread.objects(origin__exists=False).exclude('comments').order_by('-priority','-last_comment').limit(3)
 	recent_things = Thing.objects(files__0__exists=True).order_by('-modified_at', '-created_at').paginate(page=1, per_page=10)
 	return render_template('frontend/home.html',
 		title = app.config['SITE_NAME'],
