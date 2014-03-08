@@ -2,7 +2,7 @@
 
 import datetime
 
-from flask import Blueprint, request, redirect, url_for, render_template, get_template_attribute, abort, jsonify
+from flask import Blueprint, request, redirect, url_for, render_template, get_template_attribute, abort, jsonify, send_from_directory
 from flask_application import app
 from flask.ext.security import login_required, current_user
 
@@ -22,6 +22,12 @@ def index():
 		comments = recent_comments,
 		pagination = recent_things,
 		endpoint = 'thing.list_nonrequests')
+
+
+@frontend.route('/robots.txt')
+@frontend.route('/sitemap.xml')
+def static_from_root():
+	return send_from_directory(app.static_folder, request.path[1:])
 
 
 @frontend.route('/follow/<type>/<id>')

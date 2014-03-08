@@ -84,7 +84,7 @@ class Thing(SolrMixin, CreatorMixin, FollowersMixin, db.Document):
         self.makers = []
         raw_names = raw.split(',')
         for s in raw_names:
-            raw_name = str(s).strip()
+            raw_name = s.encode('utf-8').strip()
             pattern = r'(.*)\s?\((.*)\)$'
             match = re.search(pattern, raw_name)
             if match is None:
