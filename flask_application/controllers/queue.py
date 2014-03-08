@@ -185,7 +185,7 @@ def edit_thing(id, item_id):
 		qt.accessibility = form.accessibility.data
 		qt.save() 
 		flash("Notes on %s updated" % qt.thing.title)
-		return redirect(url_for("queue.detail", id=q.id))
+		return redirect(url_for("queue.detail_thing", id=q.id, item_id=qt.id))
 	return render_template('queue/edit_thing.html',
 		title = 'Notes on: ',
 		thing = qt.thing,

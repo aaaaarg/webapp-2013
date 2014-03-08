@@ -13,12 +13,13 @@
             <a class="btn btn-xs btn-default" href="{{ url_for('queue.edit_thing', id=queue.id, item_id=queued_thing.id) }}">edit</a>
         </div>
 
-        <h2>{{title}}</h2>
+        <h2><span class="text-muted">Notes: </span>{{title}}</h2>
         
         <div><strong>{{queued_thing.short_description}}</strong></div>
 
         <div><p>{{queued_thing.description|markdown}}</p></div>
 
+        <hr>
         <div>
             <em>
                 {{queued_thing.creator.username}}
@@ -30,10 +31,10 @@
 
     </div>
     <div class="col-md-3">
-        <p><a href="{{ url_for('thing.detail', id=queued_thing.thing.id) }}">see text</a></p>
+        <p><a class="yo" href="{{ url_for('thing.detail', id=queued_thing.thing.id) }}">see text</a></p>
         <hr>
         <small class="text-muted">
-        <a href="{{ url_for('queue.detail', id=queue.id) }}#finished">{{ queue.title|upper}}</a> NOTES
+        <a class="yo" href="{{ url_for('queue.detail', id=queue.id) }}#finished">{{ queue.title|upper}}</a> NOTES
         </small>
         <ul class="list-group">
         {% for qt in queue.things|selectattr("description")|sort(attribute='date_completed', reverse=True) %}
