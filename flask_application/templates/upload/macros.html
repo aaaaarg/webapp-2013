@@ -3,8 +3,8 @@
 	<link rel="stylesheet" href="{{ url_for('static', filename='css/jquery.fileupload-ui.css') }}">
 {% endmacro %}
 
-{% macro uploader(form, thing_id) %}
-{% set upload_url = url_for('upload.handle_upload',thing_id=thing_id) %}
+{% macro uploader(form, thing) %}
+{% set upload_url = url_for('upload.handle_upload',thing_id=thing.id) %}
 {% for field in form %}
 	{% if field.type == 'HiddenField' %}
 		{{ field(class_='extra-upload-field') }}
@@ -28,7 +28,7 @@
 	</div>
 {% endmacro %}
 
-{% macro uploads(files) %}
+{% macro uploads(files, thing=None) %}
 	<table id="fileuploads" class="table table-hover">
 		<caption class="text-left text-muted"><small>Uploaded versions</small></caption>  
 	  <thead>
@@ -45,6 +45,9 @@
 	      <td>{{file.short_description}}</td>
 	      <td>{{file.mimetype}}</td>
 	      <td>{{(file.file_size/1000000)|round(1)}}mb</td>
+	      {% if thing and can_delete_file_from_thing(thing) %}
+	      <td><a data-confirm="Are you sure you want to remove this file?" href="{{ url_for('thing.remove_file', id=thing.id, upload_id=file.id) }}"><span class="glyphicon glyphicon-remove"></span></a></td>
+	      {% endif %}
 	  </tr>
 	  {% endfor %}
 	</table>	

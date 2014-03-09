@@ -9,6 +9,14 @@ from flask_application.models import *
 from ..forms import QueueForm, QueuedThingForm
 
 
+from ..permissions.queue import *
+app.jinja_env.globals['can_edit_queue'] = can_edit_queue
+app.jinja_env.globals['can_add_to_queue'] = can_add_to_queue
+app.jinja_env.globals['can_remove_from_queue'] = can_remove_from_queue
+app.jinja_env.globals['can_edit_queued_thing'] = can_edit_queued_thing
+app.jinja_env.globals['can_view_queued_thing'] = can_view_queued_thing
+
+
 # Set up blueprint
 # Although reading could also be watching or listening, the variable will be called "reading"
 # The url prefix can (@todo!) be set in the application configuration so urls are like "/listening/groups"
@@ -19,22 +27,6 @@ def current_user_queues():
 	return Queue.objects.filter(creator=current_user.get_id())
 app.jinja_env.globals['current_user_queues'] = current_user_queues
 
-
-# Permissions (@todo: move them to their own file)
-def can_edit_queue(queue):
-	return True
-
-def can_add_to_queue(queue):
-	return can_edit_queue(queue)
-
-def can_remove_from_queue(queue):
-	return can_edit_queue(queue)
-
-def can_edit_queued_thing(queue, queued_thing):
-	return can_edit_queue(queue)
-
-def can_view_queued_thing(queue, queued_thing):
-	return can_edit_queue(queue)
 
 # views
 
@@ -199,6 +191,8 @@ def detail_thing(id, item_id):
 	"""
 	q = Queue.objects.get_or_404(id=id)
 	qt = QueuedThing.objects.get_or_404(id=item_id)
+	if not can_view_queued_thing(q,qt):
+		abort(403)
 	title = qt.thing.title
 	if qt.subtitle:
 		title = qt.subtitle

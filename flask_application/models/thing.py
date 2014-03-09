@@ -54,8 +54,8 @@ class Thing(SolrMixin, CreatorMixin, FollowersMixin, db.Document):
         if calibre_move:
             f.apply_calibre_folder_structure(self.get_maker_and_title())
         self.tell_followers(self.title, '''
-            A new file has been added to <a href="%s">%s</a>
-            ''' % (url_for('thing.detail', id=self.id, _external=True), self.title))
+            A new file has been added to <a href="%s">%s</a> by %s
+            ''' % (url_for('thing.detail', id=self.id, _external=True), self.title, self.format_makers_string()))
 
     def remove_file(self, f):
         self.update(pull__files=f)

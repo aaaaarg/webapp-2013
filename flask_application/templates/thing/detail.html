@@ -51,10 +51,10 @@
         {% if can_view_file_for_thing(thing) %}
         <div class="panel panel-default uploads-panel">
             <div class="panel-body">
-            {{ uploads(thing.files) }}
+            {{ uploads(thing.files, thing) }}
             {% if can_add_file_to_thing(thing) %}
             <div class="upload">
-                {{ uploader(upload_form, thing.id) }}
+                {{ uploader(upload_form, thing) }}
             </div>
             {% endif %}
             </div>

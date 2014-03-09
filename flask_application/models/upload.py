@@ -20,6 +20,8 @@ But when moving the file, construct the path with UPLOADS_DIR, UPLOADS_SUBDIR, a
 
 """
 
+
+
 class Upload(CreatorMixin, db.Document):
 	"""
 	Encapsulates a file that has been uploaded. A base class for various specific types
@@ -215,3 +217,28 @@ class Upload(CreatorMixin, db.Document):
 
 class TextUpload(Upload):
 	num_pages = db.IntField()
+
+
+
+class UploadManager(object):
+	"""
+	Handles uploads and delivers an object
+	"""
+
+	def set_uploaded_file(self, file, **kwargs):
+		"""
+		Assumes properties described in werkzeug.datastructures.FileStorage
+		Attempts to set all fields
+		"""
+		if file.mimetype in ['application/pdf', 'application/epub+zip', 'text/plain', 'text/html']:
+			u = TextUpload(**kwargs)
+		else:
+			u = Upload(**kwargs)
+		u.set_uploaded_file(file)
+
+		existing = Upload.objects(sha1=u.sha1).first()
+		if existing:
+			return existing
+		else:
+			u.save()
+			return u

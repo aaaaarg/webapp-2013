@@ -42,21 +42,17 @@ def handle_upload(thing_id=None):
 		files = request.files
 		uploaded_files = []
 		for key, file in files.iteritems():
-			u = Upload(short_description=request.form.get("short_description")[:255])
-			u.set_uploaded_file(file)
-			if Upload.objects(sha1=u.sha1).first():
-				app.logger.info("File already exists: %s" % u.file_name)
-			else:
-				u.save()
-				if thing:
-					thing.add_file(u)
-				uploaded_files.append({
-					'url': '#', #url_for('upload.serve_upload', filename=u.structured_file_name), 
-					'structured_file_name': u.structured_file_name,
-					'short_description': u.short_description,
-					'file_size': u.file_size,
-					'mimetype': u.mimetype
-				})
+			um = UploadManager()
+			u = um.set_uploaded_file(file, short_description=request.form.get("short_description")[:255])
+			if thing:
+				thing.add_file(u)
+			uploaded_files.append({
+				'url': '#', #url_for('upload.serve_upload', filename=u.structured_file_name), 
+				'structured_file_name': u.structured_file_name,
+				'short_description': u.short_description,
+				'file_size': u.file_size,
+				'mimetype': u.mimetype
+			})
 		return jsonify({'files': uploaded_files})
 	except:
 		raise

@@ -18,6 +18,7 @@ app.jinja_env.globals['can_add_file_to_thing'] = can_add_file_to_thing
 app.jinja_env.globals['can_view_file_for_thing'] = can_view_file_for_thing
 app.jinja_env.globals['can_create_thread'] = can_create_thread
 app.jinja_env.globals['can_add_thing_to_collections'] = can_add_thing_to_collections
+app.jinja_env.globals['can_delete_file_from_thing'] = can_delete_file_from_thing
 
 thing = Blueprint('thing', __name__, url_prefix='/thing')
 
@@ -185,6 +186,18 @@ def delete():
 	flash("Thing deleted")
 	return redirect(url_for("thing.list"))
 	
+
+@thing.route('/<id>/remove/<upload_id>', methods= ['GET','POST'])
+@roles_accepted('admin', 'editor')
+def remove_file(id, upload_id):
+	thing = Thing.objects.get_or_404(id=id)
+	upload = Upload.objects.get_or_404(id=upload_id)
+	if not can_delete_file_from_thing(thing):
+		abort(403)
+	thing.remove_file(upload)
+	flash("File removed")
+	return redirect(url_for("thing.detail", id=id))
+
 
 @thing.route('/actions/for/<id>')
 def sort_actions(id):
