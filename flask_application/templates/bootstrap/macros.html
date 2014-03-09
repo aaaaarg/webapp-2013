@@ -45,10 +45,12 @@
             {{trigger|safe}}
         </span>
         {% else %}
-        <span class="popover-trigger not-remote" data-trigger="manual" data-toggle="popover" data-content="{{popover_content}}" data-title="{{popover_title}}">
+        <span class="popover-trigger not-remote" data-trigger="manual">
             {{trigger|safe}}
         </span>
-        
+        <div class="popover-element hide" data-title="{{popover_title}}">
+            {{ popover_content }}
+        </div>
         {% endif %}
 {%- endmacro %}
 
