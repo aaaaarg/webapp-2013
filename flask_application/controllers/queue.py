@@ -119,7 +119,7 @@ def add_thing(id, thing_id, ajax=False):
 	Add a thing into a queue
 	"""
 	q = Queue.objects.get_or_404(id=id)
-	if not can_add_to_queue(queue):
+	if not can_add_to_queue(q):
 		abort(403)
 	t = Thing.objects.get_or_404(id=thing_id)
 	q.add_thing(t)
