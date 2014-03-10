@@ -11,24 +11,6 @@ from flask_application.models import *
 upload = Blueprint('upload', __name__, url_prefix='/upload')
 
 
-ALLOWED_EXTENSIONS = set(['txt', 'pdf', 'png', 'jpg', 'jpeg', 'gif'])
-"""
-def _handleUpload(files):
-	if not files:
-		return None
-	filenames = []
-	saved_files_urls = []
-	for key, file in files.iteritems():
-		if file and allowed_file(file.filename):
-			filename = secure_filename(file.filename)
-			print os.path.join(UPLOAD_FOLDER, filename)
-			file.save(os.path.join(UPLOAD_FOLDER, filename))
-			saved_files_urls.append(url_for('uploaded_file', filename=filename))
-			filenames.append("%s" % (file.filename))
-			print saved_files_urls[0]
-		return filenames
-"""
-
 @upload.route('/', methods= ['GET', 'POST'])
 @upload.route('/thing/<thing_id>', methods= ['GET', 'POST'])
 @login_required
@@ -47,7 +29,7 @@ def handle_upload(thing_id=None):
 			if thing:
 				thing.add_file(u)
 			uploaded_files.append({
-				'url': '#', #url_for('upload.serve_upload', filename=u.structured_file_name), 
+				'url': url_for('upload.serve_upload', filename=u.structured_file_name), 
 				'structured_file_name': u.structured_file_name,
 				'short_description': u.short_description,
 				'file_size': u.file_size,
@@ -57,6 +39,7 @@ def handle_upload(thing_id=None):
 	except:
 		raise
 		return jsonify({'status': 'error'})	
+
 
 
 @upload.route('/<path:filename>')

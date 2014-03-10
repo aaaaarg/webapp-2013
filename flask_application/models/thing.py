@@ -126,6 +126,19 @@ class Thing(SolrMixin, CreatorMixin, FollowersMixin, db.Document):
         for f in self.files:
             f.apply_calibre_folder_structure(self.get_maker_and_title())
 
+    def delete(self, *args, **kwargs):
+        # first remove some references to this thing
+        from .collection import Collection
+        from .queue import Queue, QueuedThing
+        cs = Collection.objects.filter(things__thing=self)
+        for c in cs:
+            c.remove_thing(self)
+        qts = QueuedThing.objects(thing=self)
+        for qt in qts:
+            Queue.objects().update(pull__things=qt)
+            #qt.delete() # let's not delete in case people have written something
+        super(Thing, self).delete(*args, **kwargs)
+
     def build_solr(self):
         from .collection import Collection
         return {
