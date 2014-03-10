@@ -21,7 +21,7 @@
 			>
 			  <h5 class="list-group-item-heading">
 			  	<a href="{{url_for('thing.detail', id=collected_thing.thing.id)}}">{{collected_thing.thing.title}}</a>
-			  	<span class="maker text-muted">{{ collected_thing.thing.format_makers_string() }}</span>
+			  	<span class="maker text-muted">{{ collected_thing.thing.makers_display }}</span>
 			  </h5>
 			  <div class="list-group-item-text">
 			  	{{collected_thing.thing.short_description}} 

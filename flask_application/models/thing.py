@@ -36,12 +36,14 @@ class Thing(SolrMixin, CreatorMixin, FollowersMixin, db.Document):
     files = db.ListField(db.ReferenceField(Upload))
 
     is_request = True
+    makers_display = ''
 
     def __init__(self, *args, **kwargs):
         super(Thing, self).__init__(*args, **kwargs)
         if self.modified_at is None:
              self.modified_at = self.created_at
         self._update_request_status()
+        self.makers_display = self.format_makers_string()
 
     def _update_request_status(self):
         self.is_request = False if len(self.files)>0 else True
@@ -103,6 +105,7 @@ class Thing(SolrMixin, CreatorMixin, FollowersMixin, db.Document):
                 maker.save()
             self.makers.append(MakerWithRole(maker=maker, role=role))
         self.update_makers_sorted()
+        self.makers_display = self.format_makers_string()
         # @todo tell_followers() - also refactor this code
 
     def format_for_filename(self):
