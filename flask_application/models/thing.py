@@ -72,7 +72,7 @@ class Thing(SolrMixin, CreatorMixin, FollowersMixin, db.Document):
     def update_makers_sorted(self):
         names = []
         for m in self.makers:
-            names.append(m.maker.sort_by)
+            names.append(m.maker.sort_by.encode('utf-8').strip())
         self.makers_sorted = '| '.join(names)
 
     def parse_makers_string(self, raw):
