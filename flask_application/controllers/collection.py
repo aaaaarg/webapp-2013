@@ -149,7 +149,8 @@ def add_thing(thing_id):
 	cf.set_thing(thing)
 	if cf.validate_on_submit():
 		collection = cf.collection.data
-		collection.add_thing(thing=thing, note=cf.note.data)
+		if not collection.has_thing(thing):
+			collection.add_thing(thing=thing, note=cf.note.data)
 		return jsonify({
 			'result':'success', 
 			'message':'Added to <a href="%s">%s</a>!' % (url_for('collection.detail', id=collection.id), collection.title), 
@@ -206,3 +207,24 @@ def add():
 		form=form
   )
 
+
+@collection.route('/for/thing/<thing_id>', methods= ['GET'])
+def list_for_thing(thing_id):
+	"""
+	A list of collections and optional form
+	"""
+	thing = Thing.objects.get_or_404(id=thing_id)
+	collections = Collection.objects.filter(things__thing=thing)
+	# Add this thing to one or more collections
+	if can_add_thing_to_collections():
+		cf = AddThingToCollectionsForm(formdata=request.form)
+		cf.set_thing(thing)
+		if cf.validate_on_submit():
+			ct = CollectedThing()
+			cf.populate_obj(ct)
+			cf.collection.data.add_thing(ct)
+		form_template = get_template_attribute('collection/macros.html', 'add_to_collection_form')(cf)
+		return get_template_attribute('collection/macros.html', 'show_collections_list')(collections, thing, form_template)
+	else:
+		return get_template_attribute('collection/macros.html', 'show_collections_list')(collections, thing)
+	

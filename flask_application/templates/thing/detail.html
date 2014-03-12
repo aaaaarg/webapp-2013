@@ -73,11 +73,7 @@
         </small>
         {{ show_threads_list(threads) }}
         <small class="text-muted">COLLECTIONS</small>
-        {% if can_add_thing_to_collections() %}
-        {{ show_collections_list(collections, thing, add_to_collection_form(collection_form)) }}
-        {% else %}
-        {{ show_collections_list(collections, thing) }}
-        {% endif %}
+        <div class="ajax-content-loader" data-url="{{ url_for('collection.list_for_thing', thing_id=thing.id) }}">Loading...</div>
     </div>
 </div>
 

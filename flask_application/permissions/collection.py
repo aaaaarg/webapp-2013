@@ -16,8 +16,9 @@ def can_add_thing_to_collections():
 	return current_user.is_authenticated()
 
 
+# Send None for the thing to skip checking whether the collection has the thing (an expensive check)
 def can_add_thing_to_collection(collection, thing=None):
-	if collection.has_thing(thing):
+	if thing and collection.has_thing(thing):
 		return False
 	if collection.accessibility=='public':
 		return current_user.is_active() and current_user.is_authenticated()

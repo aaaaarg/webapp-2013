@@ -100,23 +100,11 @@ def detail(id):
 	See a thing in more detail
 	"""
 	thing = Thing.objects.get_or_404(id=id)
-	collections = Collection.objects.filter(things__thing=thing)
 	threads = Thread.objects.filter(origin=thing)
 	# Upload form
 	uf = UploadForm()
-	# Add this thing to one or more collections
-	cf = AddThingToCollectionsForm(formdata=request.form)
-	cf.set_thing(thing)
-	if cf.validate_on_submit():
-		ct = CollectedThing()
-		cf.populate_obj(ct)
-		cf.collection.data.add_thing(ct)
-		flash("Thing added to Collection")
-		return redirect(url_for("thing.detail", id=thing.id))
 	return render_template('thing/detail.html',
 		thing = thing,
-		collections = collections,
-		collection_form = cf,
 		threads = threads,
 		upload_form = uf)
 

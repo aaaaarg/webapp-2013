@@ -105,7 +105,7 @@
 {% macro collection_js() %}
 <script>
 	$('select.selectpicker').selectpicker();
-	$('form[name="sort-collection"]').submit(function() {
+	$(document).on('submit', 'form[name="sort-collection"]', function() {
 		$f = $(this);
 		$.ajax({
 			type : "POST",
@@ -122,7 +122,7 @@
 		});
 		return false;
 	});
-	$('form[name="sort-collection"] select').change(function() {
+	$(document).on('change', 'form[name="sort-collection"] select', function() {
 		$ele = $(this).parent().next('.note-and-submit');
 		if ($(this).val()=="__None") $ele.slideUp();
 		else $ele.slideDown();

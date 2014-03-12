@@ -10,12 +10,11 @@ from wtforms import TextField, BooleanField, HiddenField
 from wtforms.widgets import Select, HTMLString, html_params
 from wtforms.validators import Required
 
-from ..models import Collection, SuperCollection, CollectedThing, Thing
+from ..models import Collection, SuperCollection, CollectedThing, Thing, Cache
 from ..permissions.collection import * 
 
 
 CollectionForm = model_form(SuperCollection, base_class=Form)
-
 
 class SelectWithOptgroup(Select):
 	"""
@@ -57,7 +56,7 @@ class CollectionQuerySetSelectField(QuerySetSelectField):
 		self.queryset = {}
 		self.queryset['following'] = Collection.objects.filter(supercollection__exists=False, followers=current_user.get_id()).order_by('title')
 		self.queryset['contributing'] = Collection.objects.filter(supercollection__exists=False, editors=current_user.get_id()).order_by('title')
-		self.queryset['created'] = Collection.objects.filter(supercollection__exists=False, creator=current_user.get_id()).order_by('title')
+		self.queryset['created'] = Collection.objects.filter(supercollection__exists=False, followers=current_user.get_id()).order_by('title')
 
 	def process_formdata(self, valuelist):
 		"""
@@ -81,25 +80,34 @@ class CollectionQuerySetSelectField(QuerySetSelectField):
 		"""
 		The query set is only top level collections - the "hierarchy" is basically a query set including subcollections
 		"""
+		# first try the cache
+		cached = Cache.objects(name="collections-for-%s" % current_user.get_id()).first()
+		if cached:
+			self.hierarchy = cached.value
+			return True
+		# not in cache, so we have to build it, which is expensive
 		self.hierarchy = {}
-
+		
 		def recurse(objs, depth, group):
 			for obj in objs:
-				if not obj.has_thing(self.thing):
-					label = self.label_attr and getattr(obj, self.label_attr) or obj
-					self.hierarchy[group].append((obj, depth))
-					if obj.subcollections:
-						recurse(obj.subcollections, depth + 1, group)
+				#if not obj.has_thing(self.thing):
+				label = self.label_attr and getattr(obj, self.label_attr) or obj
+				self.hierarchy[group].append((obj, depth))
+				if obj.subcollections:
+					recurse(obj.subcollections, depth + 1, group)
 
 		for group in self.queryset:
 			self.hierarchy[group] = []
 			self.queryset[group].rewind()
 			recurse(self.queryset[group], 0, group)
 
+		cached = Cache(name="collections-for-%s" % current_user.get_id(), value=self.hierarchy)
+		cached.save()
+		
+
 	def iter_choices(self):
 		self.build_flat_hierarchy()
-		#print self.hierarchy
-
+		
 		if self.allow_blank:
 			yield (u'__None', self.blank_text, self.data is None)
 
@@ -108,7 +116,7 @@ class CollectionQuerySetSelectField(QuerySetSelectField):
 
 		def iter_group_choices(flat_hierarchy):
 			for obj, depth in flat_hierarchy:
-				if not obj.has_thing(self.thing) and can_add_thing_to_collection(obj, self.thing): # Collection class gives us has_thing()
+				if can_add_thing_to_collection(obj):
 					label = self.label_attr and getattr(obj, self.label_attr) or obj
 					label = "%s %s" % ('-'*depth, label) if depth>0 else label
 					if isinstance(self.data, list):
@@ -119,6 +127,7 @@ class CollectionQuerySetSelectField(QuerySetSelectField):
 
 		for group in self.hierarchy:
 			yield (group, (iter_group_choices(self.hierarchy[group])))
+
 
 	def set_thing(self, thing):
 		self.thing = thing

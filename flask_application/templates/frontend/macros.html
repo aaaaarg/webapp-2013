@@ -66,5 +66,19 @@
 			$('#dataConfirmModal').modal({show:true});
 			return false;
 		});
+	// Content loading on page load (so we have quicker responsiveness)
+	$(document).ready(function(){
+		$(".ajax-content-loader").each(function() {
+			var $ele = $(this);
+			var jqxhr = $.get( $ele.attr('data-url'))
+		  .done(function(response) {
+		    $ele.replaceWith(response);
+		    $('select.selectpicker').selectpicker('refresh');
+		  })
+		  .fail(function() {
+		    // do nothing
+		  });
+		});
+  });
 </script>
 {% endmacro %}
