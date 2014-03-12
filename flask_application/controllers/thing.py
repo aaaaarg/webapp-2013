@@ -158,7 +158,7 @@ def add():
 		if form.collection.data:
 			collection = Collection.objects(id=form.collection.data).first()
 			if collection:
-				collection.add_thing(thing)
+				collection.add_thing(thing=thing)
 		flash("'%s' created! Now, upload a file. When you are done <a href='%s'>click here</a>. If you skip this step, then this will be classified as a 'request' and hopefully someone else will upload a file." % (thing.title, url_for('thing.detail', id=thing.id)))
 		# Upload form
 		upload_form = UploadForm()
