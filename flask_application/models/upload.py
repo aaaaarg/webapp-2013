@@ -205,7 +205,7 @@ class Upload(CreatorMixin, db.Document):
 		return "%s%s" % (_slugify_hyphenate_re.sub('-', value), ext)
 
 
-	def recover_broken_file(self):
+	def recover_broken_file(self, data):
 		"""
 		Sometimes the file just gets lost in the uploads directory.
 		This recursively crawls the directory to match the file (via hash) and then moves the file
@@ -224,26 +224,47 @@ class Upload(CreatorMixin, db.Document):
 			except:
 				return False
 
+		def safe_name(str):
+			#return "".join([c for c in str if c.isalpha() or c.isdigit() or c==' ']).rstrip()[:64]
+			return "".join([c for c in str if c.isalpha() or c.isdigit() or c==' ']).rstrip()
+
 		def splitpath(path, maxdepth=20):
 			( head, tail ) = os.path.split(path)
 			return splitpath(head, maxdepth - 1) + [ tail ] if maxdepth and head and head != path else [ head or tail ]
 
+		def look_for_file(path, the_md5):
+			for root, dirs, files in os.walk(path):
+				for filename in files:
+					p = os.path.join(root, filename)
+					md5 = compute_hash(p)
+					if md5==the_md5:
+						self.file_name = filename
+						self.file_path = os.path.join(*splitpath(p)[len(splitpath(app.config['UPLOADS_DIR'])):])
+						self.set_structured_file_name(filename)
+						self.save()
+						return True
+
+		author, title = data
+		orig_path, ext = os.path.splitext(self.file_name)
+		# Get the parts of the new path
+		directory1 = safe_name(author)
+		directory2 = safe_name(title)
+		newfilename = "%s%s" % (directory2, ext)		
+		
 		if not self.md5:
-			return False
+			return "bad file!"
 		if self.md5==compute_hash(self.full_path()):
 			# The file is already a good one
-			return True
-		for root, dirs, files in os.walk(app.config['UPLOADS_DIR']):
-			for filename in files:
-				p = os.path.join(root, filename)
-				md5 = compute_hash(p)
-				if md5==self.md5:
-					self.file_name = filename
-					self.file_path = os.path.join(*splitpath(p)[len(splitpath(app.config['UPLOADS_DIR'])):])
-					self.set_structured_file_name(filename)
-					self.save()
-					return True
-		return False
+			return "yay! already in the right place!"
+		# check author directory first
+		found = look_for_file(os.path.join(app.config['UPLOADS_DIR'], app.config['UPLOADS_SUBDIR'], directory1), self.md5)
+		# now walk through entire uploads directory, starting with root
+		if not found:
+			found = look_for_file(app.config['UPLOADS_DIR'], self.md5)
+		if found:
+			self.apply_calibre_folder_structure(data)
+			return "sucessfully moved the file to the right place"
+		return "couldn't find the file anywhere :("
 
 
 class TextUpload(Upload):
