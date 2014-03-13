@@ -41,7 +41,6 @@ def handle_upload(thing_id=None):
 		return jsonify({'status': 'error'})	
 
 
-
 @upload.route('/<path:filename>')
 @login_required
 def serve_upload(filename):
@@ -55,3 +54,17 @@ def serve_upload(filename):
 		return send_file(try_path)
 
 	abort(404)
+
+
+@upload.route('/recover/<path:filename>')
+@roles_accepted('admin', 'editor')
+def recover_broken_file(filename):
+	"""
+	The filename here is the structured filename
+	"""
+	u = Upload.objects(structured_file_name=filename).first()
+	if u and u.recover_broken_file():
+		thing = Thing.objects(files=u).first()
+		if thing:
+			u.apply_calibre_folder_structure(thing.get_maker_and_title())
+	return jsonify({'status':'ok'})

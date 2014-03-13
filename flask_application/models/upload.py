@@ -158,15 +158,6 @@ class Upload(CreatorMixin, db.Document):
 		filename = "%s%s" % (directory2, ext)
 		# put together the new path
 		new_path = os.path.join(app.config['UPLOADS_DIR'], app.config['UPLOADS_SUBDIR'], directory1, directory2, filename)
-		# A quick sanity check - is the currently stored path broken, and this new path already existing?
-		current_path_is_broken = self.file_path is None or not os.path.exists(self.full_path())
-		if current_path_is_broken and os.path.exists(new_path):
-			self.file_name = filename
-			self.file_path = os.path.join(app.config['UPLOADS_SUBDIR'], directory1, directory2, filename)
-			self.set_structured_file_name(directory1+" "+directory2)
-			self.save()
-			#print "Recovered a broken link:",self.file_name
-			return
 		# Check if there will be a file collision
 		incrementer = 1
 		while os.path.exists(new_path):
@@ -213,6 +204,46 @@ class Upload(CreatorMixin, db.Document):
 		value = unicode(_slugify_strip_re.sub('', value).strip().lower())
 		return "%s%s" % (_slugify_hyphenate_re.sub('-', value), ext)
 
+
+	def recover_broken_file(self):
+		"""
+		Sometimes the file just gets lost in the uploads directory.
+		This recursively crawls the directory to match the file (via hash) and then moves the file
+		and resaves the Upload
+		"""
+		def compute_hash(path):
+			BLOCKSIZE = 65536
+			md5 = hashlib.md5()
+			try:
+				with open(path, 'rb') as afile:
+					buf = afile.read(BLOCKSIZE)
+					while len(buf) > 0:
+						md5.update(buf)
+						buf = afile.read(BLOCKSIZE)
+				return md5.hexdigest()
+			except:
+				return False
+
+		def splitpath(path, maxdepth=20):
+			( head, tail ) = os.path.split(path)
+			return splitpath(head, maxdepth - 1) + [ tail ] if maxdepth and head and head != path else [ head or tail ]
+
+		if not self.md5:
+			return False
+		if self.md5==compute_hash(self.full_path()):
+			# The file is already a good one
+			return True
+		for root, dirs, files in os.walk(app.config['UPLOADS_DIR']):
+			for filename in files:
+				p = os.path.join(root, filename)
+				md5 = compute_hash(p)
+				if md5==self.md5:
+					self.file_name = filename
+					self.file_path = os.path.join(*splitpath(p)[len(splitpath(app.config['UPLOADS_DIR'])):])
+					self.set_structured_file_name(filename)
+					self.save()
+					return True
+		return False
 
 
 class TextUpload(Upload):
