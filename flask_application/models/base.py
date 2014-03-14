@@ -139,6 +139,7 @@ class SolrMixin(object):
 
     def delete_from_solr(self):
         solr.delete(self)
+        solr.commit()
 
     def build_solr(self):
         super(SolrMixin, self).build_solr(*args, **kwargs)
@@ -146,6 +147,10 @@ class SolrMixin(object):
     def save(self, *args, **kwargs):
         super(SolrMixin, self).save(*args, **kwargs)
         self.add_to_solr()
+
+    def delete(self, *args, **kwargs):
+        self.delete_from_solr()
+        super(SolrMixin, self).delete(*args, **kwargs)
 
     #def update(self, *args, **kwargs):
     #    super(SolrMixin, self).update(*args, **kwargs)

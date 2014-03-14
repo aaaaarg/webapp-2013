@@ -63,6 +63,13 @@ class Thing(SolrMixin, CreatorMixin, FollowersMixin, db.Document):
         self.update(pull__files=f)
         self._update_request_status()
 
+    def add_maker(self, maker):
+        m = MakerWithRole(maker=maker)
+        self.update(add_to_set__makers=m)
+
+    def remove_maker(self, maker):
+        self.update(pull__makers__maker=maker)
+
     def format_makers_string(self):
         names = []
         for m in self.makers:

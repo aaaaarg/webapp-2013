@@ -25,7 +25,7 @@ class User(db.Document, UserMixin):
     invited = db.ListField(db.GenericReferenceField())
 
     def eq(self, user):
-    	if self.get_id()==user.get_id() and not self.is_anonymous():
+    	if not self.is_anonymous() and self.get_id()==user.id:
     		return True
     	return False
 
