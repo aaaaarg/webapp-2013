@@ -101,10 +101,15 @@ def detail(id):
 	"""
 	thing = Thing.objects.get_or_404(id=id)
 	threads = Thread.objects.filter(origin=thing)
+	# preview
+	preview = thing.preview()
+	preview_url = url_for('upload.serve_upload', filename=preview) if preview else False
+
 	# Upload form
 	uf = UploadForm()
 	return render_template('thing/detail.html',
 		thing = thing,
+		preview = preview_url,
 		threads = threads,
 		upload_form = uf)
 

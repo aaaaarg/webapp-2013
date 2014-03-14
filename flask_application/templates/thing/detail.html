@@ -48,6 +48,12 @@
 
         <p><small class="text-muted"><a href="{{ url_for('user.public_profile', id=thing.creator.id|trim) }}">{{thing.creator.username}}</a></small></p>
 
+        {% if preview %}
+        <div class="preview">
+            <img src="{{ preview }}">
+        </div>
+        {% endif %}
+
         {% if can_view_file_for_thing(thing) %}
         <div class="panel panel-default uploads-panel">
             <div class="panel-body">

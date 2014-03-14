@@ -128,6 +128,17 @@ class Thing(SolrMixin, CreatorMixin, FollowersMixin, db.Document):
         # otherwise...
         return ('', self.title)
 
+
+    def preview(self):
+        """
+        This assumes that our files have their uploads processed in a particular way!
+        Documented via looseleaf, scaaaan.py, etc.
+        """
+        for f in self.files:
+            p = f.preview()
+            if p:
+                return p
+
     def save(self, *args, **kwargs):
         super(Thing, self).save(*args, **kwargs)
         for f in self.files:

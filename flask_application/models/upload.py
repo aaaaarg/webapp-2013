@@ -266,6 +266,12 @@ class Upload(CreatorMixin, db.Document):
 			return "sucessfully moved the file to the right place"
 		return "couldn't find the file anywhere :("
 
+	def preview(self):
+		if 'SCANS_SUBDIR' in app.config:
+			preview_path = os.path.join(app.config['SCANS_SUBDIR'], self.md5, "50x72.jpg")
+			if os.path.exists(os.path.join(app.config['UPLOADS_DIR'], preview_path)):
+				return preview_path
+		return False
 
 class TextUpload(Upload):
 	num_pages = db.IntField()
