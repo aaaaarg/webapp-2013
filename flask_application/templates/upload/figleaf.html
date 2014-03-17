@@ -1,0 +1,13 @@
+<script src="{{ url_for('static', filename='js/figleaf.js') }}"></script>
+    
+
+{% if current_user.is_authenticated() and preview %}
+<div id="figleaf" class="preview" style="position: relative;">
+    <img src="{{ preview }}">
+</div>
+{% endif %}
+
+<script>
+var $figleaf = document.getElementById("figleaf");
+var figleaf = new Figleaf($figleaf, "{{ preview|replace('50x72.jpg', '') }}"); 
+</script>

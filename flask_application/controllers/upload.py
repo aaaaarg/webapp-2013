@@ -56,6 +56,25 @@ def serve_upload(filename):
 	abort(404)
 
 
+
+@upload.route('/skim/<path:filename>')
+@login_required
+def figleaf(filename):
+	"""
+	The filename here is the structured filename
+	"""
+	u = Upload.objects.get_or_404(structured_file_name=filename)
+	preview = u.preview()
+	preview_url = url_for('upload.serve_upload', filename=preview) if preview else False
+
+	if not preview_url:
+		abort(404)
+
+	return render_template('upload/figleaf.html',
+		preview = preview_url
+		)
+
+
 @upload.route('/recover/<path:filename>')
 @roles_accepted('admin', 'editor')
 def recover_broken_file(filename):

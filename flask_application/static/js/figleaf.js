@@ -37,6 +37,7 @@
         this.$focus.style.display = "none";
         this.$focus.style.zIndex = "10";
         this.$focus.onscroll = this._handle_scroll.bind(this);
+
         this.$el.appendChild(this.$focus);
 
         this._has_focus = false;
