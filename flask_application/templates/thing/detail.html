@@ -20,7 +20,7 @@
     <script src="{{ url_for('static', filename='js/figleaf.js') }}"></script>
     <script>
     var $figleaf = document.getElementById("figleaf");
-    var figleaf = new Figleaf($figleaf, "{{ preview|replace("50x72.jpg", "") }}"); 
+    var figleaf = new Figleaf($figleaf, "{{ preview|replace('50x72.jpg', '') }}"); 
     </script>
     {% endif %}
 {% endblock %}
@@ -56,7 +56,7 @@
         <p><small class="text-muted"><a href="{{ url_for('user.public_profile', id=thing.creator.id|trim) }}">{{thing.creator.username}}</a></small></p>
 
         {% if current_user.is_authenticated() and preview %}
-        <div id="figleaf" class="preview">
+        <div id="figleaf" class="preview" style="position: relative;">
             <img src="{{ preview }}">
         </div>
         {% endif %}
