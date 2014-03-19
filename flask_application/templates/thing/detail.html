@@ -20,7 +20,11 @@
     <script src="{{ url_for('static', filename='js/figleaf.js') }}"></script>
     <script>
     var $figleaf = document.getElementById("figleaf");
-    var figleaf = new Figleaf($figleaf, "{{ preview|replace('50x72.jpg', '') }}"); 
+    var figleaf = new Figleaf($figleaf, "{{ preview|replace('50x72.jpg', '') }}");
+    var p = window.location.hash.substring(1);
+    if (!isNaN(parseFloat(p)) && isFinite(p)) {
+        figleaf.seek(p);   
+    } 
     </script>
     {% endif %}
 {% endblock %}

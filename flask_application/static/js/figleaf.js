@@ -24,7 +24,7 @@
 
         this.$pdf.onmousedown = this._handle_seek.bind(this);
         this.$canvas.onmousedown = this._handle_seek.bind(this);
-
+        
         // Create a frame for focus
         this.$focus = document.createElement("div");
         this.$focus.style.position = "absolute";
@@ -37,6 +37,8 @@
         this.$focus.style.display = "none";
         this.$focus.style.zIndex = "10";
         this.$focus.onscroll = this._handle_scroll.bind(this);
+        // capture keystrokes
+        window.addEventListener("keydown", this._handle_keypress.bind(this), false);
 
         this.$el.appendChild(this.$focus);
 
@@ -147,7 +149,16 @@
             }
         }.bind(this));
     }
-
+    $.Figleaf.prototype._handle_keypress = function(ev) {
+        // console.log('key code: ' + ev.keyCode);
+        // if(ev.keyCode == 32 || ev.keyCode == 9 || ev.keyCode == 13) { // space, tab, enter
+        if (ev.keyCode == 66) { // b
+            var page = this.$focus.scrollTop / SCANR.page_h;
+            window.prompt("Bookmark for this page: ", document.URL.split('#')[0] + '#' + page);
+        }
+    }
+    
+        
     // util
     var _el_offset = function( el, fixed ) {
         // http://stackoverflow.com/questions/442404/dynamically-retrieve-html-element-x-y-position-with-javascript
