@@ -134,7 +134,7 @@ class Thing(SolrMixin, CreatorMixin, FollowersMixin, db.Document):
         This assumes that our files have their uploads processed in a particular way!
         Documented via looseleaf, scaaaan.py, etc.
         """
-        for f in self.files:
+        for f in reversed(self.files):
             try:
                 p = f.preview()
                 if p:
