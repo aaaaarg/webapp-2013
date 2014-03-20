@@ -267,7 +267,7 @@ class Upload(CreatorMixin, db.Document):
 		return "couldn't find the file anywhere :("
 
 	def preview(self):
-		if 'SCANS_SUBDIR' in app.config:
+		if self.md5 and 'SCANS_SUBDIR' in app.config:
 			preview_path = os.path.join(app.config['SCANS_SUBDIR'], self.md5, "50x72.jpg")
 			if os.path.exists(os.path.join(app.config['UPLOADS_DIR'], preview_path)):
 				return preview_path

@@ -139,8 +139,6 @@ class Thing(SolrMixin, CreatorMixin, FollowersMixin, db.Document):
                 p = f.preview()
                 if p:
                     return p
-            else:
-                self.remove_file(f)
 
     def save(self, *args, **kwargs):
         super(Thing, self).save(*args, **kwargs)
