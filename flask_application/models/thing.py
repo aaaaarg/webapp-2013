@@ -135,9 +135,12 @@ class Thing(SolrMixin, CreatorMixin, FollowersMixin, db.Document):
         Documented via looseleaf, scaaaan.py, etc.
         """
         for f in self.files:
-            p = f.preview()
-            if p:
-                return p
+            if f:
+                p = f.preview()
+                if p:
+                    return p
+            else:
+                self.remove_file(f)
 
     def save(self, *args, **kwargs):
         super(Thing, self).save(*args, **kwargs)
