@@ -7,6 +7,10 @@
 {%- from "talk/macros.html" import show_threads_list with context %}
 {%- from "frontend/macros.html" import follow_toggle %}
 
+{% if preview %}
+{# handling symlinking of processed jpgs directory so nginx can serve these #}
+{% set preview = preview|replace('uploads/processed-jpgs','static/pages') %}
+{% endif %}
 
 {% block css_extra %}
     {{ upload_css() }}
