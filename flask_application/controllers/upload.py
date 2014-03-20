@@ -56,7 +56,6 @@ def serve_upload(filename):
 	abort(404)
 
 
-
 @upload.route('/skim/<path:filename>')
 @login_required
 def figleaf(filename):

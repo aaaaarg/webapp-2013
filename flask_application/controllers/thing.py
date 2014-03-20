@@ -103,7 +103,9 @@ def detail(id):
 	threads = Thread.objects.filter(origin=thing)
 	# preview
 	preview = thing.preview()
-	preview_url = url_for('upload.serve_upload', filename=preview) if preview else False
+	# not sure yet the best way to accomplish the following so preview url is hardcoded here for now
+	#preview_url = url_for('upload.preview', filename=preview) if preview else False
+	preview_url = "/static/pages/%s" % preview if preview else False
 
 	# Upload form
 	uf = UploadForm()
