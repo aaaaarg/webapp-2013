@@ -39,6 +39,9 @@
         this.$focus.onscroll = this._handle_scroll.bind(this);
         // capture keystrokes
         window.addEventListener("keydown", this._handle_keypress.bind(this), false);
+        // capture double clicks
+        this.$focus.addEventListener("dblclick", this._handle_dblclick.bind(this), false);
+        //this.$focus.dblclick = this._handle_dblclick.bind(this);
 
         this.$el.appendChild(this.$focus);
 
@@ -152,12 +155,15 @@
     $.Figleaf.prototype._handle_keypress = function(ev) {
         // console.log('key code: ' + ev.keyCode);
         // if(ev.keyCode == 32 || ev.keyCode == 9 || ev.keyCode == 13) { // space, tab, enter
-        if (ev.keyCode == 66) { // b
+        if (ev.keyCode == 66) { // b(ookmark)
             var page = this.$focus.scrollTop / SCANR.page_h;
             window.prompt("Bookmark for this page: ", document.URL.split('#')[0] + '#' + page);
         }
     }
-    
+    $.Figleaf.prototype._handle_dblclick = function(ev) {
+        console.log(this.$canvas);
+        console.log(ev);
+    }
         
     // util
     var _el_offset = function( el, fixed ) {

@@ -9,7 +9,7 @@
 
 {% if preview %}
 {# handling symlinking of processed jpgs directory so nginx can serve these #}
-{% set preview = preview|replace('upload/processed-jpgs','static/pages') %}
+{#% set preview = preview|replace('upload/processed-jpgs','static/pages') %#}
 {% endif %}
 
 {% block css_extra %}

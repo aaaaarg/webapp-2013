@@ -13,8 +13,12 @@
         <h2>{{queue.title}}</h2>
 
         <div class="btn-group btn-group-xs">
+            {% if can_edit_queue(queue) %}
             <a class="btn btn-default" href="{{ url_for('queue.edit', id=queue.id) }}">edit</a>
+            {% endif %}
+            {%- if current_user.is_authenticated() -%}
             {{ follow_toggle(queue) }}
+            {%- endif %}
         </div>
         <p><br/></p>
 
@@ -35,6 +39,7 @@
                 <tr id="o_{{queued_thing.id}}">
 			    	<td class="table-sort-handle editable" style="display:none;"><span class="glyphicon glyphicon-sort"></span></td>
 			    	<td>{{ show_queued_thing(queued_thing)}}</td>
+                    {% if can_edit_queue(queue) %}
 			    	<td class="editable" style="display:none;">
 			    		<div class="btn-group-vertical btn-group-xs">
 			    			<a class="btn btn-default" href="{{ url_for('queue.edit_thing', id=queue.id, item_id=queued_thing.id) }}" data-toggle="tooltip" title="Add notes" rel="tooltip"><span class="glyphicon glyphicon-pencil"></span></a>
@@ -42,6 +47,7 @@
                             <a class="btn btn-danger" href="{{ url_for('queue.remove_thing', id=queue.id, item_id=queued_thing.id) }}" data-toggle="tooltip" title="Delete from list" rel="tooltip"><span class="glyphicon glyphicon-remove"></span></a>
 				        </div>
 			    	</td>
+                    {% endif %}
 			    </tr>
     			{% endfor %}	
     		</table>
@@ -50,12 +56,14 @@
                 {% for queued_thing in queue.things|selectattr("date_completed")|sort(attribute='date_completed', reverse=True) %}
                 <tr id="o_{{queued_thing.id}}">
                     <td>{{ show_queued_thing(queued_thing)}}</td>
+                    {% if can_edit_queue(queue) %}
                     <td class="editable" style="display:none;">
                         <div class="btn-group-vertical btn-group-xs">
                             <a class="btn btn-default" href="{{ url_for('queue.edit_thing', id=queue.id, item_id=queued_thing.id) }}" data-toggle="tooltip" title="Edit notes" rel="tooltip"><span class="glyphicon glyphicon-pencil"></span></a>
                             <a class="btn btn-default" href="{{ url_for('queue.unfinish_thing', id=queue.id, item_id=queued_thing.id) }}" data-toggle="tooltip" title="Mark as unfinished" rel="tooltip"><span class="glyphicon glyphicon-remove"></span></a>
                         </div>
                     </td>
+                    {% endif %}
                 </tr>
                 {% endfor %}    
             </table>

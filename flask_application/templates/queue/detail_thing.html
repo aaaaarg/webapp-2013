@@ -10,7 +10,9 @@
 <div class="row">
     <div class="col-md-9">
         <div class="btn-group">
+            {% if can_edit_queued_thing(queue, queued_thing) %}
             <a class="btn btn-xs btn-default" href="{{ url_for('queue.edit_thing', id=queue.id, item_id=queued_thing.id) }}">edit</a>
+            {% endif %}
         </div>
 
         <h2><span class="text-muted">Notes: </span>{{title}}</h2>
