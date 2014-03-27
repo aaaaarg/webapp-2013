@@ -18,8 +18,10 @@
 
 
 {% macro show_makers_with_roles(makers) %}
+	{% set comma = joiner(", ") %}
 	<ul class="list-unstyled list-inline">
 	{% for maker in makers %}
+		{{ comma() }}
 		{{ show_maker(maker.maker, maker.role)}}
 	{% endfor %}
 	</ul>
