@@ -23,12 +23,12 @@
     <span class="label label-{{ type }}">{{ content|safe }}</span>
 {%- endmacro %}
 
-{% macro render_pagination(pagination, endpoint) %}
+{% macro render_pagination(pagination, endpoint, params={}) %}
     <ul class="pagination">
         {%- for page in pagination.iter_pages() %}
             {% if page %}
                 {% if page != pagination.page %}
-                    <li><a href="{{ url_for(endpoint, page=page) }}">{{ page }}</a></li>
+                    <li><a href="{{ url_for(endpoint, page=page, **params) }}">{{ page }}</a></li>
                 {% else %}
                     <li class="disabled"><a href="#" >{{ page }}</a></li>
                 {% endif %}
