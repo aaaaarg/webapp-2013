@@ -161,8 +161,8 @@
         }
     }
     $.Figleaf.prototype._handle_dblclick = function(ev) {
-        console.log(this.$canvas);
-        console.log(ev);
+        //console.log(this.$canvas);
+        //console.log(ev);
     }
         
     // util
