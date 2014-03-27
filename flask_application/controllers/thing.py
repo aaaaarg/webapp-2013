@@ -104,11 +104,18 @@ def detail(id):
 	# preview
 	preview = thing.preview()
 	preview_url = url_for('upload.serve_upload', filename=preview) if preview else False
-
+	# contributors
+	contributors = []
+	for f in thing.files:
+		if not f.creator in contributors:
+			contributors.append( f.creator )
+	if not thing.creator in contributors:
+		contributors.append( thing.creator )
 	# Upload form
 	uf = UploadForm()
 	return render_template('thing/detail.html',
 		thing = thing,
+		contributors = contributors,
 		preview = preview_url,
 		threads = threads,
 		upload_form = uf)

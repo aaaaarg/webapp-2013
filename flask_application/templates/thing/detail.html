@@ -61,7 +61,13 @@
 
         <div><p>{{thing.description}}</p></div>
 
-        <p><small class="text-muted"><a href="{{ url_for('user.public_profile', id=thing.creator.id|trim) }}">{{thing.creator.username}}</a></small></p>
+        <p><small class="text-muted">
+            {% set comma = joiner(", ") %}
+            {% for c in contributors %}
+            {{ comma() }}
+            <a href="{{ url_for('user.public_profile', id=c.id|trim) }}">{{c.username}}</a>
+            {% endfor %}
+        </small></p>
 
         {% if preview %}
         <div id="figleaf" class="preview" style="position: relative;">
