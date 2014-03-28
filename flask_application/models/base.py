@@ -64,7 +64,7 @@ class FollowersMixin(object):
 
     def has_follower(self, user):
         for u in self.followers:
-            if user.eq(u):
+            if user==u:
                 return True
         return False
 

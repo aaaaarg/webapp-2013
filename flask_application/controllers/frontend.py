@@ -49,8 +49,11 @@ def follow(type, id):
 	else:
 		abort(404)
 
-	user = User.objects(id=current_user.id).first()	
+	user = User.objects(id=current_user.get_id()).first()	
 	model.add_follower(user)
+	cached = Cache.objects(name="collections-for-%s" % user).first()
+	if cached:
+		cached.delete()
 	return jsonify({
 		'result': 'success',
 		'message': get_template_attribute('frontend/macros.html', 'unfollow')(model)
@@ -76,8 +79,11 @@ def unfollow(type, id):
 	else:
 		abort(404)
 
-	user = User.objects(id=current_user.id).first()
+	user = User.objects(id=current_user.get_id()).first()
 	model.remove_follower(user)
+	cached = Cache.objects(name="collections-for-%s" % user).first()
+	if cached:
+		cached.delete()
 	return jsonify({
 		'result': 'success',
 		'message': get_template_attribute('frontend/macros.html', 'follow')(model)

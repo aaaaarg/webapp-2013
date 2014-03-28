@@ -161,10 +161,18 @@
         }
     }
     $.Figleaf.prototype._handle_dblclick = function(ev) {
+        ev.preventDefault();
         //console.log(this.$canvas);
         //console.log(ev);
-    }
-        
+        var page = this.$focus.scrollTop / SCANR.page_h;
+        var box_pos = this.pageToBoxPos(page);
+        var pdf_pos = _el_offset(this.$pdf);
+        var click_x = ev.clientX - pdf_pos.left;
+        var click_y = ev.clientY - pdf_pos.top;
+        var x = click_x - box_pos[0];
+        var y = click_y - box_pos[1];
+        console.log('click: x:'+x+', y:'+y);
+    } 
     // util
     var _el_offset = function( el, fixed ) {
         // http://stackoverflow.com/questions/442404/dynamically-retrieve-html-element-x-y-position-with-javascript
