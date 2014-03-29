@@ -14,6 +14,7 @@ from ..permissions.collection import can_add_thing_to_collections
 
 app.jinja_env.globals['can_add_thing'] = can_add_thing
 app.jinja_env.globals['can_edit_thing'] = can_edit_thing
+app.jinja_env.globals['can_delete_thing'] = can_delete_thing
 app.jinja_env.globals['can_add_file_to_thing'] = can_add_file_to_thing
 app.jinja_env.globals['can_view_file_for_thing'] = can_view_file_for_thing
 app.jinja_env.globals['can_create_thread'] = can_create_thread
@@ -173,9 +174,9 @@ def add():
   )
 
 
-@thing.route('/<id>', methods= ['DELETE'])
-@roles_accepted('admin', 'editor', 'contributor')
-def delete():
+@thing.route('/<id>/delete', methods= ['GET','POST'])
+@roles_accepted('admin', 'editor')
+def delete(id):
 	"""
 	Delete a thing (untested)
 	"""

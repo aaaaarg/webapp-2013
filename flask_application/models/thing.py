@@ -152,9 +152,13 @@ class Thing(SolrMixin, CreatorMixin, FollowersMixin, db.Document):
         # first remove some references to this thing
         from .collection import Collection
         from .queue import Queue, QueuedThing
+        from .talk import Thread
         cs = Collection.objects.filter(things__thing=self)
         for c in cs:
             c.remove_thing(self)
+        ts = Thread.objects.filter(origin=self)
+        for t in ts:
+            t.delete()
         qts = QueuedThing.objects(thing=self)
         for qt in qts:
             Queue.objects().update(pull__things=qt)

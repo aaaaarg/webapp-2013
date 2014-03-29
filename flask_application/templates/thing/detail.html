@@ -45,6 +45,9 @@
             {% if can_edit_thing(thing) %}
             <a class="btn btn-default" href="{{ url_for('thing.edit', id=thing.id) }}">edit</a>
             {% endif %}
+            {% if can_delete_thing(thing) %}
+            <a data-confirm="Are you sure you want to delete this? It is not reversible!" class="btn btn-danger" href="{{ url_for('thing.delete', id=thing.id) }}">delete</a>
+            {% endif %}
             {%- if current_user.is_authenticated() -%}
             {{ follow_toggle(thing) }}
             {%- endif %}
