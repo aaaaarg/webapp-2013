@@ -73,7 +73,11 @@ class Thing(SolrMixin, CreatorMixin, FollowersMixin, db.Document):
     def format_makers_string(self):
         names = []
         for m in self.makers:
-            names.append(m.maker.format_name(m.role))
+            try:
+                names.append(m.maker.format_name(m.role))
+            except AttributeError:
+                # uh oh, there's a bad maker in here
+                names.append('???')
         return ', '.join(names)
 
     def update_makers_sorted(self):
