@@ -51,9 +51,10 @@ def follow(type, id):
 
 	user = User.objects(id=current_user.get_id()).first()	
 	model.add_follower(user)
-	cached = Cache.objects(name="collections-for-%s" % user).first()
-	if cached:
-		cached.delete()
+	if type=='collection':
+		cached = Cache.objects(name="collections-for-%s" % current_user.get_id()).first()
+		if cached:
+			cached.delete()
 	return jsonify({
 		'result': 'success',
 		'message': get_template_attribute('frontend/macros.html', 'unfollow')(model)

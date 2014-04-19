@@ -20,3 +20,6 @@ class Cache(db.Document):
 
 	def set_expiration(self, days):
 		self.expires = one_day(days=days)
+
+	def expire(self):
+		self.delete()
