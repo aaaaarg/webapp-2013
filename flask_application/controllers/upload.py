@@ -51,6 +51,10 @@ def serve_upload(filename):
 	try_path = u.full_path() if u else os.path.join(app.config['UPLOADS_DIR'], filename)
 	
 	if try_path and os.path.exists(try_path):
+		# There is a problem with epub
+		if u.mimetype=='application/epub+zip':
+			return send_file(try_path, 'application/epub')
+		# The normal way
 		return send_file(try_path)
 
 	abort(404)
