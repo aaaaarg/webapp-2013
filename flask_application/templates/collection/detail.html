@@ -87,6 +87,9 @@
 	      {% endif %}
 	  </small>
 	  {{ show_threads_list(threads) }}
+
+	  <small class="text-muted">FOLLOWERS</small>
+    <div class="ajax-content-loader" data-url="{{ url_for('collection.list_followers', id=collection.id) }}">
 	</div>
 </div>
 

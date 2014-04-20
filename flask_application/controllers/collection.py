@@ -227,4 +227,47 @@ def list_for_thing(thing_id):
 		return get_template_attribute('collection/macros.html', 'show_collections_list')(collections, thing, form_template)
 	else:
 		return get_template_attribute('collection/macros.html', 'show_collections_list')(collections, thing)
-	
+
+
+@collection.route('/<id>/followers')
+def list_followers(id):
+	"""
+	Removes current user as follower
+	Returns JSON
+	"""
+	model = Collection.objects.get_or_404(id=id)
+	editors = model.editors
+	followers = model.followers
+	for editor in editors:
+		if editor in followers:
+			followers.remove(editor)
+	return get_template_attribute('collection/macros.html', 'list_followers')(followers, editors, model)
+
+
+@collection.route('/<id>/editor/<user_id>/add', methods= ['GET', 'POST'])
+def add_editor(id, user_id):
+	"""
+	Add an editor to a collection
+	"""
+	c = Collection.objects.get_or_404(id=id)
+	u = User.objects.get_or_404(id=user_id)
+	if not can_edit_collection(c):
+		abort(403)
+	c.add_editor(u)
+	flash("%s added as editor to %s" % (u.username, c.title))
+	return redirect(url_for("collection.detail", id=id))
+
+
+@collection.route('/<id>/editor/<user_id>/remove', methods= ['GET', 'POST'])
+def remove_editor(id, user_id):
+	"""
+	Remove an editor from a collection
+	"""
+	c = Collection.objects.get_or_404(id=id)
+	u = User.objects.get_or_404(id=user_id)
+	if not can_edit_collection(c):
+		abort(403)
+	c.remove_editor(u)
+	flash("%s removed as editor from %s" % (u.username, c.title))
+	return redirect(url_for("collection.detail", id=id))
+

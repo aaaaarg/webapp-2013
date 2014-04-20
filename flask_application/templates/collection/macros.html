@@ -102,6 +102,29 @@
 {% endmacro %}
 
 
+{% macro list_followers(followers, editors, collection) %}
+	<div class="followers-list list-group">
+	{% for u in editors %}
+		<div class="list-group-item">
+			<a href="{{ url_for('user.public_profile', id=u.id|trim) }}">{{u.username}}</a> (editor
+			{% if can_edit_collection(collection) %}
+			<a href="{{ url_for('collection.remove_editor', id=collection.id, user_id=u.id) }}" data-toggle="tooltip" title="Remove from editors" rel="tooltip">[ - ]</a>
+			{% endif %}
+			)
+		</div>
+	{% endfor %}
+	{% for u in followers %}
+		<div class="list-group-item">
+			<a href="{{ url_for('user.public_profile', id=u.id|trim) }}">{{u.username}}</a> 
+			{% if can_edit_collection(collection) %}
+			<a href="{{ url_for('collection.add_editor', id=collection.id, user_id=u.id) }}" data-toggle="tooltip" title="Add as editor" rel="tooltip"> + </a>
+			{% endif %}
+		</div>
+	{% endfor %}
+	</div>
+{% endmacro %}
+
+
 {% macro collection_js() %}
 <script>
 	$('select.selectpicker').selectpicker();
