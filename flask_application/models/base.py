@@ -102,10 +102,15 @@ class EditorsMixin(object):
     def remove_editor(self, user):
         self.update(pull__editors=user)
 
-    def has_editor(self, user):
+    def has_editor(self, user=None):
+        if user is None:
+            user = current_user
         for u in self.editors:
-            if user.eq(u):
-                return True
+            try:
+                if user.id==u.id:
+                    return True
+            except:
+                pass
         return False
 
     # current user is following?
