@@ -55,7 +55,7 @@
 			
 			<div class="subcollection panel panel-default">
 			  <div class="panel-heading">
-			    <h3 class="panel-title">{{subcollection.title}}</h3>
+			    <h3 class="panel-title"><a href="{{ url_for('collection.detail', id=subcollection.id) }}">{{subcollection.title}}</a></h3>
 			  </div>
 			  <div class="panel-body">
 			    <p class="lead">{{subcollection.short_description}}</p>
