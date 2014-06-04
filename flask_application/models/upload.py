@@ -273,6 +273,14 @@ class Upload(CreatorMixin, db.Document):
 				return preview_path
 		return False
 
+	def preview_dir(self):
+		if self.md5 and 'SCANS_SUBDIR' in app.config:
+			preview_path = os.path.join(app.config['SCANS_SUBDIR'], self.md5)
+			preview_dir = os.path.join(app.config['UPLOADS_DIR'], preview_path)
+			if os.path.exists(preview_dir):
+				return preview_dir
+		return False
+
 class TextUpload(Upload):
 	num_pages = db.IntField()
 

@@ -52,7 +52,7 @@ def serve_upload(filename):
 	
 	if try_path and os.path.exists(try_path):
 		# There is a problem with epub
-		if u.mimetype=='application/epub+zip':
+		if u and u.mimetype=='application/epub+zip':
 			return send_file(try_path, 'application/epub')
 		# The normal way
 		return send_file(try_path)

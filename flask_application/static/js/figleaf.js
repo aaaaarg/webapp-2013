@@ -159,6 +159,17 @@
             var page = this.$focus.scrollTop / SCANR.page_h;
             window.prompt("Bookmark for this page: ", document.URL.split('#')[0] + '#' + page);
         }
+        if (ev.keyCode == 219) { // [ (for the beginning)
+            var page = this.$focus.scrollTop / SCANR.page_h;
+            this.clip_top = page;
+        }
+        if (ev.keyCode == 221) { // ] (for the end)
+            var page = this.$focus.scrollTop / SCANR.page_h + SCANR.box_h / SCANR.page_h;
+            parts = this.basepath.split('/');
+            md5 = parts[parts.length - 2]
+            window.prompt("Bookmark for this clip: ", window.location.host + '/clip/' + md5 + "/" + this.clip_top + "-" + page + ".jpg");
+        } 
+        
     }
     $.Figleaf.prototype._handle_dblclick = function(ev) {
         ev.preventDefault();

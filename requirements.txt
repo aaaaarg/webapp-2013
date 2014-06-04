@@ -1,6 +1,7 @@
 Flask==0.10.1
 Flask-Assets==0.8
 Flask-Cache==0.12
+Flask-Images==1.1.3
 Flask-Login==0.2.6
 Flask-Mail==0.9.0
 Flask-Sendmail==0.1.0
