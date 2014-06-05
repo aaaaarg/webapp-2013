@@ -12,12 +12,21 @@ from ..models import *
 
 reference = Blueprint('reference', __name__)
 
-@reference.route('/reference/<string:md5>')
-def show_reference(md5):
-	'''
-	Shows a page with figleaf viewer embedded, open to a specified location via a fragment
-	'''
-	return 'ref'
+@reference.route('/ref/<string:md5>')
+def figleaf(md5):
+	"""
+	The filename here is the structured filename
+	"""
+	u = Upload.objects.get_or_404(md5=md5)
+	preview = u.preview()
+	preview_url = url_for('upload.serve_upload', filename=preview) if preview else False
+
+	if not preview_url:
+		abort(404)
+
+	return render_template('upload/figleaf.html',
+		preview = preview_url
+		)
 
 @reference.route('/clip/<string:md5>/<string:boundaries>.jpg')
 def citation(md5, boundaries):

@@ -37,6 +37,8 @@
         this.$focus.style.display = "none";
         this.$focus.style.zIndex = "10";
         this.$focus.onscroll = this._handle_scroll.bind(this);
+        // capture dragging in the focus frame
+        //this.$focus.onmousedown = this._handle_seek.bind(this);
         // capture keystrokes
         window.addEventListener("keydown", this._handle_keypress.bind(this), false);
         // capture double clicks
@@ -111,6 +113,27 @@
 
         this.$focus.scrollTop = page * SCANR.page_h;
     }
+    $.Figleaf.prototype.highlight = function(y1, y2) {
+        if (!isNaN(parseFloat(y1)) && isFinite(y1) && !isNaN(parseFloat(y2)) && isFinite(y2)) {
+            this.seek(y1 - 0.05);
+            var $div = document.createElement("div");
+            $div.style.width = SCANR.page_w;
+            $div.style.height = SCANR.page_h * (y2-y1);
+            $div.style.backgroundColor = "#FFFF00";
+            $div.style.position = "absolute";
+            $div.style.top = SCANR.page_h * y1;
+            $div.style.opacity = 0.3;
+            this.$focus.appendChild($div);
+        }
+    }
+    $.Figleaf.prototype.reference = function(str) {
+        n = str.split(',');
+        if (n.length==1 && !isNaN(parseFloat(n[0])) && isFinite(n[0])) {
+            this.seek(n[0]);
+        } else if (n.length==2 ) {
+            this.highlight(n[0], n[1]);
+        }
+    }
     $.Figleaf.prototype._handle_scroll = function(ev) {
         var page = this.$focus.scrollTop / SCANR.page_h;
 
@@ -169,7 +192,18 @@
             md5 = parts[parts.length - 2]
             window.prompt("Bookmark for this clip: ", window.location.host + '/clip/' + md5 + "/" + this.clip_top + "-" + page + ".jpg");
         } 
-        
+        if (ev.keyCode == 222) { // ' (the first time opens the clip, the second time closes it)
+            var page = this.$focus.scrollTop / SCANR.page_h;
+            page = Math.round( page * 100 ) / 100
+            if (this.clip_top) {
+                parts = this.basepath.split('/');
+                md5 = parts[parts.length - 2]
+                window.prompt("Bookmark for this clip: ", window.location.host + '/ref/' + md5 + "#" + this.clip_top + "," + page);
+                this.clip_top = false;
+            } else {
+                this.clip_top = page;
+            }
+        } 
     }
     $.Figleaf.prototype._handle_dblclick = function(ev) {
         ev.preventDefault();
