@@ -2,7 +2,7 @@
 <head>
 <title>
 {% for thing in things %}
-{{ thing.title }}
+{{ thing.makers_display }}, {{ thing.title }} 
 {% endfor %}
 </title>
 <script src="{{ url_for('static', filename='js/figleaf.js') }}"></script>
