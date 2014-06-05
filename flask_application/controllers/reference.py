@@ -18,6 +18,7 @@ def figleaf(md5):
 	The filename here is the structured filename
 	"""
 	u = Upload.objects.get_or_404(md5=md5)
+	things = Thing.objects.filter(files=u)
 	preview = u.preview()
 	preview_url = url_for('upload.serve_upload', filename=preview) if preview else False
 
@@ -25,7 +26,8 @@ def figleaf(md5):
 		abort(404)
 
 	return render_template('upload/figleaf.html',
-		preview = preview_url
+		preview = preview_url,
+		things = things
 		)
 
 @reference.route('/clip/<string:md5>/<string:boundaries>.jpg')

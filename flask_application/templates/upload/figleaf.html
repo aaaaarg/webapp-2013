@@ -1,6 +1,10 @@
 <script src="{{ url_for('static', filename='js/figleaf.js') }}"></script>
     
-
+<div>
+{% for thing in things %}
+<p><em><a href="{{ url_for('thing.detail', id=thing.id) }}">{{ thing.title }}</em></a> {{ thing.makers_display }}</p>
+{% endfor %}
+</div>
 {# if current_user.is_authenticated() and preview #}
 {% if preview %}
 {% set preview = preview|replace('upload/processed-jpgs','static/pages') %}
