@@ -134,6 +134,20 @@
             this.highlight(n[0], n[1]);
         }
     }
+    $.Figleaf.prototype.annotation = function(pos, url) {
+        var $div = document.createElement("div");
+        $div.innerHTML = "<a target='_new' href='"+url+"'><b>&#10138;</b></a>";
+        $div.style.backgroundColor = "#00FF00";
+        $div.style.color = "#000000";
+        $div.style.position = "absolute";
+        $div.style.padding = 2;
+        $div.style.cursor = "pointer";
+        $div.style.top = SCANR.page_h * pos;
+        $div.style.left = SCANR.page_w - 28;
+        $div.style.opacity = 0.7;
+        this.$focus.appendChild($div);
+        console.log("Annotation: " + $div.style.top + "," + $div.style.left);
+    }
     $.Figleaf.prototype._handle_scroll = function(ev) {
         var page = this.$focus.scrollTop / SCANR.page_h;
 
@@ -176,11 +190,31 @@
         }.bind(this));
     }
     $.Figleaf.prototype._handle_keypress = function(ev) {
+        parts = this.basepath.split('/');
+        md5 = parts[parts.length - 2]    
         // console.log('key code: ' + ev.keyCode);
         // if(ev.keyCode == 32 || ev.keyCode == 9 || ev.keyCode == 13) { // space, tab, enter
         if (ev.keyCode == 66) { // b(ookmark)
             var page = this.$focus.scrollTop / SCANR.page_h;
             window.prompt("Bookmark for this page: ", document.URL.split('#')[0] + '#' + page);
+        }
+        if (ev.keyCode == 82) { // r(eference)
+            var t = this;
+            var urlRegex =/^(?:(?:https?|ftp):\/\/)(?:\S+(?::\S*)?@)?(?:(?!10(?:\.\d{1,3}){3})(?!127(?:\.\d{1,3}){3})(?!169\.254(?:\.\d{1,3}){2})(?!192\.168(?:\.\d{1,3}){2})(?!172\.(?:1[6-9]|2\d|3[0-1])(?:\.\d{1,3}){2})(?:[1-9]\d?|1\d\d|2[01]\d|22[0-3])(?:\.(?:1?\d{1,2}|2[0-4]\d|25[0-5])){2}(?:\.(?:[1-9]\d?|1\d\d|2[0-4]\d|25[0-4]))|(?:(?:[a-z\u00a1-\uffff0-9]+-?)*[a-z\u00a1-\uffff0-9]+)(?:\.(?:[a-z\u00a1-\uffff0-9]+-?)*[a-z\u00a1-\uffff0-9]+)*(?:\.(?:[a-z\u00a1-\uffff]{2,})))(?::\d{2,5})?(?:\/[^\s]*)?$/i;
+            var page = this.$focus.scrollTop / SCANR.page_h;
+            var url = window.prompt("Paste a reference URL: ");
+            if (!urlRegex.test(url)){
+                var xhReq = new XMLHttpRequest();
+                xhReq.onreadystatechange=function() {
+                    if (xhReq.readyState==4 && xhReq.status==200) {
+                        if (xhReq.responseText==url){
+                            t.annotation(page, xhReq.responseText);
+                        }
+                    }
+                }
+                xhReq.open("GET", 'http://' + window.location.host + '/ref/' + md5 + '/add/' + page + '?url=' + encodeURIComponent(url), true);
+                xhReq.send(null);
+            } 
         }
         if (ev.keyCode == 219) { // [ (for the beginning)
             var page = this.$focus.scrollTop / SCANR.page_h;
@@ -188,8 +222,6 @@
         }
         if (ev.keyCode == 221) { // ] (for the end)
             var page = this.$focus.scrollTop / SCANR.page_h + SCANR.box_h / SCANR.page_h;
-            parts = this.basepath.split('/');
-            md5 = parts[parts.length - 2]
             window.prompt("Bookmark for this clip: ", window.location.host + '/clip/' + md5 + "/" + this.clip_top + "-" + page + ".jpg");
         } 
         if (ev.keyCode == 222) { // ' (the first time opens the clip, the second time closes it)

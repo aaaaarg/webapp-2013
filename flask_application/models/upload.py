@@ -1,5 +1,7 @@
 import os, hashlib, unicodedata, re
 
+from bson import ObjectId
+
 from flask_application import app
 
 from werkzeug import secure_filename
@@ -20,6 +22,14 @@ But when moving the file, construct the path with UPLOADS_DIR, UPLOADS_SUBDIR, a
 
 """
 
+class Annotation(CreatorMixin, db.EmbeddedDocument):
+	"""
+	Each individual reference/ annotation
+	"""
+	_id = db.ObjectIdField(default=ObjectId())
+	pos = db.FloatField()
+	url = db.StringField()
+	note = db.StringField()
 
 
 class Upload(CreatorMixin, db.Document):
@@ -41,6 +51,8 @@ class Upload(CreatorMixin, db.Document):
 	# precompute some identifiers
 	sha1 = db.StringField(max_length=255)
 	md5 = db.StringField(max_length=255)
+	# annotations/ references
+	annotations = db.ListField(db.EmbeddedDocumentField(Annotation))
 
 
 	def full_path(self):
@@ -280,6 +292,10 @@ class Upload(CreatorMixin, db.Document):
 			if os.path.exists(preview_dir):
 				return preview_dir
 		return False
+
+	def add_annotation(self, annotation):
+		self.update(add_to_set__annotations=annotation)
+
 
 class TextUpload(Upload):
 	num_pages = db.IntField()

@@ -1,12 +1,12 @@
 #!/usr/bin/env python
 
-import datetime, os
+import datetime, os, rfc3987
 from math import floor
 from PIL import Image
 
-from flask import Blueprint, request, redirect, url_for, render_template, send_file
+from flask import Blueprint, request, redirect, url_for, render_template, send_file, abort
+from flask.ext.security import (login_required, roles_required, roles_accepted)
 from flask_application import app
-from flask_images import resized_img_src
 
 from ..models import *
 
@@ -27,8 +27,25 @@ def figleaf(md5):
 
 	return render_template('upload/figleaf.html',
 		preview = preview_url,
-		things = things
+		things = things,
+		annotations = u.annotations
 		)
+
+
+@reference.route('/ref/<string:md5>/add/<float:pos>')
+@login_required
+def create_reference(md5, pos):
+	"""
+	Adds a reference notation to an upload
+	"""
+	url = request.args.get('url', '')
+	if not rfc3987.match(url, rule='URI'):
+		abort(404)
+	u = Upload.objects.get_or_404(md5=md5)
+	a = Annotation(url=url, pos=pos)
+	u.add_annotation(a)
+	return url
+	
 
 @reference.route('/clip/<string:md5>/<string:boundaries>.jpg')
 def citation(md5, boundaries):
