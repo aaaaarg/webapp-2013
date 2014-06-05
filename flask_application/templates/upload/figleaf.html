@@ -1,5 +1,12 @@
+<html>
+<head>
+<title>
+{% for thing in things %}
+{{ thing.title }}
+{% endfor %}
+</title>
 <script src="{{ url_for('static', filename='js/figleaf.js') }}"></script>
-    
+</head>
 <div>
 {% for thing in things %}
 <p><em><a href="{{ url_for('thing.detail', id=thing.id) }}">{{ thing.title }}</em></a> {{ thing.makers_display }}</p>
@@ -21,3 +28,4 @@ if (p) {
     figleaf.reference(p);
 } 
 </script>
+</html>
