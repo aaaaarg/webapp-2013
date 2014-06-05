@@ -24,7 +24,7 @@
 var $figleaf = document.getElementById("figleaf");
 var figleaf = new Figleaf($figleaf, "{{ preview|replace('50x72.jpg', '') }}"); 
 var p = window.location.hash.substring(1);
-figleaf._populate_pages(0);
+figleaf._populate_pages();
 // add annotations
 {% for annotation in annotations %}
 figleaf.annotation({{ annotation.pos }}, '{{ annotation.url }}');
