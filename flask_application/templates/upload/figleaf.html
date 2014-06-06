@@ -16,22 +16,23 @@
 {% if preview %}
 {% set preview = preview|replace('upload/processed-jpgs','static/pages') %}
 <div id="figleaf" class="preview" style="position: relative;">
-    <img src="{{ preview }}">
+    <img src="{{ preview }}" onload="figleafLoaded(this)">
 </div>
 {% endif %}
 
 <script>
-var $figleaf = document.getElementById("figleaf");
-var figleaf = new Figleaf($figleaf, "{{ preview|replace('50x72.jpg', '') }}"); 
-var p = window.location.hash.substring(1);
-figleaf._populate_pages();
-// add annotations
-{% for annotation in annotations %}
-figleaf.annotation({{ annotation.pos }}, '{{ annotation.url }}');
-{% endfor %}
-// if there is a reference, go to it
-if (p) {
-    figleaf.reference(p);
-} 
+function figleafLoaded() {
+	var $figleaf = document.getElementById("figleaf");
+	var figleaf = new Figleaf($figleaf, "{{ preview|replace('50x72.jpg', '') }}"); 
+	var p = window.location.hash.substring(1);
+	// add annotations
+	{% for annotation in annotations %}
+	figleaf.annotation({{ annotation.pos }}, '{{ annotation.url }}');
+	{% endfor %}
+	// if there is a reference, go to it
+	if (p) {
+	    figleaf.reference(p);
+	} 	
+}
 </script>
 </html>
