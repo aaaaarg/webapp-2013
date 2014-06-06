@@ -12,6 +12,15 @@
 <p><em><a href="{{ url_for('thing.detail', id=thing.id) }}">{{ thing.title }}</em></a> {{ thing.makers_display }}</p>
 {% endfor %}
 </div>
+<div style="padding: 10px; border:1px solid #CCC; float:right; font-size: 11px;">
+<u>guide</u><br/>
+<p>click on a page and scroll to start...</p>
+<b style="color:#ff0000">b</b> get a bookmark to the current position<br/>
+<b style="color:#ff0000">' (quote)</b> get a link to highlighted section [press once to begin selection, then scroll a little, then press again to mark the end of the selection]<br/>
+<b style="color:#ff0000">[ ] (brackets)</b> create an image from an excerpt press <b style="color:#ff0000">[</b> to mark the top of the clip, then scroll a little, then press <b style="color:#ff0000">]</b> for the bottom<br/>
+<b style="color:#ff0000">a</b> create a reference link in the text that points to another text. you will have to paste in a url (which you can get from one of the above)<br/>
+<p>The top of the frame/window is the point of reference for selections, clips, and references.</p>
+</div>
 {# if current_user.is_authenticated() and preview #}
 {% if preview %}
 {% set preview = preview|replace('upload/processed-jpgs','static/pages') %}
