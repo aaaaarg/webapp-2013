@@ -9,23 +9,25 @@
 </head>
 <body>
 
+
+<div>
+{% for thing in things %}
+<p><em><a href="{{ url_for('thing.detail', id=thing.id) }}">{{ thing.title }}</em></a> {{ thing.makers_display }}</p>
+{% endfor %}
+</div>
+
 <div style="width:100%">
 
-	<div>
-	{% for thing in things %}
-	<p><em><a href="{{ url_for('thing.detail', id=thing.id) }}">{{ thing.title }}</em></a> {{ thing.makers_display }}</p>
-	{% endfor %}
-	</div>
 
 	{# if current_user.is_authenticated() and preview #}
 	{% if preview %}
 	{% set preview = preview|replace('upload/processed-jpgs','static/pages') %}
-	<div id="figleaf" class="preview" style="position: relative;">
+	<div id="figleaf" class="preview" style="position: relative; float: left;">
 	    <img src="{{ preview }}" onload="figleafLoaded(this)">
 	</div>
 	{% endif %}
 
-	<div style="padding: 10px; width: 100px; border:1px solid #CCC; float:right; font-size: 11px;">
+	<div style="padding: 10px; width: 100px; border:1px solid #CCC; font-size: 11px;">
 	<u>guide</u><br/>
 	<p>click on a page and scroll to start...</p>
 	<b style="color:#ff0000">b</b> get a bookmark to the current position<br/>
