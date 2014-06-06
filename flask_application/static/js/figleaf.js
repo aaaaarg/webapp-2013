@@ -234,7 +234,7 @@
             if (this.clip_top) {
                 parts = this.basepath.split('/');
                 md5 = parts[parts.length - 2]
-                window.prompt("Bookmark for this clip: ", window.location.host + '/ref/' + md5 + "#" + this.clip_top + "," + page);
+                window.prompt("Bookmark for this clip: ", "http://" + window.location.host + '/ref/' + md5 + "#" + this.clip_top + "," + page);
                 this.clip_top = false;
             } else {
                 this.clip_top = page;
