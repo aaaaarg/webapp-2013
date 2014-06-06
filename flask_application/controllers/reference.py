@@ -40,7 +40,7 @@ def create_reference(md5, pos):
 	"""
 	url = request.args.get('url', '')
 	if not rfc3987.match(url, rule='URI'):
-		abort(404)
+		return "Sorry, that's not a valid URL:\n" % url
 	u = Upload.objects.get_or_404(md5=md5)
 	a = Annotation(url=url, pos=pos)
 	u.add_annotation(a)
