@@ -18,17 +18,35 @@ def figleaf(md5):
 	The filename here is the structured filename
 	"""
 	u = Upload.objects.get_or_404(md5=md5)
-	things = Thing.objects.filter(files=u)
+	thing = Thing.objects.filter(files=u).first()
 	preview = u.preview()
 	preview_url = url_for('upload.serve_upload', filename=preview) if preview else False
+
+	# load annotations
+	annotations = Reference.objects.filter(upload=u)
+	# create a list of referenced things
+	references = []
+	for a in annotations:
+		if a.ref_thing and not a.ref_thing in references:
+			references.append(a.ref_thing)
+	# for back references
+	back_annotations = Reference.objects.filter(ref_upload=u)
+	back_references = []
+	for a in back_annotations:
+		if a.thing and not a.thing in back_references:
+			back_references.append(a.thing)
+	
 
 	if not preview_url:
 		abort(404)
 
 	return render_template('upload/figleaf.html',
 		preview = preview_url,
-		things = things,
-		annotations = u.annotations
+		things = thing,
+		annotations = annotations,
+		references = references,
+		back_annotations = back_annotations,
+		back_references = back_references
 		)
 
 
@@ -42,8 +60,10 @@ def create_reference(md5, pos):
 	if not rfc3987.match(url, rule='URI'):
 		return "Sorry, that's not a valid URL:\n" % url
 	u = Upload.objects.get_or_404(md5=md5)
-	a = Annotation(url=url, pos=pos)
-	u.add_annotation(a)
+	# Create the reference
+	r = Reference(upload=u, ref_url=url, pos=pos)
+	r.save()
+	
 	return url
 	
 

@@ -21,7 +21,8 @@ from .user import User, Role
 from .thing import Thing
 from .collection import Collection, SuperCollection, CollectedThing, CollectionIndex
 from .maker import Maker, Name, MakerIndex
-from .upload import Upload, TextUpload, UploadManager, Annotation
+from .upload import Upload, TextUpload, UploadManager
 from .talk import Thread, Comment
 from .queue import Queue, QueuedThing
+from .reference import Reference, Annotation
 from .cache import Cache

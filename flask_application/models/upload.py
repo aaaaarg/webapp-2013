@@ -22,16 +22,6 @@ But when moving the file, construct the path with UPLOADS_DIR, UPLOADS_SUBDIR, a
 
 """
 
-class Annotation(CreatorMixin, db.EmbeddedDocument):
-	"""
-	Each individual reference/ annotation
-	"""
-	_id = db.ObjectIdField(default=ObjectId())
-	pos = db.FloatField()
-	url = db.StringField()
-	note = db.StringField()
-
-
 class Upload(CreatorMixin, db.Document):
 	"""
 	Encapsulates a file that has been uploaded. A base class for various specific types
@@ -51,9 +41,7 @@ class Upload(CreatorMixin, db.Document):
 	# precompute some identifiers
 	sha1 = db.StringField(max_length=255)
 	md5 = db.StringField(max_length=255)
-	# annotations/ references
-	annotations = db.ListField(db.EmbeddedDocumentField(Annotation))
-
+	
 
 	def full_path(self):
 		"""
