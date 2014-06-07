@@ -127,7 +127,7 @@
         }
     }
     $.Figleaf.prototype.reference = function(str) {
-        n = str.split(',');
+        n = str.split('-');
         if (n.length==1 && !isNaN(parseFloat(n[0])) && isFinite(n[0])) {
             this.seek(n[0]);
         } else if (n.length==2 ) {
