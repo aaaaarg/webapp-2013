@@ -50,7 +50,7 @@ def figleaf(md5):
 
 	return render_template('upload/figleaf.html',
 		preview = preview_url,
-		things = thing,
+		thing = thing,
 		annotations = annotations,
 		references = references,
 		back_annotations = back_annotations,
