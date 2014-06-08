@@ -41,7 +41,6 @@ class Upload(CreatorMixin, db.Document):
 	# precompute some identifiers
 	sha1 = db.StringField(max_length=255)
 	md5 = db.StringField(max_length=255)
-	
 
 	def full_path(self):
 		"""
@@ -265,6 +264,11 @@ class Upload(CreatorMixin, db.Document):
 			self.apply_calibre_folder_structure(data)
 			return "sucessfully moved the file to the right place"
 		return "couldn't find the file anywhere :("
+
+	def request_preview(self):
+		# requests that a preview be generated
+		import datetime
+		self.update(set__created_at=datetime.datetime.now())
 
 	def preview(self):
 		if self.md5 and 'SCANS_SUBDIR' in app.config:

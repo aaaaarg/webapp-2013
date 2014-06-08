@@ -20,6 +20,13 @@ def figleaf(md5):
 	u = Upload.objects.get_or_404(md5=md5)
 	thing = Thing.objects.filter(files=u).first()
 	preview = u.preview()
+	u.request_preview()
+	if not preview:
+		if u.mimetype=="application/pdf":
+			u.request_preview()
+			return "A preview will be generated within the next 15 minutes"
+		else:
+			return "Sorry, I only know how to preview pdfs"
 	preview_url = url_for('upload.serve_upload', filename=preview) if preview else False
 
 	# load annotations
