@@ -42,7 +42,7 @@
 	  {% for file in files %}
 	  <tr>
 	      <td><a href="{{url_for('upload.serve_upload', filename=file.structured_file_name)}}">{{file.structured_file_name}}</a>
-	      {% if file.preview() %}
+	      {% if file.mimetype=="application/pdf" %}
 	       <small><a href="{{url_for('reference.figleaf', md5=file.md5)}}">(preview)</a></small>
 	      {% endif %}
 	      </td>
