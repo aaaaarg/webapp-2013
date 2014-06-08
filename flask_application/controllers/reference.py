@@ -17,10 +17,11 @@ def figleaf(md5):
 	"""
 	The filename here is the structured filename
 	"""
-	u = Upload.objects.get_or_404(md5=md5)
+	u = Upload.objects.filter(md5=md5).first()
+	if not u:
+		abort(404)
 	thing = Thing.objects.filter(files=u).first()
 	preview = u.preview()
-	u.request_preview()
 	if not preview:
 		if u.mimetype=="application/pdf":
 			u.request_preview()
