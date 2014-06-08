@@ -21,7 +21,7 @@
 
 	{# if current_user.is_authenticated() and preview #}
 	{% if preview %}
-	{# set preview = preview|replace('upload/processed-jpgs','static/pages') #}
+	{% set preview = preview|replace('upload/processed-jpgs','static/pages') %}
 	<div id="figleaf" class="preview" style="position: relative; float: left;">
 	    <img src="{{ preview }}" onload="figleafLoaded(this)">
 	</div>
