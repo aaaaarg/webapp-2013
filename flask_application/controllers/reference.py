@@ -67,7 +67,9 @@ def create_reference(md5, pos):
 	url = request.args.get('url', '')
 	if not rfc3987.match(url, rule='URI'):
 		return "Sorry, that's not a valid URL:\n" % url
-	u = Upload.objects.get_or_404(md5=md5)
+	u = Upload.objects.filter(md5=md5).first()
+	if not u:
+		abort(404)
 	# Create the reference
 	r = Reference(upload=u, ref_url=url, pos=pos)
 	r.save()
