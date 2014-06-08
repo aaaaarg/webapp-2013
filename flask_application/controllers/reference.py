@@ -78,7 +78,7 @@ def create_reference(md5, pos):
 	
 
 @reference.route('/clip/<string:md5>/<string:boundaries>.jpg')
-def citation(md5, boundaries):
+def clip(md5, boundaries):
 	'''
 	Serves an image excerpt pages, with clipping boundaries defined
 	'''
@@ -130,3 +130,27 @@ def citation(md5, boundaries):
 		# Serve it
 		return send_file(clip_path) 
 	return 'Sorry!'
+
+
+@reference.route('/ref_clips/<string:md5>')
+def reference_clips(md5):
+	"""
+	A page made of clips
+	"""
+	u = Upload.objects.filter(md5=md5).first()
+	if not u:
+		abort(404)
+	# load annotations
+	annotations = Reference.objects.filter(upload=u)
+	clips = []
+
+	for a in annotations:
+		if a.ref_upload and a.ref_pos:
+			if a.ref_pos_end:
+				clips.append(url_for("reference.clip", md5=a.ref_upload.md5, boundaries="%s-%s" % (a.ref_pos, a.ref_pos_end)))
+			else:
+				clips.append(url_for("reference.clip", md5=a.ref_upload.md5, boundaries="%s-%s" % (int(a.ref_pos), int(a.ref_pos)+1)))
+
+	return render_template('upload/clips.html',
+		clips = clips
+	)

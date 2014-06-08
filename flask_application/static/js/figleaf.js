@@ -134,18 +134,21 @@
             this.highlight(n[0], n[1]);
         }
     }
-    $.Figleaf.prototype.annotation = function(pos, url) {
+    $.Figleaf.prototype.annotation = function(pos, url, title) {
+        function moveAnnotation(ele) {
+            alert(ele);
+        }
         var $div = document.createElement("div");
-        $div.innerHTML = "<a target='_new' href='"+url+"'><b>&#10138;</b></a>";
-        $div.style.backgroundColor = "#00FF00";
-        $div.style.color = "#000000";
+        $div.innerHTML = "<a target='_new' title="+title+" alt="+title+" style='font-size:12px;padding:0 2 0 2px;line-height:10px;margin-right:2px;background-color:#00FF00;border:1px solid #000;text-decoration:none;color:#000' href='"+url+"'><b>&#10095;</b></a><!--<a target='_new' onclick='moveAnnotation(this)' style='text-decoration:none;cursor:pointer;color:#000;font-size:11px;' href='"+url+"'>&#8597;</a>-->";
+        //$div.style.backgroundColor = "#00FF00";
+        //$div.style.border = "1px solid #000";
         $div.style.position = "absolute";
-        $div.style.padding = 2;
-        $div.style.cursor = "pointer";
         $div.style.top = SCANR.page_h * pos;
         $div.style.left = SCANR.page_w - 28;
         $div.style.opacity = 0.7;
         this.$focus.appendChild($div);
+        
+        
         console.log("Annotation: " + $div.style.top + "," + $div.style.left);
     }
     $.Figleaf.prototype._handle_scroll = function(ev) {
@@ -208,7 +211,7 @@
                 xhReq.onreadystatechange=function() {
                     if (xhReq.readyState==4 && xhReq.status==200) {
                         if (xhReq.responseText==url){
-                            t.annotation(page, xhReq.responseText);
+                            t.annotation(page, xhReq.responseText, "");
                         } else {
                             alert(xhReq.responseText);
                         }
