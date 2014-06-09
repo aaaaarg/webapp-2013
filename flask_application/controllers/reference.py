@@ -110,8 +110,7 @@ def clip(md5, boundaries):
 				if int(to)>int(fr):
 					to = int(fr) + 1
 				# hackish computation of image crop based on how JS addressing is done (still buggy at bottom)
-				upper_y, lower_y = (compute_y(fr-int(fr), w), min(compute_y(to-int(fr), h))
-				return im.crop((0, upper_y, w, lower_y, w)))
+				return im.crop((0, compute_y(fr-int(fr), w), w, min(compute_y(to-int(fr), h)), w)))
 				#return im.crop((0, int(1000*(fr-int(fr))), w, int(1000*(to-int(fr)))))
 			return False
 
