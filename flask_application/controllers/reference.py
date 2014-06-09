@@ -100,7 +100,7 @@ def clip(md5, boundaries):
 	preview_dir = u.preview_dir()
 	if preview_dir:
 		def compute_y(y, w):
-			return float(w)*y*10/7
+			return int(float(w)*y*10/7)
 		# Loads a clip of a page with fr (top) and to (bottom)
 		def load_clip(d, fr, to):
 			page_path = os.path.join(d, lg_filename_format%int(fr))
