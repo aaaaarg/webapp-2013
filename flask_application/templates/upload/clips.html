@@ -1,17 +1,19 @@
 <html>
 <head>
 <title>
-clips
+{% if thing %}
+{{thing.title}}
+{% endif %}
 </title>
 </head>
-<body>
+<body background="#333">
 
 {% if thing %}
 <h3><a href="{{ url_for('thing.detail', id=thing.id) }}">{{thing.title}}</a></h3>
 {% endif %}
 
 {% for link, img in clips %}
-<a target="_new" href="{{link}}" style="border:0"><img src="{{img}}"></a>
+<a target="_new" href="{{link}}" style="border:0; padding: 7px;"><img src="{{img}}"></a>
 {% endfor %}
 
 </body>
