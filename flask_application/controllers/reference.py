@@ -99,6 +99,8 @@ def clip(md5, boundaries):
 	u = Upload.objects.get_or_404(md5=md5)
 	preview_dir = u.preview_dir()
 	if preview_dir:
+		def compute_y(y, w):
+			return float(w)*y*10/7
 		# Loads a clip of a page with fr (top) and to (bottom)
 		def load_clip(d, fr, to):
 			page_path = os.path.join(d, lg_filename_format%int(fr))
@@ -107,7 +109,7 @@ def clip(md5, boundaries):
 				w, h = im.size
 				if int(to)>int(fr):
 					to = int(fr) + 1
-				return im.crop((0, int(h*(fr-int(fr))), w, int(h*(to-int(fr)))))
+				return im.crop((0, compute_y(fr-int(fr), w), w, compute_y(to-int(fr), w)))
 				#return im.crop((0, int(1000*(fr-int(fr))), w, int(1000*(to-int(fr)))))
 			return False
 
