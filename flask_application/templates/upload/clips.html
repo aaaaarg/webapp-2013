@@ -6,7 +6,7 @@
 {% endif %}
 </title>
 </head>
-<body background="#333">
+<body style="background-color:#333">
 
 {% if thing %}
 <h3><a href="{{ url_for('thing.detail', id=thing.id) }}">{{thing.title}}</a></h3>
