@@ -81,6 +81,7 @@ def create_reference(md5, pos):
 def clip(md5, boundaries):
 	'''
 	Serves an image excerpt pages, with clipping boundaries defined
+	(for now, page height is hardcoded as 1000, so hacky bits reflect that)
 	'''
 	lg_filename_format = '1024x-%s.jpg'
 	clip_dir = os.path.join(app.config['UPLOADS_DIR'], app.config['CLIP_CACHE'], md5)
@@ -106,7 +107,8 @@ def clip(md5, boundaries):
 				w, h = im.size
 				if int(to)>int(fr):
 					to = int(fr) + 1
-				return im.crop((0, int(h*(fr-int(fr))), w, int(h*(to-int(fr)))))
+				#return im.crop((0, int(h*(fr-int(fr))), w, int(h*(to-int(fr)))))
+				return im.crop((0, int(1000*(fr-int(fr))), w, int(1000*(to-int(fr)))))
 			return False
 
 		im = load_clip(preview_dir, top, bot)
