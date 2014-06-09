@@ -149,10 +149,13 @@ def reference_clips(md5):
 
 	for a in annotations:
 		if a.ref_upload and a.ref_pos:
+			link = url_for("reference.figleaf", md5=a.upload.md5, _anchor=a.pos)
 			if a.ref_pos_end:
-				clips.append(url_for("reference.clip", md5=a.ref_upload.md5, boundaries="%s-%s" % (a.ref_pos, a.ref_pos_end)))
+				img = url_for("reference.clip", md5=a.ref_upload.md5, boundaries="%s-%s" % (a.ref_pos, a.ref_pos_end))
+				clips.append((link,img))
 			else:
-				clips.append(url_for("reference.clip", md5=a.ref_upload.md5, boundaries="%s-%s" % (int(a.ref_pos), int(a.ref_pos)+1)))
+				img = url_for("reference.clip", md5=a.ref_upload.md5, boundaries="%s-%s" % (int(a.ref_pos), int(a.ref_pos)+1))
+				clips.append((link,img))
 
 	return render_template('upload/clips.html',
 		thing = thing,

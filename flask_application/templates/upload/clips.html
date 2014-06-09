@@ -10,8 +10,8 @@ clips
 <h3><a href="{{ url_for('thing.detail', id=thing.id) }}">{{thing.title}}</a></h3>
 {% endif %}
 
-{% for clip in clips %}
-<img src="{{clip}}">
+{% for link, img in clips %}
+<a target="_new" href="{{link}}" style="border:0"><img src="{{img}}"></a>
 {% endfor %}
 
 </body>
