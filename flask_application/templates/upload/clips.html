@@ -6,10 +6,12 @@ clips
 </head>
 <body>
 
+{% if thing %}
+<h3><a href="{{ url_for('thing.detail', id=thing.id) }}">{{thing.title}}</a></h3>
+{% endif %}
+
 {% for clip in clips %}
-
 <img src="{{clip}}">
-
 {% endfor %}
 
 </body>

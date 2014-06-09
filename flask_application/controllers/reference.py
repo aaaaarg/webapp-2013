@@ -138,10 +138,11 @@ def reference_clips(md5):
 	A page made of clips
 	"""
 	u = Upload.objects.filter(md5=md5).first()
+	thing = Thing.objects.filter(files=u).first()
 	if not u:
 		abort(404)
 	# load annotations
-	annotations = Reference.objects.filter(upload=u)
+	annotations = Reference.objects.filter(upload=u).order_by('pos')
 	clips = []
 
 	for a in annotations:
@@ -152,5 +153,6 @@ def reference_clips(md5):
 				clips.append(url_for("reference.clip", md5=a.ref_upload.md5, boundaries="%s-%s" % (int(a.ref_pos), int(a.ref_pos)+1)))
 
 	return render_template('upload/clips.html',
+		thing = thing,
 		clips = clips
 	)
