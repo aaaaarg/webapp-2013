@@ -107,8 +107,8 @@ def clip(md5, boundaries):
 				w, h = im.size
 				if int(to)>int(fr):
 					to = int(fr) + 1
-				#return im.crop((0, int(h*(fr-int(fr))), w, int(h*(to-int(fr)))))
-				return im.crop((0, int(1000*(fr-int(fr))), w, int(1000*(to-int(fr)))))
+				return im.crop((0, int(h*(fr-int(fr))), w, int(h*(to-int(fr)))))
+				#return im.crop((0, int(1000*(fr-int(fr))), w, int(1000*(to-int(fr)))))
 			return False
 
 		im = load_clip(preview_dir, top, bot)
