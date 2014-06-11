@@ -43,7 +43,7 @@ def figleaf(md5, user_id=None):
 	for a in annotations:
 		if a.ref_thing and a.ref_pos:
 			if not a.ref_thing in references:
-				references[a.ref_thing] = { 'md5':u.md5, 'pages':[] }
+				references[a.ref_thing] = { 'md5':ref_upload.md5, 'pages':[] }
 			references[a.ref_thing]['pages'].append(a.ref_pos)
 
 	# for back references

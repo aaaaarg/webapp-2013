@@ -169,6 +169,7 @@
         str2 = $div2.textContent;
         $div2.innerHTML = str2;
         function showNote(ev) {
+            ev.preventDefault();
             this.style.display = (this.style.display=="none") ? "block" : "none";
             return false;
         }
