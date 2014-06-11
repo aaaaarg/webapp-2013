@@ -248,7 +248,13 @@
                 var xhReq = new XMLHttpRequest();
                 xhReq.onreadystatechange=function() {
                     if (xhReq.readyState==4 && xhReq.status==200) {
-                        console.log(t.clip_top);
+                        if (note!='') {
+                            if (t.clip_top) {
+                                t.annotation(t.clip_top, note);
+                            } else {
+                                t.annotation(page, note);
+                            }
+                        }
                         if (t.clip_top) {
                             t.highlight(t.clip_top, page);
                             t.clip_top = false;
@@ -268,7 +274,7 @@
                 xhReq.onreadystatechange=function() {
                     if (xhReq.readyState==4 && xhReq.status==200) {
                         if (xhReq.responseText==url){
-                            t.annotation(page, xhReq.responseText, "");
+                            t.reference(page, xhReq.responseText, "");
                         } else {
                             alert(xhReq.responseText);
                         }
