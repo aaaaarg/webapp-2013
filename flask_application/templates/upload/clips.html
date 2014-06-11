@@ -5,14 +5,30 @@
 {{thing.title}}
 {% endif %}
 </title>
+<style>
+body {
+	color:#fff;
+	background-color: #222;
+	font-family: sans-serif;
+	font-size: 13px;
+}
+p a {
+	color:#FF0000;
+}
+</style>
 </head>
-<body style="background-color:#333">
+<body>
 
 {% if thing %}
 <h3><a href="{{ url_for('thing.detail', id=thing.id) }}">{{thing.title}}</a></h3>
 {% endif %}
 
-{% for link, img in clips %}
+{% for link, img, note in clips %}
+
+{% if note %}
+<p>{{note|urlize(40)|markdown}}</p>
+{% endif %}
+
 <a target="_new" href="{{link}}" style="border:0; padding: 7px;"><img src="{{img}}"></a>
 {% endfor %}
 

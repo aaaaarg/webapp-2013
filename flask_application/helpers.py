@@ -1,6 +1,7 @@
 import dateutil.parser
 import datetime
 import math
+import json
 from flask import abort, Blueprint
 from functools import wraps
 
@@ -73,4 +74,6 @@ def encode_id(val):
 def decode_id(val):
     return dechaffify(str_int(val))
 
+def escapejs(val):
+    return json.dumps(str(val))
 

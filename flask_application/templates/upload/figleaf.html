@@ -11,9 +11,23 @@
 
 
 <div>
+
+<p>
 {% if thing %}
-<p><em><a href="{{ url_for('thing.detail', id=thing.id) }}">{{ thing.title }}</em></a> {{ thing.makers_display }}</p>
+<em><a href="{{ url_for('thing.detail', id=thing.id) }}">{{ thing.title }}</em></a> {{ thing.makers_display }}
 {% endif %}
+
+<span style="font-size:10px">
+(
+<a href="{{url_for('reference.clips', md5=upload.md5) }}">clips</a> /
+{% if current_user %}
+<a href="{{url_for('reference.clips', md5=upload.md5, user_id=current_user.get_id()) }}">your clips</a> /
+{% endif %}
+<a href="{{url_for('reference.reference_clips', md5=upload.md5) }}">ref clips</a>
+)
+</span>
+</p>
+
 </div>
 
 <div style="width:100%">
@@ -21,7 +35,7 @@
 
 	{# if current_user.is_authenticated() and preview #}
 	{% if preview %}
-	{% set preview = preview|replace('upload/processed-jpgs','static/pages') %}
+	{# set preview = preview|replace('upload/processed-jpgs','static/pages') #}
 	<div id="figleaf" class="preview" style="position: relative; float: left;">
 	    <img src="{{ preview }}" onload="figleafLoaded(this)">
 	</div>
@@ -29,21 +43,39 @@
 
 	<div style="width: 200px; float: left;">
 		<div style="padding: 10px; border:1px solid #CCC; font-size: 11px;">
-		<u>guide</u><br/>
-		<p>click on a page and scroll to start...</p>
-		<b style="color:#ff0000">b</b> get a bookmark to the current position<br/>
-		<b style="color:#ff0000">' (quote)</b> get a link to highlighted section [press once to begin selection, then scroll a little, then press again to mark the end of the selection]<br/>
-		<b style="color:#ff0000">[ ] (brackets)</b> create an image from an excerpt press <b style="color:#ff0000">[</b> to mark the top of the clip, then scroll a little, then press <b style="color:#ff0000">]</b> for the bottom<br/>
-		<b style="color:#ff0000">a</b> create a reference link in the text that points to another text. you will have to paste in a url (which you can get from one of the above)<br/>
-		<p>The top of the frame/window is the point of reference for selections, clips, and references.</p>
+		<p><u>guide</u></p>
+		click on a page and scroll to start...
+		<hr>
+		<b style="color:#ff0000">b</b> gets a bookmark to the current position<br/>
+		<b style="color:#ff0000">' (quote)</b> gets a link to highlighted section -- press <b style="color:#ff0000">'</b> once to begin selection, then scroll a little, then press <b style="color:#ff0000">'</b> again to mark the end of the selection<br/>
+		<b style="color:#ff0000">[ ] (brackets)</b> gets a link to an image of an excerpt -- press <b style="color:#ff0000">[</b> to mark the top of the clip, then scroll a little, then press <b style="color:#ff0000">]</b> for the bottom<br/>
+		<hr>
+		The top of the frame/window is the point of reference for selections, clips, and references.
+		<hr>
+		<b style="color:#ff0000">r</b> creates a reference link in the text that points to another text -- you will have to paste in a url, which you can get from one of the above<br/>
+		<b style="color:#ff0000">a</b> creates an annotation at the current point in the text.<br/>
+		<b style="color:#ff0000">' (quote)</b> then <b style="color:#ff0000">a</b> saves a highlighted annotation to the text -- first press <b style="color:#ff0000">'</b> once to begin selection, then scroll a little, then press <b style="color:#ff0000">a</b> to mark the end of the selection<br/>
+		<hr>
+		{% if current_user %}
+		<a href="{{url_for("reference.figleaf", md5=upload.md5, user_id=current_user.get_id()) }}">see your notes & highlights</a><br/>
+		{% endif %}
 		</div>
 
 		<div style="font-size:12px;">
 			{% if references %}
 			<b>references</b>
 			{% endif %}
-			{% for reference in references %}
-				<p><em><a href="{{ url_for('thing.detail', id=reference.id) }}">{{ reference.title }}</em></a> {{ reference.makers_display }}</p>
+			{% for reference, data in references.items() %}
+				<p>
+					<em><a href="{{ url_for('thing.detail', id=reference.id) }}">{{ reference.title }}</em></a> {{ reference.makers_display }}
+					{% if data['pages'] %}
+					[ 
+					{% for page in data['pages'] %}
+					<a href="{{ url_for('reference.figleaf', md5=data['md5'], _anchor=page) }}">{{ page|int }}</em></a>
+					{% endfor %}
+					]
+					{% endif %}
+				</p>
 			{% endfor %}
 		</div>
 
@@ -51,8 +83,17 @@
 			{% if back_references %}
 			<b>referenced from</b>
 			{% endif %}
-			{% for reference in back_references %}
-				<p><em><a href="{{ url_for('thing.detail', id=reference.id) }}">{{ reference.title }}</em></a> {{ reference.makers_display }}</p>
+			{% for reference, data in back_references.items() %}
+				<p>
+					<em><a href="{{ url_for('thing.detail', id=reference.id) }}">{{ reference.title }}</em></a> {{ reference.makers_display }}
+					{% if data['pages'] %}
+					[ 
+					{% for page in data['pages'] %}
+					<a href="{{ url_for('reference.figleaf', md5=data['md5'], _anchor=page) }}">{{ page|int }}</em></a>
+					{% endfor %}
+					]
+					{% endif %}
+				</p>
 			{% endfor %}
 		</div>
 	</div>
@@ -64,17 +105,26 @@ function figleafLoaded() {
 	var $figleaf = document.getElementById("figleaf");
 	var figleaf = new Figleaf($figleaf, "{{ preview|replace('50x72.jpg', '') }}"); 
 	var p = window.location.hash.substring(1);
+	// add user notes
+	{% for note in notes %}
+	{% if note.pos and note.pos_end %}
+	figleaf.highlight({{ note.pos }}, {{ note.pos_end }});
+	{% endif %}
+	{% if note.note %}
+	figleaf.annotation({{ note.pos }}, "{{ note.note|urlize(40)|escapejs }}");
+	{% endif %}
+	{% endfor %}
 	// add annotations
 	{% for annotation in annotations %}
 	{% if annotation.thing %}
-	figleaf.annotation({{ annotation.pos }}, '{{ annotation.ref_url }}', "{{annotation.thing.title}}");
+	figleaf.reference({{ annotation.pos }}, '{{ annotation.ref_url }}', "{{annotation.thing.title|escapejs}}");
 	{% else %}
-	figleaf.annotation({{ annotation.pos }}, '{{ annotation.ref_url }}', "");
+	figleaf.reference({{ annotation.pos }}, '{{ annotation.ref_url }}', "");
 	{% endif %}
 	{% endfor %}
 	// if there is a reference, go to it
 	if (p) {
-	    figleaf.reference(p);
+    figleaf.goto_reference(p);
 	} 	
 }
 </script>

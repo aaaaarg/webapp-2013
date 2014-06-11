@@ -126,7 +126,7 @@
             this.$focus.appendChild($div);
         }
     }
-    $.Figleaf.prototype.reference = function(str) {
+    $.Figleaf.prototype.goto_reference = function(str) {
         n = str.split('-');
         if (n.length==1 && !isNaN(parseFloat(n[0])) && isFinite(n[0])) {
             this.seek(n[0]);
@@ -134,12 +134,12 @@
             this.highlight(n[0], n[1]);
         }
     }
-    $.Figleaf.prototype.annotation = function(pos, url, title) {
+    $.Figleaf.prototype.reference = function(pos, url, title) {
         function moveAnnotation(ele) {
             alert(ele);
         }
         var $div = document.createElement("div");
-        $div.innerHTML = "<a target='_new' title="+title+" alt="+title+" style='font-size:12px;padding:0 2 0 2px;line-height:10px;margin-right:2px;background-color:#00FF00;border:1px solid #000;text-decoration:none;color:#000' href='"+url+"'><b>&#10095;</b></a><!--<a target='_new' onclick='moveAnnotation(this)' style='text-decoration:none;cursor:pointer;color:#000;font-size:11px;' href='"+url+"'>&#8597;</a>-->";
+        $div.innerHTML = "<a target='_new' title='"+title+"' alt='"+title+"' style='font-size:12px;padding:0 2 0 2px;line-height:10px;margin-right:2px;background-color:#00FF00;border:1px solid #000;text-decoration:none;color:#000' href='"+url+"'><b>&#10095;</b></a><!--<a target='_new' onclick='moveAnnotation(this)' style='text-decoration:none;cursor:pointer;color:#000;font-size:11px;' href='"+url+"'>&#8597;</a>-->";
         //$div.style.backgroundColor = "#00FF00";
         //$div.style.border = "1px solid #000";
         $div.style.position = "absolute";
@@ -147,8 +147,34 @@
         $div.style.left = SCANR.page_w - 28;
         $div.style.opacity = 0.7;
         this.$focus.appendChild($div);
-        
-        
+        console.log("Reference: " + $div.style.top + "," + $div.style.left);
+    }
+    $.Figleaf.prototype.annotation = function(pos, str) {
+        var $div = document.createElement("div");
+        $div.innerHTML = "<a target='_new' title='hover for note' alt='hover for note' style='font-size:12px;padding:0 2 0 2px;line-height:10px;margin-right:2px;text-decoration:none;color:#000' href='#open-note'><b>&#10149;</b></a>";
+        $div.style.position = "absolute";
+        $div.style.top = SCANR.page_h * pos;
+        $div.style.left = "5";
+        $div.style.opacity = "0.7";
+        var $div2 = document.createElement("div");
+        $div2.style.position = "absolute";
+        $div2.style.top = SCANR.page_h * pos;
+        $div2.style.left = "25";
+        $div2.style.padding = "10px";
+        $div2.style.border = "1px solid #000000";
+        $div2.style.backgroundColor = "#FFFFFF";
+        $div2.style.width = SCANR.page_w - 100;
+        $div2.style.display = "none";
+        $div2.innerHTML = decodeURIComponent(str);
+        str2 = $div2.textContent;
+        $div2.innerHTML = str2;
+        function showNote(ev) {
+            this.style.display = (this.style.display=="none") ? "block" : "none";
+            return false;
+        }
+        $div.onmousedown = showNote.bind($div2);
+        this.$focus.appendChild($div2);
+        this.$focus.appendChild($div);
         console.log("Annotation: " + $div.style.top + "," + $div.style.left);
     }
     $.Figleaf.prototype._handle_scroll = function(ev) {
@@ -193,18 +219,49 @@
         }.bind(this));
     }
     $.Figleaf.prototype._handle_keypress = function(ev) {
+        if (!this._has_focus) return;
+        var t = this;
+        if (ev.keyCode == 27) { // escape (hide window)
+            this._has_focus = false;
+            this.$focus.style.display = "none";
+            return false;
+        }
         parts = this.basepath.split('/');
-        md5 = parts[parts.length - 2]    
+        md5 = parts[parts.length - 2];
+        var page = this.$focus.scrollTop / SCANR.page_h;
         // console.log('key code: ' + ev.keyCode);
         // if(ev.keyCode == 32 || ev.keyCode == 9 || ev.keyCode == 13) { // space, tab, enter
         if (ev.keyCode == 66) { // b(ookmark)
-            var page = this.$focus.scrollTop / SCANR.page_h;
             window.prompt("Bookmark for this page: ", "http://" + window.location.host + '/ref/' + md5 + "#" + page);
         }
         if (ev.keyCode == 65) { // a(nnotation)
-            var t = this;
+            // one can press quote first and create a highlighted annotation
+            var note = window.prompt("Click 'OK' to save the selection. You can add a short note if you want.");
+            if (note === null || (note === '' && navigator.userAgent.toLowerCase().indexOf('safari') != -1 && !confirm("Just to confirm:\npress 'OK' to save with an empty note\npress 'Cancel' to cancel the whole thing\n\n(Sorry that this is redundant, but it is because of a Safari bug.)"))) {
+                this.clip_top = false;
+            } else {
+                if (this.clip_top) {
+                    pos = this.clip_top + "-" + page;
+                } else {
+                    pos = page;
+                }
+                var xhReq = new XMLHttpRequest();
+                xhReq.onreadystatechange=function() {
+                    if (xhReq.readyState==4 && xhReq.status==200) {
+                        console.log(t.clip_top);
+                        if (t.clip_top) {
+                            t.highlight(t.clip_top, page);
+                            t.clip_top = false;
+                        }
+                    }
+                }
+                xhReq.open("GET", 'http://' + window.location.host + '/ann/' + md5 + '/add/' + pos + '?note=' + encodeURIComponent(note), true);
+                xhReq.send(null);
+            }
+            
+        }
+        if (ev.keyCode == 82) { // r(eference)
             var urlRegex = new RegExp(/https?:\/\/(www\.)?[-a-zA-Z0-9@:%._\+~#=]{2,256}\.[a-z]{2,6}\b([-a-zA-Z0-9@:%_\+.~#?&//=]*)?/gi);
-            var page = this.$focus.scrollTop / SCANR.page_h;
             var url = window.prompt("Paste a reference URL: ");
             if (url.match(urlRegex)){
                 var xhReq = new XMLHttpRequest();
@@ -224,16 +281,13 @@
             }
         }
         if (ev.keyCode == 219) { // [ (for the beginning)
-            var page = this.$focus.scrollTop / SCANR.page_h;
             this.clip_top = page;
         }
         if (ev.keyCode == 221) { // ] (for the end)
             //var page = this.$focus.scrollTop / SCANR.page_h + SCANR.box_h / SCANR.page_h;
-            var page = this.$focus.scrollTop / SCANR.page_h;
             window.prompt("Bookmark for this clip: ", window.location.host + '/clip/' + md5 + "/" + this.clip_top + "-" + page + ".jpg");
         } 
         if (ev.keyCode == 222) { // ' (the first time opens the clip, the second time closes it)
-            var page = this.$focus.scrollTop / SCANR.page_h;
             page = Math.round( page * 100 ) / 100
             if (this.clip_top) {
                 parts = this.basepath.split('/');

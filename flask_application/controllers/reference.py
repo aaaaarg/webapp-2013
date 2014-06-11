@@ -1,11 +1,11 @@
 #!/usr/bin/env python
 
-import datetime, os, rfc3987
+import datetime, os, rfc3987, re
 from math import floor
 from PIL import Image
 
 from flask import Blueprint, request, redirect, url_for, render_template, send_file, abort
-from flask.ext.security import (login_required, roles_required, roles_accepted)
+from flask.ext.security import (login_required, roles_required, roles_accepted, current_user)
 from flask_application import app
 
 from ..models import *
@@ -13,7 +13,8 @@ from ..models import *
 reference = Blueprint('reference', __name__)
 
 @reference.route('/ref/<string:md5>')
-def figleaf(md5):
+@reference.route('/ref/<string:md5>/<user_id>')
+def figleaf(md5, user_id=None):
 	"""
 	The filename here is the structured filename
 	"""
@@ -30,31 +31,42 @@ def figleaf(md5):
 			return "Sorry, I only know how to preview pdfs"
 	preview_url = url_for('upload.serve_upload', filename=preview) if preview else False
 
-	# load annotations
-	annotations = Reference.objects.filter(upload=u)
-	# create a list of referenced things
-	references = []
-	for a in annotations:
-		if a.ref_thing and not a.ref_thing in references:
-			references.append(a.ref_thing)
-	# for back references
-	back_annotations = Reference.objects.filter(ref_upload=u)
-	back_references = []
-	for a in back_annotations:
-		if a.thing and not a.thing in back_references:
-			back_references.append(a.thing)
-	
-
 	if not preview_url:
 		abort(404)
 
+	# load annotations
+	#annotations = Reference.objects.filter(upload=u, ref_url__exists=True)
+	annotations = Reference.objects.filter(upload=u, ref_url__exists=True).order_by('ref_pos')
+	# create a list of referenced things
+	
+	references = {}
+	for a in annotations:
+		if a.ref_thing and a.ref_pos:
+			if not a.ref_thing in references:
+				references[a.ref_thing] = { 'md5':u.md5, 'pages':[] }
+			references[a.ref_thing]['pages'].append(a.ref_pos)
+
+	# for back references
+	back_annotations = Reference.objects.filter(ref_upload=u).order_by('pos')
+	back_references = {}
+	for a in back_annotations:
+		if a.thing and a.pos:
+			if not a.thing in back_references:
+				back_references[a.thing] = { 'md5':a.upload.md5, 'pages':[] }
+			back_references[a.thing]['pages'].append(a.pos)
+
+	# if we pass a user id then we try and load highlights & notes created by the user
+	notes = Reference.objects.filter(upload=u, creator=user_id)
+
 	return render_template('upload/figleaf.html',
 		preview = preview_url,
+		upload=u,
 		thing = thing,
 		annotations = annotations,
 		references = references,
 		back_annotations = back_annotations,
-		back_references = back_references
+		back_references = back_references,
+		notes = notes
 		)
 
 
@@ -75,6 +87,27 @@ def create_reference(md5, pos):
 	r.save()
 	
 	return url
+
+@reference.route('/ann/<string:md5>/add/<string:pos>')
+@login_required
+def create_annotation(md5, pos):
+	"""
+	Adds a reference notation to an upload
+	"""
+	note = request.args.get('note', '')
+	u = Upload.objects.filter(md5=md5).first()
+	if not u:
+		abort(404)
+	# Create the reference
+	r = Reference(upload=u, note=note, raw_pos=pos)
+	# try and extract a url
+	urls = re.findall(r'(https?://\S+)', note)
+	for url in urls:
+		if r._parse_url(url):
+			break
+
+	r.save()
+	return ''	
 	
 
 @reference.route('/clip/<string:md5>/<string:boundaries>.jpg')
@@ -137,6 +170,35 @@ def clip(md5, boundaries):
 	return 'Sorry!'
 
 
+@reference.route('/clips/<string:md5>')
+@reference.route('/clips/<string:md5>/<user_id>')
+def clips(md5, user_id=None):
+	"""
+	A page made of clips/ highlights of the text
+	"""
+	u = Upload.objects.filter(md5=md5).first()
+	thing = Thing.objects.filter(files=u).first()
+	if not u:
+		abort(404)
+	# load annotations
+	if user_id:
+		annotations = Reference.objects.filter(upload=u, creator=user_id).order_by('pos')
+	else:
+		annotations = Reference.objects.filter(upload=u).order_by('pos')
+	clips = []
+
+	for a in annotations:
+		if a.pos_end:
+			link = url_for("reference.figleaf", md5=a.upload.md5, _anchor=a.pos)
+			if a.pos_end:
+				img = url_for("reference.clip", md5=a.upload.md5, boundaries="%s-%s" % (a.pos, a.pos_end))
+				clips.append((link,img,a.note))
+
+	return render_template('upload/clips.html',
+		thing = thing,
+		clips = clips
+	)
+
 @reference.route('/ref_clips/<string:md5>')
 def reference_clips(md5):
 	"""
@@ -155,10 +217,9 @@ def reference_clips(md5):
 			link = url_for("reference.figleaf", md5=a.upload.md5, _anchor=a.pos)
 			if a.ref_pos_end:
 				img = url_for("reference.clip", md5=a.ref_upload.md5, boundaries="%s-%s" % (a.ref_pos, a.ref_pos_end))
-				clips.append((link,img))
 			else:
 				img = url_for("reference.clip", md5=a.ref_upload.md5, boundaries="%s-%s" % (int(a.ref_pos), int(a.ref_pos)+1))
-				clips.append((link,img))
+			clips.append((link,img,""))
 
 	return render_template('upload/clips.html',
 		thing = thing,

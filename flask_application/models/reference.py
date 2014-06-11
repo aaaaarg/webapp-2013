@@ -70,10 +70,12 @@ class Reference(Annotation):
 	def parse_ref_pos(self, s):
 		self.ref_pos, self.ref_pos_end = self._parse_pos(s)
 
-	def _parse_url(self):
+	def _parse_url(self, url=False):
 		'''
 		Will take an internal URL as a reference and derive the correct upload and thing
 		'''
+		if url:
+			self.ref_url = url
 		if self.ref_url:
 			url_parts = urlparse.urlparse(self.ref_url)
 			try:
@@ -83,5 +85,8 @@ class Reference(Annotation):
 					self.ref_thing = Thing.objects.filter(files=self.ref_upload).first()
 					if url_parts.fragment:
 						self.parse_ref_pos(url_parts.fragment)
+					return True
 			except Exception,e: 
 				print str(e)
+		# by default
+		return False
