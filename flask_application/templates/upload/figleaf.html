@@ -55,10 +55,6 @@
 		<b style="color:#ff0000">r</b> creates a reference link in the text that points to another text -- you will have to paste in a url, which you can get from one of the above<br/>
 		<b style="color:#ff0000">a</b> creates an annotation at the current point in the text.<br/>
 		<b style="color:#ff0000">' (quote)</b> then <b style="color:#ff0000">a</b> saves a highlighted annotation to the text -- first press <b style="color:#ff0000">'</b> once to begin selection, then scroll a little, then press <b style="color:#ff0000">a</b> to mark the end of the selection<br/>
-		<hr>
-		{% if current_user %}
-		<a href="{{url_for("reference.figleaf", md5=upload.md5, user_id=current_user.get_id()) }}">see your notes & highlights</a><br/>
-		{% endif %}
 		</div>
 
 		<div style="font-size:12px;">

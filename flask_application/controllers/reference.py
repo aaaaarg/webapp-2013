@@ -56,7 +56,10 @@ def figleaf(md5, user_id=None):
 			back_references[a.thing]['pages'].append(a.pos)
 
 	# if we pass a user id then we try and load highlights & notes created by the user
-	notes = Reference.objects.filter(upload=u, creator=user_id)
+	if user_id:
+		notes = Reference.objects.filter(upload=u, creator=user_id)
+	else:
+		notes = Reference.objects.filter(upload=u, creator=current_user.get_id())
 
 	return render_template('upload/figleaf.html',
 		preview = preview_url,
