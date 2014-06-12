@@ -112,11 +112,13 @@ function figleafLoaded() {
 	{% endfor %}
 	// add annotations
 	{% for annotation in annotations %}
-	{% if annotation.thing %}
-	figleaf.reference({{ annotation.pos }}, '{{ annotation.ref_url }}', "{{annotation.thing.title|escapejs}}");
-	{% else %}
-	figleaf.reference({{ annotation.pos }}, '{{ annotation.ref_url }}', "");
-	{% endif %}
+		{% if annotation.ref_url %}
+		{% if annotation.thing %}
+		figleaf.reference({{ annotation.pos }}, '{{ annotation.ref_url }}', "{{annotation.thing.title|escapejs}}");
+		{% else %}
+		figleaf.reference({{ annotation.pos }}, '{{ annotation.ref_url }}', "");
+		{% endif %}
+		{% endif %}
 	{% endfor %}
 	// add edit links
 	{% for annotation in editable %}
