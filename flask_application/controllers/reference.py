@@ -4,13 +4,49 @@ import datetime, os, rfc3987, re
 from math import floor
 from PIL import Image
 
-from flask import Blueprint, request, redirect, url_for, render_template, send_file, abort
+from flask import Blueprint, request, redirect, flash, url_for, render_template, send_file, abort
 from flask.ext.security import (login_required, roles_required, roles_accepted, current_user)
 from flask_application import app
+from flask_application.forms import ReferenceForm
 
 from ..models import *
+from ..permissions.reference import *
 
 reference = Blueprint('reference', __name__)
+
+@reference.route('/annotation/<id>/edit', methods= ['GET', 'POST'])
+def edit(id):
+	"""
+	Edit a reference
+	"""
+	r = Reference.objects.get_or_404(id=id)
+	if not can_edit_reference(r):
+		abort(403)
+	form = ReferenceForm(formdata=request.form, obj=r, exclude=['creator','thing','upload','ref_pos','ref_pos_end','ref_thing','ref_upload'])
+	if form.validate_on_submit():
+		form.populate_obj(r)
+		r.save() 
+		flash("Reference updated")
+		return redirect("%s#%s" % (url_for("reference.figleaf", md5=r.upload.md5), r.pos))
+	return render_template('reference/edit.html',
+		title = 'Edit',
+		form = form,
+		reference = r)
+
+
+@reference.route('/<id>/delete', methods= ['GET','POST'])
+def delete(id):
+	"""
+	Delete a reference
+	"""
+	model = Reference.objects.get_or_404(id=id)
+	if not can_edit_reference(model):
+		abort(403)
+	md5 = model.upload.md5
+	pos = model.pos
+	model.delete()
+	flash("Reference deleted")
+	return redirect("%s#%s" % (url_for("reference.figleaf", md5=md5), pos))
 
 @reference.route('/ref/<string:md5>')
 @reference.route('/ref/<string:md5>/<user_id>')
@@ -36,12 +72,16 @@ def figleaf(md5, user_id=None):
 
 	# load annotations
 	#annotations = Reference.objects.filter(upload=u, ref_url__exists=True)
-	annotations = Reference.objects.filter(upload=u, ref_url__exists=True).order_by('ref_pos')
+	annotations = Reference.objects.filter(upload=u).order_by('ref_pos')
 	# create a list of referenced things
-	
 	references = {}
+	# the annotations/ reference that the user can edit
+	editable = []
+
 	for a in annotations:
-		if a.ref_thing and a.ref_pos:
+		if can_edit_reference(a):
+			editable.append(a)
+		if a.ref_thing and a.ref_pos and a.ref_url:
 			if not a.ref_thing in references:
 				references[a.ref_thing] = { 'md5':a.ref_upload.md5, 'pages':[] }
 			references[a.ref_thing]['pages'].append(a.ref_pos)
@@ -61,7 +101,7 @@ def figleaf(md5, user_id=None):
 	else:
 		notes = Reference.objects.filter(upload=u, creator=current_user.get_id())
 
-	return render_template('upload/figleaf.html',
+	return render_template('reference/figleaf.html',
 		preview = preview_url,
 		upload=u,
 		thing = thing,
@@ -69,7 +109,8 @@ def figleaf(md5, user_id=None):
 		references = references,
 		back_annotations = back_annotations,
 		back_references = back_references,
-		notes = notes
+		notes = notes,
+		editable = editable
 		)
 
 
@@ -197,7 +238,7 @@ def clips(md5, user_id=None):
 				img = url_for("reference.clip", md5=a.upload.md5, boundaries="%s-%s" % (a.pos, a.pos_end))
 				clips.append((link,img,a.note))
 
-	return render_template('upload/clips.html',
+	return render_template('reference/clips.html',
 		thing = thing,
 		clips = clips
 	)
@@ -224,7 +265,7 @@ def reference_clips(md5):
 				img = url_for("reference.clip", md5=a.ref_upload.md5, boundaries="%s-%s" % (int(a.ref_pos), int(a.ref_pos)+1))
 			clips.append((link,img,""))
 
-	return render_template('upload/clips.html',
+	return render_template('reference/clips.html',
 		thing = thing,
 		clips = clips
 	)

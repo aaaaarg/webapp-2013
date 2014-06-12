@@ -134,10 +134,20 @@
             this.highlight(n[0], n[1]);
         }
     }
+    $.Figleaf.prototype.edit = function(pos, url) {
+        var $div = document.createElement("div");
+        $div.innerHTML = "<a target='_new' title='edit' alt='edit' href='"+url+"'><div style='font-size:12px;line-height:10px;background-color:#0000FF;border:1px solid #000;'>&nbsp;</div></a>";
+        //$div.style.backgroundColor = "#00FF00";
+        //$div.style.border = "1px solid #000";
+        $div.style.position = "absolute";
+        $div.style.top = SCANR.page_h * pos;
+        $div.style.left = SCANR.page_w - 32;
+        $div.style.width = 4;
+        $div.style.opacity = 0.7;
+        this.$focus.appendChild($div);
+        //console.log("Reference: " + $div.style.top + "," + $div.style.left);
+    }
     $.Figleaf.prototype.reference = function(pos, url, title) {
-        function moveAnnotation(ele) {
-            alert(ele);
-        }
         var $div = document.createElement("div");
         $div.innerHTML = "<a target='_new' title='"+title+"' alt='"+title+"' style='font-size:12px;padding:0 2 0 2px;line-height:10px;margin-right:2px;background-color:#00FF00;border:1px solid #000;text-decoration:none;color:#000' href='"+url+"'><b>&#10095;</b></a><!--<a target='_new' onclick='moveAnnotation(this)' style='text-decoration:none;cursor:pointer;color:#000;font-size:11px;' href='"+url+"'>&#8597;</a>-->";
         //$div.style.backgroundColor = "#00FF00";
@@ -147,7 +157,7 @@
         $div.style.left = SCANR.page_w - 28;
         $div.style.opacity = 0.7;
         this.$focus.appendChild($div);
-        console.log("Reference: " + $div.style.top + "," + $div.style.left);
+        //console.log("Reference: " + $div.style.top + "," + $div.style.left);
     }
     $.Figleaf.prototype.annotation = function(pos, str) {
         var $div = document.createElement("div");
@@ -176,7 +186,7 @@
         $div.onmousedown = showNote.bind($div2);
         this.$focus.appendChild($div2);
         this.$focus.appendChild($div);
-        console.log("Annotation: " + $div.style.top + "," + $div.style.left);
+        //console.log("Annotation: " + $div.style.top + "," + $div.style.left);
     }
     $.Figleaf.prototype._handle_scroll = function(ev) {
         var page = this.$focus.scrollTop / SCANR.page_h;

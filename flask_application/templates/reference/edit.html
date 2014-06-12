@@ -1,0 +1,17 @@
+{% extends "bootstrap/layouts/base_navbar_responsive.html" %}
+{%- from "bootstrap/forms/macros.html" import render_field %}
+
+
+{% block title %}
+{{ title }}
+{% endblock %}
+
+{% block content %}
+<form action="" method="post" name="reference">
+    {{form.hidden_tag()}}
+    {{render_field(form.pos, placeholder='Must be a floating point number (such as 1.23)')}}
+    {{render_field(form.ref_url, placeholder='URL to point to')}}
+    {{render_field(form.note, rows=5)}}
+    <p><button class="btn btn-primary" type="submit">Save</button> <a href="{{ url_for('reference.delete', id=reference.id) }}" class="btn btn-danger">Delete</a></p>
+</form>
+{% endblock %}

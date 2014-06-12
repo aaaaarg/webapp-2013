@@ -66,7 +66,12 @@ class Reference(Annotation):
 		super(Reference, self).__init__(*args, **kwargs)
 		if self.ref_url:
 			self._parse_url()
-	
+
+	def save(self, *args, **kwargs):
+		super(Reference, self).save(*args, **kwargs)
+		if self.ref_url:
+			self._parse_url()
+
 	def parse_ref_pos(self, s):
 		self.ref_pos, self.ref_pos_end = self._parse_pos(s)
 
