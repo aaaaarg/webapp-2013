@@ -42,6 +42,21 @@ class Upload(CreatorMixin, db.Document):
 	sha1 = db.StringField(max_length=255)
 	md5 = db.StringField(max_length=255)
 
+	def delete(self, *args, **kwargs):
+		# first remove some references to this thing
+		from .thing import Thing
+		from .reference import Reference
+		ts = Thing.objects.filter(files=self)
+		for t in ts:
+			t.remove_file(self)
+		rs = Reference.objects.filter(upload=self)
+		for r in rs:
+			r.delete()
+		rs = Reference.objects.filter(ref_upload=self)
+		for r in rs:
+			r.delete()
+		super(Upload, self).delete(*args, **kwargs)
+
 	def full_path(self):
 		"""
 		This is the full path to the file, as determined by configured application UPLOADS_DIR, 

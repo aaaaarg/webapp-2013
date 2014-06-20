@@ -7,7 +7,7 @@ from flask.ext.script import Command, Option
 from flask.ext.security.utils import encrypt_password
 from flask_application import user_datastore, app
 from flask_application.populate import populate_data
-from flask_application.models import db, solr, User, Role, Thing, Maker, Upload, Collection, SuperCollection, CollectedThing, Thread, Comment, Queue, TextUpload
+from flask_application.models import db, solr, User, Role, Thing, Maker, Upload, Reference, Collection, SuperCollection, CollectedThing, Thread, Comment, Queue, TextUpload
 
 
 class ResetDB(Command):
@@ -55,17 +55,31 @@ class SolrReindex(Command):
 class FixMD5s(Command):
 	""" Clears out duplicate uploads (based on md5) """
 	def run(self, **kwargs):
-		def check_uploads(uploads):
-			for u in uploads:
-				t = Thing.objects.filter(files=u['_id']).first()
-				if not t: # the upload isn't being used, so let's delete it
-					print "deleting", u['structured_file_name']
-					upload = Upload.objects.get(id=u['_id'])
-					upload.delete()
+		def check_upload(upload):
+			t = Thing.objects.filter(files=upload).first()
+			if not t: # the upload isn't being used, so let's delete it
+				print "deleting", upload.structured_file_name
+				upload.delete()
+		def check_md5(md5):
+			uploads = Upload.objects.filter(md5=md5)
+			if len(uploads)>1:
+				first = None
+				for u in uploads:
+					if not first:
+						first = u
+					else:
+						print "deleting", u.structured_file_name
+						Reference.objects(upload=u).update(set__upload=first)
+						Reference.objects(ref_upload=u).update(set__ref_upload=first)
+						u.delete()
 
-		client = MongoClient()
-		db = client.testing
-		for u in db.upload.group(key={"md5":1}, condition={}, initial={"list": []}, reduce='function(obj, prev) {prev.list.push(obj)}'):
-			#print u['md5'], len(u['list'])
-			check_uploads(u['list'])
-
+		# purge uploads that are not in use
+		uploads = Upload.objects.all()
+		print "CHECKING EMPTIES"
+		for u in uploads:
+			check_upload(u)
+		md5s = Upload.objects.distinct('md5')
+		print "CHECKING MD5"
+		for md5 in md5s:
+			check_md5(md5)
+		
