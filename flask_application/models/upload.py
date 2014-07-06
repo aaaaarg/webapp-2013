@@ -325,7 +325,7 @@ class UploadManager(object):
 			u = Upload(**kwargs)
 		u.set_uploaded_file(file)
 
-		existing = Upload.objects(sha1=u.sha1).first()
+		existing = Upload.objects(md5=u.md5).first()
 		if existing:
 			return existing
 		else:

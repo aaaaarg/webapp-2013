@@ -60,6 +60,13 @@ def serve_upload(filename):
 	abort(404)
 
 
+@upload.route('/preview/<path:filename>')
+def serve_preview(filename):
+	"""
+	The filename here is the structured filename
+	"""
+	return serve_upload(filename)
+
 @upload.route('/recover/<path:filename>')
 @roles_accepted('admin', 'editor')
 def recover_broken_file(filename):
