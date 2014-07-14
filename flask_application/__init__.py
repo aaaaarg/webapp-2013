@@ -88,7 +88,7 @@ def cache_fetch(key, value_function, timeout=None):
 app.cache.fetch = cache_fetch
 
 # Helpers
-from flask_application.helpers import datetimeformat, escapejs
+from flask_application.helpers import datetimeformat, escapejs, nl2br
 app.jinja_env.filters['datetimeformat'] = datetimeformat
 app.jinja_env.filters['escapejs'] = escapejs
 app.jinja_env.filters['nl2br'] = nl2br
