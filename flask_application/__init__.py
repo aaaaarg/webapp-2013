@@ -91,6 +91,7 @@ app.cache.fetch = cache_fetch
 from flask_application.helpers import datetimeformat, escapejs
 app.jinja_env.filters['datetimeformat'] = datetimeformat
 app.jinja_env.filters['escapejs'] = escapejs
+app.jinja_env.filters['nl2br'] = nl2br
 
 # Markdown
 from flaskext.markdown import Markdown

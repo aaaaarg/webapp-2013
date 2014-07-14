@@ -62,7 +62,7 @@
 
         <div><p class="lead">{{thing.short_description}}</p></div>
 
-        <div><p>{{thing.description|markdown}}</p></div>
+        <div><p>{{thing.description|nl2br|markdown}}</p></div>
 
         <p><small class="text-muted">
             {% set comma = joiner(", ") %}

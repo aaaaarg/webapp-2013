@@ -77,3 +77,6 @@ def decode_id(val):
 def escapejs(val):
     return json.dumps(str(val))
 
+def nl2br(val): 
+    return val.replace('\n','<br>\n')
+
