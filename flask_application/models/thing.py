@@ -74,7 +74,10 @@ class Thing(SolrMixin, CreatorMixin, FollowersMixin, db.Document):
         names = []
         for m in self.makers:
             try:
-                names.append(m.maker.format_name(m.role))
+                n = m.maker.format_name(m.role)
+                if not isinstance(n, unicode):
+                    n = n.decode('utf-8')
+                names.append(n)
             except AttributeError:
                 # uh oh, there's a bad maker in here
                 names.append('???')
@@ -83,7 +86,11 @@ class Thing(SolrMixin, CreatorMixin, FollowersMixin, db.Document):
     def update_makers_sorted(self):
         names = []
         for m in self.makers:
-            names.append(m.maker.sort_by.encode('utf-8').strip())
+            #names.append(m.maker.sort_by.encode('utf-8').strip())
+            n = m.maker.sort_by.strip()
+            if not isinstance(n, unicode):
+                n = n.decode('utf-8')
+            names.append(n)
         self.makers_sorted = '| '.join(names)
 
     def parse_makers_string(self, raw):
