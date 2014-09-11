@@ -22,7 +22,7 @@
 
 {% macro show_collected_things_condensed(collection) %}
 	<div class="things sortable">
-		<div>
+		<h5>
 		{% set maker='' %}
 		{% for collected_thing in collection.things %}
 			{% if maker!=collected_thing.thing.makers_display %}
@@ -39,7 +39,7 @@
 		  			{% endif %}
 		  		</div>
 		{% endfor %}
-		</div>
+		</h5>
 	</div>
 {% endmacro %}
 
