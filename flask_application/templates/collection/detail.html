@@ -49,7 +49,7 @@
 		<div><p>{{collection.description|markdown}}</p></div>
 
 		{{ show_collected_things(collection) }}
-		
+
 		<div class="subcollections sortable">
 		{% for subcollection in collection.subcollections|sort(attribute='weight') %}
 			
