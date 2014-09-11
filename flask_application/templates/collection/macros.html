@@ -21,33 +21,32 @@
 {% endmacro %}
 
 {% macro show_collected_things_condensed(collection) %}
-	<div class="things list-group">
+	<div class="things sortable">
+		<div>
 		{% set maker='' %}
 		{% for collected_thing in collection.things %}
-			<div>
-					{% if maker!=collected_thing.thing.makers_display %}
-					<br />
-					<h5 class="list-group-item-heading">
-						<span class="maker text-muted">{{ collected_thing.thing.makers_display }}</span>
-					</h5>
-					{% set maker=collected_thing.thing.makers_display %}
-					{% endif %}
-				  <h5 class="list-group-item-heading">
-				  	{% set notes= collected_thing.thing.short_description ~ ' - ' ~ collected_thing.note %}
-				  	<a data-toggle="tooltip" rel="tooltip" title="{{ notes }}" href="{{url_for('thing.detail', id=collected_thing.thing.id)}}">{{ collected_thing.thing.title }}</a>
-					  	{% if can_remove_thing_from_collection(collection, collected_thing.thing) %}
-			  			{{ popover('<small class="text-muted text-right">[re/move this]</small>', collected_thing.thing.title, move_thing_options(collection, collected_thing.thing)) }}
-			  			{% endif %}
-				  </h5>
-			</div>
+			{% if maker!=collected_thing.thing.makers_display %}
+			</h5>
+			<h5 class="list-group-item-heading sort-item" data-sortmaker="{{collected_thing.thing.makers_sorted}}">
+				<br />
+				<div class="maker text-muted">{{ collected_thing.thing.makers_display }}</div>
+			{% set maker=collected_thing.thing.makers_display %}
+			{% endif %}
+			  	{% set notes= collected_thing.thing.short_description ~ ' - ' ~ collected_thing.note %}
+			  	<div><a data-toggle="tooltip" rel="tooltip" title="{{ notes }}" href="{{url_for('thing.detail', id=collected_thing.thing.id)}}">{{ collected_thing.thing.title }}</a>
+				  	{% if can_remove_thing_from_collection(collection, collected_thing.thing) %}
+		  			{{ popover('<small class="text-muted text-right">[re/move this]</small>', collected_thing.thing.title, move_thing_options(collection, collected_thing.thing)) }}
+		  			{% endif %}
+		  		</div>
 		{% endfor %}
+		</div>
 	</div>
 {% endmacro %}
 
 {% macro show_collected_things_expanded(collection) %}
 	<div class="things list-group sortable">
 		{% for collected_thing in collection.things %}
-			<div class="list-group-item" 
+			<div class="list-group-item sort-item" 
 				data-sortmaker="{{collected_thing.thing.makers_sorted}}"
 				data-sortadded="{{collected_thing.created_at}}"
 				>

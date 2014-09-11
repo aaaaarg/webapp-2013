@@ -104,15 +104,15 @@
 		$('a.sort-toggle').click(function() {
 			type = $(this).attr('data-sort');
 			if (type=='date') {
-				$('div.sortable>.list-group-item').tsort({attr:'data-sortadded', order:'desc'});
+				$('div.sortable>.sort-item').tsort({attr:'data-sortadded', order:'desc'});
 			} else if (type=='maker') {
-				$('div.sortable>.list-group-item').tsort({attr:'data-sortmaker'});
+				$('div.sortable>.sort-item').tsort({attr:'data-sortmaker'});
 			} else {
-				$('div.sortable>.list-group-item').tsort('h5 a');
+				$('div.sortable>.sort-item').tsort('h5 a');
 			}
 			return false;
 		});
-		$('div.sortable>.list-group-item').tsort({attr:'data-sortmaker'});
+		$('div.sortable>.sort-item').tsort({attr:'data-sortmaker'});
 	});
 </script>
 {% endblock %}
