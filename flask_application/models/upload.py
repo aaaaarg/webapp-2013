@@ -326,7 +326,7 @@ class Upload(SolrMixin, CreatorMixin, db.Document):
 		import codecs
 		# try and read from file
 		retVal = False
-		codec = 'utf-8'
+		codec = 'ascii'
 		if self.md5 and 'TXT_SUBDIR' in app.config:
 			txt_dir = os.path.join(app.config['UPLOADS_DIR'], app.config['TXT_SUBDIR'], self.md5)
 			txt_path = os.path.join(txt_dir, "%s.%s" % (self.md5, format))
@@ -340,7 +340,7 @@ class Upload(SolrMixin, CreatorMixin, db.Document):
 				# create the directory for a cached version of the text file if it doesn't exist
 				if not os.path.exists(txt_dir):
 						os.makedirs(txt_dir)
-				with codecs.open(txt_path, "w", codec) as fout:
+				with codecs.open(txt_path, "w", encoding=codec) as fout:
 					laparams = LAParams()
 					if format=="txt":
 						device = TextConverter(rsrcmgr, fout, codec=codec, laparams=laparams)
