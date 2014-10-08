@@ -74,3 +74,7 @@ ul.nav ul.dropdown-menu li a {
 .uploads-panel {
 	margin-top: 30px;
 }
+
+ul.fulltext.results li em {
+	background-color: #FFFF00;
+}

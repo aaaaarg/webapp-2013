@@ -89,8 +89,7 @@ def unfollow(type, id):
 	return jsonify({
 		'result': 'success',
 		'message': get_template_attribute('frontend/macros.html', 'follow')(model)
-	})
-	
+	})	
 
 @frontend.route('/search')
 @frontend.route('/search/<type>')
@@ -125,6 +124,36 @@ def search(type=False):
 	else: 
 		return render_template(
 		'frontend/search_results.html',
+		query = query,
+		title = 'Search for',
+		content = content,
+		page_next = page + 1,
+		type = type
+	)
+
+
+@frontend.route('/research')
+def research(type=False):
+	""" Full text search results """
+	query = request.args.get('query', "")
+	page = int(request.args.get('page', "1"))
+	num = 10
+	start = (page-1)*num
+	results = solr.query(content_type="upload", text=query).paginate(start=start, rows=num).highlight("description", snippets=3).execute()
+	# Build list of results
+	things = []
+	for id, result in results.highlighting.items():
+		u = Upload.objects.get(id=id)
+		if u:
+			t = Thing.objects.filter(files=u).first()
+			if t:
+				print result
+				things.append((t, result['description']))
+	
+	content = get_template_attribute('frontend/macros.html', 'fulltext_search_results')(things)
+	
+	return render_template(
+		'frontend/search_fulltext.html',
 		query = query,
 		title = 'Search for',
 		content = content,

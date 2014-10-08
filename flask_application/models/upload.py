@@ -7,7 +7,7 @@ from flask_application import app
 from werkzeug import secure_filename
 from mongoengine.base import ValidationError
 
-from . import db, CreatorMixin
+from . import db, CreatorMixin, SolrMixin
 
 """
 
@@ -22,7 +22,7 @@ But when moving the file, construct the path with UPLOADS_DIR, UPLOADS_SUBDIR, a
 
 """
 
-class Upload(CreatorMixin, db.Document):
+class Upload(SolrMixin, CreatorMixin, db.Document):
 	"""
 	Encapsulates a file that has been uploaded. A base class for various specific types
 	"""
@@ -302,6 +302,84 @@ class Upload(CreatorMixin, db.Document):
 
 	def add_annotation(self, annotation):
 		self.update(add_to_set__annotations=annotation)
+
+
+	def plaintext(self):
+		if self.md5 and 'TXT_SUBDIR' in app.config:
+			txt_path = os.path.join(app.config['TXT_SUBDIR'], self.md5, "%s.txt" % self.md5)
+			txt_dir = os.path.join(app.config['UPLOADS_DIR'], txt_path)
+			if os.path.exists(txt_dir):
+				return txt_dir
+
+	def extract_pdf_text(self, format="txt"):
+		""" Extracts text from a pdf. Format can be txt or html """
+		from pdfminer.pdfparser import PDFParser
+		from pdfminer.pdfdocument import PDFDocument
+		from pdfminer.converter import HTMLConverter, TextConverter
+		from pdfminer.layout import LAParams
+		from pdfminer.pdfpage import PDFPage
+		from pdfminer.pdfpage import PDFTextExtractionNotAllowed
+		from pdfminer.pdfinterp import PDFResourceManager
+		from pdfminer.pdfinterp import PDFPageInterpreter
+		from pdfminer.pdfdevice import PDFDevice
+		from cStringIO import StringIO
+		import codecs
+		# try and read from file
+		retVal = False
+		codec = 'utf-8'
+		if self.md5 and 'TXT_SUBDIR' in app.config:
+			txt_dir = os.path.join(app.config['UPLOADS_DIR'], app.config['TXT_SUBDIR'], self.md5)
+			txt_path = os.path.join(txt_dir, "%s.%s" % (self.md5, format))
+			if os.path.exists(txt_path):
+				with codecs.open(txt_path, "r", codec) as f:
+					return f.read()
+	    # only text and html conversion allowed
+			try_path = self.full_path()
+			if try_path and os.path.exists(try_path):
+				rsrcmgr = PDFResourceManager()
+				# create the directory for a cached version of the text file if it doesn't exist
+				if not os.path.exists(txt_dir):
+						os.makedirs(txt_dir)
+				with codecs.open(txt_path, "w", codec) as fout:
+					laparams = LAParams()
+					if format=="txt":
+						device = TextConverter(rsrcmgr, fout, codec=codec, laparams=laparams)
+					elif format=="html":
+						device = HTMLConverter(rsrcmgr, fout, codec=codec, laparams=laparams)
+					fp = file(try_path, 'rb')
+					interpreter = PDFPageInterpreter(rsrcmgr, device)
+					password = ""
+					maxpages = 0
+					caching = True
+					pagenos=set()
+					for page in PDFPage.get_pages(fp, pagenos, maxpages=maxpages, password=password,caching=caching, check_extractable=True):
+						interpreter.process_page(page)
+					fp.close()
+					device.close()
+					fout.close()
+					with codecs.open(txt_path, "r", codec) as f:
+						content = f.read()
+						if not content=="":
+							retVal = content
+			# make sure this directory is gone if there are not going to be any contents
+			if not retVal:
+				shutil.rmtree(txt_dir)
+		return retVal
+
+	def build_solr(self):
+		# I think this will cause major problems when uploads are saved because it triggers a pdf text extraction
+		return {}
+		
+		# first try and extract text
+		content = self.extract_pdf_text()
+		if not content:
+			return {}
+		else:
+			return {
+			'_id' : self.id,
+			'content_type' : 'upload',
+			'searchable_text': content,
+		}
 
 
 class TextUpload(Upload):

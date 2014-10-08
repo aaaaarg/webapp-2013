@@ -1,4 +1,8 @@
-import datetime, sys, traceback
+import datetime, sys, traceback, re
+from unidecode import unidecode
+
+from sunburnt.schema import SolrError
+
 from pymongo import MongoClient
 
 from mongoengine.errors import ValidationError
@@ -96,28 +100,39 @@ class FixMD5s(Command):
 			check_md5(md5)
 
 
-class ExtractPDFText(Command):
-	"""Extracts text from a PDF"""
+class IndexPDFText(Command):
+	""" Extracts text from a PDF and indexes it in Solr """
 	option_list = (
-		Option('--file', '-f', dest='filepath'),
+		Option('--md5', '-m', dest='md5'),
 	)
-	def run(self, filepath):
-		print "Opening",filepath,"for extraction"
-		rsrcmgr = PDFResourceManager()
-		retstr = StringIO()
-		codec = 'utf-8'
-		laparams = LAParams()
-		device = HTMLConverter(rsrcmgr, retstr, codec=codec, laparams=laparams)
-		fp = file(filepath, 'rb')
-		interpreter = PDFPageInterpreter(rsrcmgr, device)
-		password = ""
-		maxpages = 0
-		caching = True
-		pagenos=set()
-		for page in PDFPage.get_pages(fp, pagenos, maxpages=maxpages, password=password,caching=caching, check_extractable=True):
-			interpreter.process_page(page)
-		fp.close()
-		device.close()
-		str = retstr.getvalue()
-		retstr.close()
-		return str
+	def run(self, md5):
+		_illegal_xml_chars_RE = re.compile(u'[\x00-\x08\x0b\x0c\x0e-\x1F\uD800-\uDFFF\uFFFE\uFFFF]')
+		u = Upload.objects.filter(md5=md5).first()
+		if u:
+			print "Opening",u.structured_file_name,"for extraction"
+			content = u.extract_pdf_text()
+			if content:
+				d = {
+					'_id' : u.id,
+					'content_type' : 'upload',
+					'description': re.sub(_illegal_xml_chars_RE, '?', content),
+				}
+				
+				for k in d:
+					if isinstance(d[k], basestring):
+						d[k] = unidecode(d[k])				
+
+				try:
+					solr.add(d)
+					solr.commit()
+				except SolrError as e:
+					print "SolrError: ", e
+				except:
+					print "Unexpected error:", sys.exc_info()[0]
+					print traceback.print_tb(sys.exc_info()[2])
+					print d
+			else:
+				print "- No text could be extracted so this will not be indexed"
+		else:
+			print "No upload found with the given md5"
+		
