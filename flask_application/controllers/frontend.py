@@ -142,7 +142,7 @@ def research(type=False):
 	content = ""
 
 	if not query=="":
-		results = solr.query(content_type="upload", text=query).paginate(start=start, rows=num).highlight("description", snippets=3).execute()
+		results = solr.query(content_type="upload", text=query).paginate(start=start, rows=num).highlight("description", snippets=3, maxAnalyzedChars=-1).execute()
 		# Build list of results
 		things = []
 		for id, result in results.highlighting.items():
