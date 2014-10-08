@@ -139,18 +139,21 @@ def research(type=False):
 	page = int(request.args.get('page', "1"))
 	num = 10
 	start = (page-1)*num
-	results = solr.query(content_type="upload", text=query).paginate(start=start, rows=num).highlight("description", snippets=3).execute()
-	# Build list of results
-	things = []
-	for id, result in results.highlighting.items():
-		u = Upload.objects.get(id=id)
-		if u:
-			t = Thing.objects.filter(files=u).first()
-			if t:
-				print result
-				things.append((t, result['description']))
+	content = ""
 	
-	content = get_template_attribute('frontend/macros.html', 'fulltext_search_results')(things)
+	if not query=="":
+		results = solr.query(content_type="upload", text=query).paginate(start=start, rows=num).highlight("description", snippets=3).execute()
+		# Build list of results
+		things = []
+		for id, result in results.highlighting.items():
+			u = Upload.objects.get(id=id)
+			if u:
+				t = Thing.objects.filter(files=u).first()
+				if t:
+					print result
+					things.append((t, result['description']))
+		
+		content = get_template_attribute('frontend/macros.html', 'fulltext_search_results')(things)
 	
 	return render_template(
 		'frontend/search_fulltext.html',
