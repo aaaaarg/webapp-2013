@@ -140,7 +140,7 @@ def research(type=False):
 	num = 10
 	start = (page-1)*num
 	content = ""
-	
+
 	if not query=="":
 		results = solr.query(content_type="upload", text=query).paginate(start=start, rows=num).highlight("description", snippets=3).execute()
 		# Build list of results
@@ -150,8 +150,10 @@ def research(type=False):
 			if u:
 				t = Thing.objects.filter(files=u).first()
 				if t:
-					print result
-					things.append((t, result['description']))
+					if 'description' in result:
+						things.append((t, result['description']))
+					else:
+						things.append((t, []))
 		
 		content = get_template_attribute('frontend/macros.html', 'fulltext_search_results')(things)
 	
