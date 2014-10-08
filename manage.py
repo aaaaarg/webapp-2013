@@ -7,7 +7,7 @@ sys.path.insert(0, os.getcwd())
 from flask_application import app
 from flask.ext.script import Manager, Server
 
-from flask_application.script import ResetDB, PopulateDB, SolrReindex, FixMD5s
+from flask_application.script import ResetDB, PopulateDB, SolrReindex, FixMD5s, ExtractPDFText
 
 from flask.ext.security.script import (CreateUserCommand , AddRoleCommand,
         RemoveRoleCommand, ActivateUserCommand, DeactivateUserCommand)
@@ -22,11 +22,14 @@ manager.add_command("solr_reindex", SolrReindex())
 
 manager.add_command("fix_md5s", FixMD5s())
 
+manager.add_command("pdf_extract", ExtractPDFText())
+
 manager.add_command('create_user', CreateUserCommand())
 manager.add_command('add_role', AddRoleCommand())
 manager.add_command('remove_role', RemoveRoleCommand())
 manager.add_command('deactivate_user', DeactivateUserCommand())
 manager.add_command('activate_user', ActivateUserCommand())
+
 
 if __name__ == "__main__":
     manager.run()

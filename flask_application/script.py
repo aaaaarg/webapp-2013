@@ -9,6 +9,18 @@ from flask_application import user_datastore, app
 from flask_application.populate import populate_data
 from flask_application.models import db, solr, User, Role, Thing, Maker, Upload, Reference, Collection, SuperCollection, CollectedThing, Thread, Comment, Queue, TextUpload
 
+# pdf extraction
+from pdfminer.pdfparser import PDFParser
+from pdfminer.pdfdocument import PDFDocument
+from pdfminer.converter import HTMLConverter, TextConverter
+from pdfminer.layout import LAParams
+from pdfminer.pdfpage import PDFPage
+from pdfminer.pdfpage import PDFTextExtractionNotAllowed
+from pdfminer.pdfinterp import PDFResourceManager
+from pdfminer.pdfinterp import PDFPageInterpreter
+from pdfminer.pdfdevice import PDFDevice
+from cStringIO import StringIO
+
 
 class ResetDB(Command):
   """Drops all tables and recreates them"""
@@ -82,4 +94,30 @@ class FixMD5s(Command):
 		print "CHECKING MD5"
 		for md5 in md5s:
 			check_md5(md5)
-		
+
+
+class ExtractPDFText(Command):
+	"""Extracts text from a PDF"""
+	option_list = (
+		Option('--file', '-f', dest='filepath'),
+	)
+	def run(self, filepath):
+		print "Opening",filepath,"for extraction"
+		rsrcmgr = PDFResourceManager()
+		retstr = StringIO()
+		codec = 'utf-8'
+		laparams = LAParams()
+		device = HTMLConverter(rsrcmgr, retstr, codec=codec, laparams=laparams)
+		fp = file(filepath, 'rb')
+		interpreter = PDFPageInterpreter(rsrcmgr, device)
+		password = ""
+		maxpages = 0
+		caching = True
+		pagenos=set()
+		for page in PDFPage.get_pages(fp, pagenos, maxpages=maxpages, password=password,caching=caching, check_extractable=True):
+			interpreter.process_page(page)
+		fp.close()
+		device.close()
+		str = retstr.getvalue()
+		retstr.close()
+		return str

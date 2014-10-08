@@ -48,6 +48,54 @@ def delete(id):
 	flash("Reference deleted")
 	return redirect("%s#%s" % (url_for("reference.figleaf", md5=md5), pos))
 
+
+@reference.route('/read/<string:md5>.<format>')
+def pdf2html(md5, format):
+	from pdfminer.pdfparser import PDFParser
+	from pdfminer.pdfdocument import PDFDocument
+	from pdfminer.converter import HTMLConverter, TextConverter
+	from pdfminer.layout import LAParams
+	from pdfminer.pdfpage import PDFPage
+	from pdfminer.pdfpage import PDFTextExtractionNotAllowed
+	from pdfminer.pdfinterp import PDFResourceManager
+	from pdfminer.pdfinterp import PDFPageInterpreter
+	from pdfminer.pdfdevice import PDFDevice
+	from cStringIO import StringIO
+	# only text and html conversion allowed
+	if not format=='txt' and not format=='html':
+		abort(404)
+	u = Upload.objects.filter(md5=md5).first()
+	if not u:
+		abort(404)
+	try_path = u.full_path() if u else os.path.join(app.config['UPLOADS_DIR'], filename)
+	if try_path and os.path.exists(try_path):
+		thing = Thing.objects.filter(files=u).first()
+		rsrcmgr = PDFResourceManager()
+		retstr = StringIO()
+		codec = 'utf-8'
+		laparams = LAParams()
+		if format=="txt":
+			device = TextConverter(rsrcmgr, retstr, codec=codec, laparams=laparams)
+		elif format=="html":
+			device = HTMLConverter(rsrcmgr, retstr, codec=codec, laparams=laparams)
+		fp = file(try_path, 'rb')
+		interpreter = PDFPageInterpreter(rsrcmgr, device)
+		password = ""
+		maxpages = 0
+		caching = True
+		pagenos=set()
+		for page in PDFPage.get_pages(fp, pagenos, maxpages=maxpages, password=password,caching=caching, check_extractable=True):
+			interpreter.process_page(page)
+		fp.close()
+		device.close()
+		str = retstr.getvalue()
+		retstr.close()
+		if format=="txt":
+			return "<pre>"+str+"</pre>"
+		elif format=="html":
+			return str
+	return "Sorry, something went wrong"
+
 @reference.route('/ref/<string:md5>')
 @reference.route('/ref/<string:md5>/<user_id>')
 def figleaf(md5, user_id=None):
