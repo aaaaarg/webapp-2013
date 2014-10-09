@@ -143,10 +143,13 @@ def research(type=False):
 
 	if not query=="":
 		#results = solr.query(content_type="page", text=query).paginate(start=start, rows=num).highlight("searchable_text", snippets=3, maxAnalyzedChars=-1).execute()
+		"""
 		query_tokens = query.split()
 		combined = ' '.join(query_tokens)
 		new_query = '"%s"~%d' % (combined, len(query_tokens))
-		results = solr.query(content_type="page", text=new_query).sort_by("-score").paginate(start=start, rows=num).execute()
+		"""
+		new_query = "'%s'" % query
+		results = solr.query(content_type="page", searchable_text=new_query).sort_by("-score").paginate(start=start, rows=num).execute()
 		# Build list of results 
 		things = []
 		for result in results:

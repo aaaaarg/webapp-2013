@@ -121,11 +121,13 @@ def figleaf(md5, user_id=None):
 	search_results = {}
 	query = request.args.get('query', '')
 	if not query=='':
-		print query
+		"""
 		query_tokens = query.split()
 		combined = ' '.join(query_tokens)
 		new_query = '"%s"~%d' % (combined, len(query_tokens))
-		results = solr.query(content_type="page", md5_s=md5, text=new_query).field_limit("_id", score=True).sort_by("-score").execute()
+		"""
+		new_query = "'%s'" % query
+		results = solr.query(content_type="page", md5_s=md5, searchable_text=new_query).field_limit("_id", score=True).sort_by("-score").execute()
 		max_score = 0
 		min_score = 100
 		for result in results:
