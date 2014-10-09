@@ -74,6 +74,7 @@ def figleaf(md5, user_id=None):
 		abort(404)
 	thing = Thing.objects.filter(files=u).first()
 	preview = u.preview()
+
 	if not preview:
 		if u.mimetype=="application/pdf":
 			u.request_preview()
@@ -116,6 +117,29 @@ def figleaf(md5, user_id=None):
 	else:
 		notes = Reference.objects.filter(upload=u, creator=current_user.get_id())
 
+	# if there is a query specified, do it
+	search_results = {}
+	query = request.args.get('query', '')
+	if not query=='':
+		print query
+		query_tokens = query.split()
+		combined = ' '.join(query_tokens)
+		new_query = '"%s"~%d' % (combined, len(query_tokens))
+		results = solr.query(content_type="page", md5_s=md5, text=new_query).field_limit("_id", score=True).sort_by("-score").execute()
+		max_score = 0
+		min_score = 100
+		for result in results:
+			print result
+			if '_id' in result:
+				# id[0] is the upload id, id[1] is upload page
+				id = str(result['_id']).split('_')
+				if len(id)==2:
+					search_results[id[1]] = result['score']
+					max_score = result['score'] if result['score'] > max_score else max_score
+					min_score = result['score'] if result['score'] < min_score else min_score
+		min_score = min_score - 0.1
+		search_results.update((x, (y-min_score)/(max_score-min_score)) for x, y in search_results.items())
+
 	return render_template('reference/figleaf.html',
 		preview = preview_url,
 		upload=u,
@@ -125,7 +149,8 @@ def figleaf(md5, user_id=None):
 		back_annotations = back_annotations,
 		back_references = back_references,
 		notes = notes,
-		editable = editable
+		editable = editable,
+		search_results = search_results
 		)
 
 

@@ -113,6 +113,21 @@
 
         this.$focus.scrollTop = page * SCANR.page_h;
     }
+    $.Figleaf.prototype.tint = function(page, ratio, color) {
+        if (!isNaN(parseInt(page)) && isFinite(page) && !isNaN(parseFloat(ratio)) && isFinite(ratio)) {
+            pos = this.pageToPos(page);
+            var $div = document.createElement("div");
+            $div.style.width = SCANR.th_w;
+            $div.style.height = SCANR.th_h;
+            $div.style.backgroundColor = "#FFFF00";
+            $div.style.position = "absolute";
+            $div.style.left = pos[0];
+            $div.style.top = pos[1];
+            $div.style.opacity = 0.5 * ratio;
+            $div.style.zIndex = "6";
+            this.$el.appendChild($div);
+        }
+    }
     $.Figleaf.prototype.highlight = function(y1, y2) {
         if (!isNaN(parseFloat(y1)) && isFinite(y1) && !isNaN(parseFloat(y2)) && isFinite(y2)) {
             this.seek(y1 - 0.05);

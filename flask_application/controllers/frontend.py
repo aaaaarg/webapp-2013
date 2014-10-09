@@ -147,7 +147,7 @@ def research(type=False):
 		combined = ' '.join(query_tokens)
 		new_query = '"%s"~%d' % (combined, len(query_tokens))
 		results = solr.query(content_type="page", text=new_query).paginate(start=start, rows=num).execute()
-		# Build list of results
+		# Build list of results 
 		things = []
 		for result in results:
 			if '_id' in result:

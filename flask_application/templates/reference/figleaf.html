@@ -124,6 +124,12 @@ function figleafLoaded() {
 	{% for annotation in editable %}
 	figleaf.edit({{ annotation.pos }}, '{{ url_for("reference.edit", id=annotation.id) }}');
 	{% endfor %}
+	// add search results
+	{% if search_results %}
+		{% for p, s in search_results.items() %}
+		figleaf.tint({{ p }}, {{ s }});
+		{% endfor %}
+	{% endif %}
 	// if there is a reference, go to it
 	if (p) {
     figleaf.goto_reference(p);
