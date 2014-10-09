@@ -14,16 +14,7 @@ from flask_application.populate import populate_data
 from flask_application.models import db, solr, User, Role, Thing, Maker, Upload, Reference, Collection, SuperCollection, CollectedThing, Thread, Comment, Queue, TextUpload
 
 # pdf extraction
-from pdfminer.pdfparser import PDFParser
-from pdfminer.pdfdocument import PDFDocument
-from pdfminer.converter import HTMLConverter, TextConverter
-from pdfminer.layout import LAParams
-from pdfminer.pdfpage import PDFPage
-from pdfminer.pdfpage import PDFTextExtractionNotAllowed
-from pdfminer.pdfinterp import PDFResourceManager
-from pdfminer.pdfinterp import PDFPageInterpreter
-from pdfminer.pdfdevice import PDFDevice
-from cStringIO import StringIO
+from pdfminer.pdfparser import PDFSyntaxError
 
 
 class ResetDB(Command):
@@ -159,4 +150,7 @@ class IndexPDFText(Command):
 			indexUpload(u)
 		else:
 			for u in Upload.objects().all():
-					indexUpload(u)
+					try:
+						indexUpload(u)
+					except PDFSyntaxError:
+						pass
