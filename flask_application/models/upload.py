@@ -328,7 +328,6 @@ class Upload(SolrMixin, CreatorMixin, db.Document):
 			if try_path and os.path.exists(try_path):
 				pages = get_pages(try_path)
 				everything = "".join(pages)
-				print everything
 				if not os.path.exists(txt_dir):
 					os.makedirs(txt_dir)
 				with open(txt_path, "w") as fout:
