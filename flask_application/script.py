@@ -15,6 +15,7 @@ from flask_application.models import db, solr, User, Role, Thing, Maker, Upload,
 
 # pdf extraction
 from pdfminer.pdfparser import PDFSyntaxError
+from pdfminer.psparser import PSEOF
 
 
 class ResetDB(Command):
@@ -153,4 +154,6 @@ class IndexPDFText(Command):
 					try:
 						indexUpload(u)
 					except PDFSyntaxError:
-						pass
+						print '- Skipping... syntax error'
+					except PSEOF:
+						print '- Skipping... unexplained EOF'
