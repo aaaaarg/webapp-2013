@@ -146,7 +146,7 @@ def research(type=False):
 		query_tokens = query.split()
 		combined = ' '.join(query_tokens)
 		new_query = '"%s"~%d' % (combined, len(query_tokens))
-		results = solr.query(content_type="page", text=new_query).paginate(start=start, rows=num).execute()
+		results = solr.query(content_type="page", text=new_query).sort_by("-score").paginate(start=start, rows=num).execute()
 		# Build list of results 
 		things = []
 		for result in results:
