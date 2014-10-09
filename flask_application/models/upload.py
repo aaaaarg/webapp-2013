@@ -321,7 +321,9 @@ class Upload(SolrMixin, CreatorMixin, db.Document):
 			codec = 'utf-8'
 			txt_dir = os.path.join(app.config['UPLOADS_DIR'], app.config['TXT_SUBDIR'], self.md5)
 			txt_path = os.path.join(txt_dir, "%s.%s" % (self.md5, format))
-			if not paginated and os.path.exists(txt_path):
+			if os.path.exists(txt_path):
+				if paginated:
+					return False
 				with open(txt_path, "r") as f:
 					return f.read()
 			try_path = self.full_path()
