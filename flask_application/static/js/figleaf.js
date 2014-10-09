@@ -125,7 +125,7 @@
             $div.style.top = pos[1];
             $div.style.opacity = 0.5 * ratio;
             $div.style.zIndex = "6";
-            $div.style.pointer-events = "none";
+            $div.style.pointerEvents = "none";
             this.$el.appendChild($div);
         }
     }
