@@ -159,7 +159,7 @@ def research(type=False):
 						t = Thing.objects.filter(files=u).first()
 						things.append((t, result['md5_s'], id[1] ))
 		
-		content = get_template_attribute('frontend/macros.html', 'fulltext_search_results')(things)
+		content = get_template_attribute('frontend/macros.html', 'fulltext_search_results')(things, query)
 	
 	return render_template(
 		'frontend/search_fulltext.html',
