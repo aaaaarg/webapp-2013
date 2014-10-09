@@ -327,6 +327,10 @@ class Upload(SolrMixin, CreatorMixin, db.Document):
 				with open(txt_path, "r") as f:
 					return f.read()
 			try_path = self.full_path()
+			# Only handle pdfs (with pdf extension)
+			n, e = os.path.splitext(try_path)
+    	if not e=='.pdf':
+        return False
 			if try_path and os.path.exists(try_path):
 				pages = get_pages(try_path)
 				everything = "".join(pages)
