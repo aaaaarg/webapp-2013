@@ -7,6 +7,8 @@ from flask_application import app
 from werkzeug import secure_filename
 from mongoengine.base import ValidationError
 
+import codecs
+
 from . import db, CreatorMixin, SolrMixin
 
 """
@@ -311,60 +313,30 @@ class Upload(SolrMixin, CreatorMixin, db.Document):
 			if os.path.exists(txt_dir):
 				return txt_dir
 
-	def extract_pdf_text(self, format="txt"):
+
+	def extract_pdf_text(self, format="txt", paginated=False):
 		""" Extracts text from a pdf. Format can be txt or html """
-		from pdfminer.pdfparser import PDFParser
-		from pdfminer.pdfdocument import PDFDocument
-		from pdfminer.converter import HTMLConverter, TextConverter
-		from pdfminer.layout import LAParams
-		from pdfminer.pdfpage import PDFPage
-		from pdfminer.pdfpage import PDFTextExtractionNotAllowed
-		from pdfminer.pdfinterp import PDFResourceManager
-		from pdfminer.pdfinterp import PDFPageInterpreter
-		from pdfminer.pdfdevice import PDFDevice
-		from cStringIO import StringIO
-		import codecs
-		# try and read from file
-		retVal = False
-		codec = 'ascii'
+		from flask_application.pdf_scraper import get_pages
 		if self.md5 and 'TXT_SUBDIR' in app.config:
+			codec = 'utf-8'
 			txt_dir = os.path.join(app.config['UPLOADS_DIR'], app.config['TXT_SUBDIR'], self.md5)
 			txt_path = os.path.join(txt_dir, "%s.%s" % (self.md5, format))
-			if os.path.exists(txt_path):
-				with codecs.open(txt_path, "r", codec) as f:
+			if not paginated and os.path.exists(txt_path):
+				with open(txt_path, "r") as f:
 					return f.read()
-	    # only text and html conversion allowed
 			try_path = self.full_path()
 			if try_path and os.path.exists(try_path):
-				rsrcmgr = PDFResourceManager()
-				# create the directory for a cached version of the text file if it doesn't exist
+				pages = get_pages(try_path)
+				everything = "".join(pages)
+				print everything
 				if not os.path.exists(txt_dir):
-						os.makedirs(txt_dir)
-				with codecs.open(txt_path, "w", encoding=codec) as fout:
-					laparams = LAParams()
-					if format=="txt":
-						device = TextConverter(rsrcmgr, fout, codec=codec, laparams=laparams)
-					elif format=="html":
-						device = HTMLConverter(rsrcmgr, fout, codec=codec, laparams=laparams)
-					fp = file(try_path, 'rb')
-					interpreter = PDFPageInterpreter(rsrcmgr, device)
-					password = ""
-					maxpages = 0
-					caching = True
-					pagenos=set()
-					for page in PDFPage.get_pages(fp, pagenos, maxpages=maxpages, password=password,caching=caching, check_extractable=True):
-						interpreter.process_page(page)
-					fp.close()
-					device.close()
-					fout.close()
-					with codecs.open(txt_path, "r", codec) as f:
-						content = f.read()
-						if not content=="":
-							retVal = content
-			# make sure this directory is gone if there are not going to be any contents
-			if not retVal:
-				shutil.rmtree(txt_dir)
-		return retVal
+					os.makedirs(txt_dir)
+				with open(txt_path, "w") as fout:
+					fout.write(everything)
+				if paginated:
+					return pages
+				else:
+					return everything
 
 	def build_solr(self):
 		# I think this will cause major problems when uploads are saved because it triggers a pdf text extraction

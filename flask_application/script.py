@@ -66,6 +66,14 @@ class SolrReindex(Command):
 				solr.delete(queries=solr.Q(content_type="thread"))
 				solr.commit()
 				print 'reindexing discussions'
+			if todo=='pages' or todo=='all':
+				print 'dropping pages index'
+				solr.delete(queries=solr.Q(content_type="page"))
+				solr.commit()
+			if todo=='uploads' or todo=='all':
+				print 'dropping uploads index'
+				solr.delete(queries=solr.Q(content_type="upload"))
+				solr.commit()
 
 
 class FixMD5s(Command):
@@ -110,29 +118,35 @@ class IndexPDFText(Command):
 		u = Upload.objects.filter(md5=md5).first()
 		if u:
 			print "Opening",u.structured_file_name,"for extraction"
-			content = u.extract_pdf_text()
-			if content:
-				d = {
-					'_id' : u.id,
-					'content_type' : 'upload',
-					'description': re.sub(_illegal_xml_chars_RE, '?', content),
-				}
-				
-				for k in d:
-					if isinstance(d[k], basestring):
-						d[k] = unidecode(d[k])				
+			pages = u.extract_pdf_text(paginated=True)
+			page_num = 0
+			for content in pages:
+				if content:
+					d = {
+						'_id' : "%s_%s" % (u.id, page_num),
+						'content_type' : 'page',
+						'searchable_text': re.sub(_illegal_xml_chars_RE, '?', content),
+						'md5_s': u.md5,
+					}
+					
+					for k in d:
+						if isinstance(d[k], basestring):
+							d[k] = unidecode(d[k])				
 
-				try:
-					solr.add(d)
-					solr.commit()
-				except SolrError as e:
-					print "SolrError: ", e
-				except:
-					print "Unexpected error:", sys.exc_info()[0]
-					print traceback.print_tb(sys.exc_info()[2])
-					print d
-			else:
-				print "- No text could be extracted so this will not be indexed"
+					try:
+						print "- Adding page #",page_num
+						solr.add(d)
+						solr.commit()
+					except SolrError as e:
+						print "SolrError: ", e
+					except:
+						print "Unexpected error:", sys.exc_info()[0]
+						print traceback.print_tb(sys.exc_info()[2])
+						print d
+				else:
+					print "- No text could be extracted so this page will not be indexed"
+				# incrememnt the page number
+				page_num += 1
 		else:
 			print "No upload found with the given md5"
 		

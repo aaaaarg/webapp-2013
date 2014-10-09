@@ -142,18 +142,19 @@ def research(type=False):
 	content = ""
 
 	if not query=="":
-		results = solr.query(content_type="upload", text=query).paginate(start=start, rows=num).highlight("description", snippets=3, maxAnalyzedChars=-1).execute()
+		#results = solr.query(content_type="page", text=query).paginate(start=start, rows=num).highlight("searchable_text", snippets=3, maxAnalyzedChars=-1).execute()
+		results = solr.query(content_type="page", text=query).paginate(start=start, rows=num).execute()
 		# Build list of results
 		things = []
-		for id, result in results.highlighting.items():
-			u = Upload.objects.get(id=id)
-			if u:
-				t = Thing.objects.filter(files=u).first()
-				if t:
-					if 'description' in result:
-						things.append((t, result['description']))
-					else:
-						things.append((t, []))
+		for result in results:
+			if '_id' in result:
+				# id[0] is the upload id, id[1] is upload page
+				id = str(result['_id']).split('_')
+				if len(id)==2:
+					u = Upload.objects.get(id=id[0])
+					if u:
+						t = Thing.objects.filter(files=u).first()
+						things.append((t, result['md5_s'], id[1] ))
 		
 		content = get_template_attribute('frontend/macros.html', 'fulltext_search_results')(things)
 	
