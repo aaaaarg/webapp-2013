@@ -108,18 +108,14 @@ class FixMD5s(Command):
 			check_md5(md5)
 
 
-class IndexPDFText(Command):
-	""" Extracts text from a PDF and indexes it in Solr """
-	option_list = (
-		Option('--md5', '-m', dest='md5'),
-	)
-	def run(self, md5):
+def indexUpload(u):
+	""" Attempts to extract text from an uploaded PDF and index in Solr """
+	if u:
 		_illegal_xml_chars_RE = re.compile(u'[\x00-\x08\x0b\x0c\x0e-\x1F\uD800-\uDFFF\uFFFE\uFFFF]')
-		u = Upload.objects.filter(md5=md5).first()
-		if u:
-			print "Opening",u.structured_file_name,"for extraction"
-			pages = u.extract_pdf_text(paginated=True)
-			page_num = 0
+		print "Opening",u.structured_file_name,"for extraction"
+		pages = u.extract_pdf_text(paginated=True)
+		page_num = 0
+		if pages:
 			for content in pages:
 				if content:
 					d = {
@@ -148,5 +144,19 @@ class IndexPDFText(Command):
 				# incrememnt the page number
 				page_num += 1
 		else:
-			print "No upload found with the given md5"
-		
+			print 'Skipping...'
+	else:
+		print "No upload found with the given md5"
+
+class IndexPDFText(Command):
+	""" Extracts text from a PDF and indexes it in Solr """
+	option_list = (
+		Option('--md5', '-m', dest='md5'),
+	)
+	def run(self, md5):
+		if md5:
+			u = Upload.objects.filter(md5=md5).first()
+			indexUpload(u)
+		else:
+			for u in Upload.objects().all():
+					indexUpload(u)
