@@ -189,12 +189,14 @@ def _parse_pages (doc, images_folder):
 
     text_content = []
     for i, page in enumerate(PDFPage.create_pages(doc)):
-        interpreter.process_page(page)
-        # receive the LTPage object for this page
-        layout = device.get_result()
-        # layout is an LTPage object which may contain child objects like LTTextBox, LTFigure, LTImage, etc.
-        text_content.append(parse_lt_objs(layout, (i+1), images_folder))
-
+        try:
+            interpreter.process_page(page)
+            # receive the LTPage object for this page
+            layout = device.get_result()
+            # layout is an LTPage object which may contain child objects like LTTextBox, LTFigure, LTImage, etc.
+            text_content.append(parse_lt_objs(layout, (i+1), images_folder))
+        except:
+            pass
     return text_content
 
 def get_pages (pdf_doc, pdf_pwd='', images_folder='/tmp'):
