@@ -119,7 +119,7 @@
             var $div = document.createElement("div");
             $div.style.width = SCANR.th_w;
             $div.style.height = SCANR.th_h;
-            $div.style.backgroundColor = "#FFFF00";
+            $div.style.backgroundColor = color;
             $div.style.position = "absolute";
             $div.style.left = pos[0];
             $div.style.top = pos[1];

@@ -35,7 +35,7 @@
 
 	{# if current_user.is_authenticated() and preview #}
 	{% if preview %}
-	{% set preview = preview|replace('upload/processed-jpgs','static/pages') %}
+	{# set preview = preview|replace('upload/processed-jpgs','static/pages') #}
 	<div id="figleaf" class="preview" style="position: relative; float: left;">
 	    <img src="{{ preview }}" onload="figleafLoaded(this)">
 	</div>
@@ -126,8 +126,11 @@ function figleafLoaded() {
 	{% endfor %}
 	// add search results
 	{% if search_results %}
-		{% for p, s in search_results.items() %}
-		figleaf.tint({{ p }}, {{ s }});
+		{% set colors = {0:'#FFFF00', 1:'#00FFFF', 2:'#FF00FF'} %}
+		{% for idx, result_set in search_results.items() %}
+			{% for p, s in result_set.items() %}
+			figleaf.tint({{ p }}, {{ s }}, "{{ colors[idx] }}");
+			{% endfor %}
 		{% endfor %}
 	{% endif %}
 	// if there is a reference, go to it

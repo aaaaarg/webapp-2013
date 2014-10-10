@@ -121,26 +121,28 @@ def figleaf(md5, user_id=None):
 	search_results = {}
 	query = request.args.get('query', '')
 	if not query=='':
-		"""
-		query_tokens = query.split()
-		combined = ' '.join(query_tokens)
-		new_query = '"%s"~%d' % (combined, len(query_tokens))
-		"""
-		new_query = "'%s'" % query
-		results = solr.query(content_type="page", md5_s=md5, searchable_text=new_query).field_limit("_id", score=True).sort_by("-score").execute()
-		max_score = 0
-		min_score = 100
-		for result in results:
-			print result
-			if '_id' in result:
-				# id[0] is the upload id, id[1] is upload page
-				id = str(result['_id']).split('_')
-				if len(id)==2:
-					search_results[id[1]] = result['score']
-					max_score = result['score'] if result['score'] > max_score else max_score
-					min_score = result['score'] if result['score'] < min_score else min_score
-		min_score = min_score - 0.1
-		search_results.update((x, (y-min_score)/(max_score-min_score)) for x, y in search_results.items())
+		subqueries = query.split(',')
+		q_idx = 0
+		for q in subqueries:
+			if q_idx==3:
+				continue
+			new_query = "'%s'" % q.strip()
+			results = solr.query(content_type="page", md5_s=md5, searchable_text=new_query).field_limit("_id", score=True).sort_by("-score").execute()
+			max_score = 0
+			min_score = 100
+			search_results[q_idx] = {}
+			for result in results:
+				print result
+				if '_id' in result:
+					# id[0] is the upload id, id[1] is upload page
+					id = str(result['_id']).split('_')
+					if len(id)==2:
+						search_results[q_idx][id[1]] = result['score']
+						max_score = result['score'] if result['score'] > max_score else max_score
+						min_score = result['score'] if result['score'] < min_score else min_score
+			min_score = min_score - 0.1
+			search_results[q_idx].update((x, (y-min_score)/(max_score-min_score)) for x, y in search_results[q_idx].items())
+			q_idx+=1
 
 	return render_template('reference/figleaf.html',
 		preview = preview_url,
