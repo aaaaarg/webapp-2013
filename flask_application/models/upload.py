@@ -332,7 +332,10 @@ class Upload(SolrMixin, CreatorMixin, db.Document):
 			if not e=='.pdf':
 				return False
 			if try_path and os.path.exists(try_path):
-				pages = get_pages(try_path)
+				try:
+					pages = get_pages(try_path)
+				except:
+					return False
 				if not pages:
 					return False
 				everything = "".join(pages)
