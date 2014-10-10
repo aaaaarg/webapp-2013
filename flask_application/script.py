@@ -150,7 +150,7 @@ class IndexPDFText(Command):
 			u = Upload.objects.filter(md5=md5).first()
 			indexUpload(u)
 		else:
-			for u in Upload.objects().all():
+			for u in Upload.objects().order_by('-created_at').all():
 					try:
 						indexUpload(u)
 					except PDFSyntaxError:
