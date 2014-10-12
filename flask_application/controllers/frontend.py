@@ -147,9 +147,8 @@ def research(type=False):
 		#combined = ' '.join(query_tokens)
 		#new_query = "'%s'~%d" % (combined, 0)
 		new_query = "'%s'" % query
-		the_query = solr.query(searchable_text=new_query).filter(content_type="page").sort_by("-score").paginate(start=start, rows=num)
+		the_query = solr.query(searchable_text=new_query).filter(content_type="page").filter_exclude(md5_s="7dbf4aee8eb2b19197fe62913e15dda5").sort_by("-score").paginate(start=start, rows=num)
 		# Hack to exclude the card catalogue, which could very well overrun search results
-		the_query.filter_exclude(md5_s="7dbf4aee8eb2b19197fe62913e15dda5")
 		results = the_query.execute()
 		# Build list of results 
 		things = []
