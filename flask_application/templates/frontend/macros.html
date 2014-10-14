@@ -36,7 +36,8 @@
 	<ul class="list-group results fulltext">
 	{% for thing, md5, page in things %}
 		<li class="list-group-item">
-			<strong><a href="{{ url_for('thing.detail', id=thing.id) }}">{{ thing.title }}</a></strong> <small>p.{{ page }}</small>
+			<strong><a href="{{ url_for('thing.detail', id=thing.id) }}">{{ thing.title }}</a></strong> <small>p.{{ page }}</small><br/>
+			{{ thing.makers_display }}
 			<p>
 			<a href="{{ url_for('reference.figleaf', md5=md5, query=query) }}#{{page}}"><img src="/static/pages/{{ md5 }}/1024x-{{ page }}.jpg"></a>
 			</p>
