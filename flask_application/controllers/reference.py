@@ -4,7 +4,7 @@ import datetime, os, rfc3987, re
 from math import floor
 from PIL import Image
 
-from flask import Blueprint, request, redirect, flash, url_for, render_template, send_file, abort
+from flask import Blueprint, request, redirect, flash, url_for, render_template, send_file, abort, jsonify
 from flask.ext.security import (login_required, roles_required, roles_accepted, current_user)
 from flask_application import app
 from flask_application.forms import ReferenceForm
@@ -63,6 +63,38 @@ def pdf2html(md5, format):
 	else:
 		return "<pre>%s</pre>" % content	
 
+
+@reference.route('/ref/<string:md5>/search-inside')
+def search_inside(md5):
+	""" Conduct a search inside the text """
+	search_results = {}
+	query = request.args.get('query', '')
+	if not query=='':
+		subqueries = query.split(',')
+		q_idx = 0
+		for q in subqueries:
+			if q_idx==3:
+				continue
+			new_query = "'%s'" % q.strip()
+			results = solr.query(searchable_text=new_query).filter(content_type="page").filter(md5_s=md5).field_limit("_id", score=True).sort_by("-score").execute()
+			max_score = 0
+			min_score = 100
+			search_results[q_idx] = {}
+			for result in results:
+				print result
+				if '_id' in result:
+					# id[0] is the upload id, id[1] is upload page
+					id = str(result['_id']).split('_')
+					if len(id)==2:
+						search_results[q_idx][id[1]] = result['score']
+						max_score = result['score'] if result['score'] > max_score else max_score
+						min_score = result['score'] if result['score'] < min_score else min_score
+			min_score = min_score - 0.1
+			search_results[q_idx].update((x, (y-min_score)/(max_score-min_score)) for x, y in search_results[q_idx].items())
+			q_idx+=1
+	return jsonify(search_results)
+
+
 @reference.route('/ref/<string:md5>')
 @reference.route('/ref/<string:md5>/<user_id>')
 def figleaf(md5, user_id=None):
@@ -118,6 +150,7 @@ def figleaf(md5, user_id=None):
 		notes = Reference.objects.filter(upload=u, creator=current_user.get_id())
 
 	# if there is a query specified, do it
+	is_searchable = False
 	search_results = {}
 	query = request.args.get('query', '')
 	if not query=='':
@@ -132,7 +165,7 @@ def figleaf(md5, user_id=None):
 			min_score = 100
 			search_results[q_idx] = {}
 			for result in results:
-				print result
+				is_searchable = True
 				if '_id' in result:
 					# id[0] is the upload id, id[1] is upload page
 					id = str(result['_id']).split('_')
@@ -144,6 +177,12 @@ def figleaf(md5, user_id=None):
 			search_results[q_idx].update((x, (y-min_score)/(max_score-min_score)) for x, y in search_results[q_idx].items())
 			q_idx+=1
 
+	# check if this is searchable
+	if not is_searchable:
+		results = solr.query().filter(content_type="page").filter(md5_s=md5).execute()
+		if results:
+			is_searchable = True
+
 	return render_template('reference/figleaf.html',
 		preview = preview_url,
 		upload=u,
@@ -154,7 +193,8 @@ def figleaf(md5, user_id=None):
 		back_references = back_references,
 		notes = notes,
 		editable = editable,
-		search_results = search_results
+		search_results = search_results,
+		searchable=is_searchable
 		)
 
 

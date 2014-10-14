@@ -10,7 +10,7 @@ from flask.ext.mongoengine import MongoEngine
 # Create db, which is used across all models
 db = MongoEngine(app)
 
-# Create solr interface
+# Set up solr interface
 solr = SolrInterface(app.config['SOLR_SERVER_URL'])
 
 # Import user models here, before mixins

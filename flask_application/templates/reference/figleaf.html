@@ -1,15 +1,13 @@
-<html>
-<head>
-<title>
-{% if thing %}
-{{ thing.makers_display }}, {{ thing.title }} 
-{% endif %}
-</title>
-<script src="{{ url_for('static', filename='js/figleaf.js') }}"></script>
-</head>
-<body>
+{% extends "bootstrap/layouts/base.html" %}
+
+{% block title %}
+	{% if thing %}
+	{{ thing.makers_display }}, {{ thing.title }} 
+	{% endif %}
+{% endblock %}
 
 
+{% block post_container %}
 <div>
 
 <p>
@@ -26,7 +24,6 @@
 <a href="{{url_for('reference.reference_clips', md5=upload.md5) }}">ref clips</a>
 )
 </span>
-</p>
 
 </div>
 
@@ -37,23 +34,33 @@
 	{% if preview %}
 	{% set preview = preview|replace('upload/processed-jpgs','static/pages') %}
 	<div id="figleaf" class="preview" style="position: relative; float: left;">
-	    <img src="{{ preview }}" onload="figleafLoaded(this)">
+	    <img src="{{ preview }}">
 	</div>
 	{% endif %}
 
 	<div style="width: 200px; float: left;">
+		{% if searchable %}
+		<form class="form-inline" id="search-inside-form" role="form">
+			<label class="sr-only" for="search-inside">Search Inside</label>
+			<div class="input-group-btn">
+        <input type="text" class="form-control" id="search-inside" placeholder="search inside">
+        <button type="submit" class="btn btn-default"><i class="glyphicon glyphicon-search"></i></button>
+      </div>
+		</form>
+		{% endif %}
+
 		<div style="padding: 10px; border:1px solid #CCC; font-size: 11px;">
 		<p><u>guide</u></p>
 		click on a page and scroll to start...
 		<hr>
-		<b style="color:#ff0000">b</b> gets a bookmark to the current position<br/>
+		<b style="color:#ff0000">ctrl+b</b> gets a bookmark to the current position<br/>
 		<b style="color:#ff0000">' (quote)</b> gets a link to highlighted section -- press <b style="color:#ff0000">'</b> once to begin selection, then scroll a little, then press <b style="color:#ff0000">'</b> again to mark the end of the selection<br/>
 		<b style="color:#ff0000">[ ] (brackets)</b> gets a link to an image of an excerpt -- press <b style="color:#ff0000">[</b> to mark the top of the clip, then scroll a little, then press <b style="color:#ff0000">]</b> for the bottom<br/>
 		<hr>
 		The top of the frame/window is the point of reference for selections, clips, and references.
 		<hr>
-		<b style="color:#ff0000">r</b> creates a reference link in the text that points to another text -- you will have to paste in a url, which you can get from one of the above<br/>
-		<b style="color:#ff0000">a</b> creates an annotation at the current point in the text.<br/>
+		<b style="color:#ff0000">ctrl+r</b> creates a reference link in the text that points to another text -- you will have to paste in a url, which you can get from one of the above<br/>
+		<b style="color:#ff0000">ctrl+a</b> creates an annotation at the current point in the text.<br/>
 		<b style="color:#ff0000">' (quote)</b> then <b style="color:#ff0000">a</b> saves a highlighted annotation to the text -- first press <b style="color:#ff0000">'</b> once to begin selection, then scroll a little, then press <b style="color:#ff0000">a</b> to mark the end of the selection<br/>
 		</div>
 
@@ -95,8 +102,39 @@
 	</div>
 
 </div>
+{% endblock %}
 
+
+{% block js_footer %}
+<script src="{{ url_for('static', filename='js/figleaf.js') }}"></script>
 <script>
+var tints = ["#FFFF00", "#00FFFF", "#FF00FF"];
+$(document).ready( function() {
+	var figleafs = Array();
+	$('#figleaf img').each(function() {
+		figleafs.push(figleafLoaded($(this)));
+	});
+	$('#search-inside-form').submit(function(event) {
+		event.preventDefault();
+		console.log('searching');
+    $.ajax({
+        type: 'get',
+        data: {'ajax':true, 'query': $('#search-inside').val()},
+        url: '{{ url_for("reference.search_inside", md5=upload.md5) }}',
+        success: function(data) {
+        	$('.sr').remove();
+          $.each(data, function(c,obj) {
+					  $.each(obj, function(p,s) {
+						  for (var i = 0; i < figleafs.length; i++) {
+						  	figleafs[i].tint(p, s, tints[c]);
+						  }
+						}); 
+					}); 
+        }
+    });
+    return false;
+	});
+});
 function figleafLoaded() {
 	var $figleaf = document.getElementById("figleaf");
 	var figleaf = new Figleaf($figleaf, "{{ preview|replace('50x72.jpg', '') }}"); 
@@ -126,10 +164,9 @@ function figleafLoaded() {
 	{% endfor %}
 	// add search results
 	{% if search_results %}
-		{% set colors = {0:'#FFFF00', 1:'#00FFFF', 2:'#FF00FF'} %}
 		{% for idx, result_set in search_results.items() %}
 			{% for p, s in result_set.items() %}
-			figleaf.tint({{ p }}, {{ s }}, "{{ colors[idx] }}");
+			figleaf.tint({{ p }}, {{ s }}, tints[{{ idx }}]);
 			{% endfor %}
 		{% endfor %}
 	{% endif %}
@@ -137,9 +174,7 @@ function figleafLoaded() {
 	if (p) {
     figleaf.goto_reference(p);
 	} 	
+	return figleaf;
 }
 </script>
-
-
-</body>
-</html>
+{% endblock %}

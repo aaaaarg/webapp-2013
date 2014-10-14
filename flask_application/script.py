@@ -124,7 +124,7 @@ def indexUpload(u):
 					try:
 						print "- Adding page #",page_num
 						solr.add(d)
-						solr.commit()
+						#solr.commit()
 					except SolrError as e:
 						print "SolrError: ", e
 					except:
@@ -135,6 +135,15 @@ def indexUpload(u):
 					print "- No text could be extracted so this page will not be indexed"
 				# incrememnt the page number
 				page_num += 1
+			try:
+				print "- Committing!"
+				solr.commit()
+			except SolrError as e:
+				print "SolrError: ", e
+			except:
+				print "Unexpected error:", sys.exc_info()[0]
+				print traceback.print_tb(sys.exc_info()[2])
+				print d
 		else:
 			print 'Skipping...'
 	else:

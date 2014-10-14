@@ -117,6 +117,7 @@
         if (!isNaN(parseInt(page)) && isFinite(page) && !isNaN(parseFloat(ratio)) && isFinite(ratio)) {
             pos = this.pageToPos(page);
             var $div = document.createElement("div");
+            $div.className = 'sr';
             $div.style.width = SCANR.th_w;
             $div.style.height = SCANR.th_h;
             $div.style.backgroundColor = color;
@@ -262,6 +263,9 @@
             window.prompt("Bookmark for this page: ", "http://" + window.location.host + '/ref/' + md5 + "#" + page);
         }
         if (ev.keyCode == 65) { // a(nnotation)
+            if (!ev.ctrlKey) {
+                return;
+            }
             // one can press quote first and create a highlighted annotation
             var note = window.prompt("Click 'OK' to save the selection. You can add a short note if you want.");
             if (note === null || (note === '' && navigator.userAgent.toLowerCase().indexOf('safari') != -1 && !confirm("Just to confirm:\npress 'OK' to save with an empty note\npress 'Cancel' to cancel the whole thing\n\n(Sorry that this is redundant, but it is because of a Safari bug.)"))) {
@@ -294,6 +298,9 @@
             
         }
         if (ev.keyCode == 82) { // r(eference)
+            if (!ev.ctrlKey) {
+                return;
+            }
             var urlRegex = new RegExp(/https?:\/\/(www\.)?[-a-zA-Z0-9@:%._\+~#=]{2,256}\.[a-z]{2,6}\b([-a-zA-Z0-9@:%_\+.~#?&//=]*)?/gi);
             var url = window.prompt("Paste a reference URL: ");
             if (url.match(urlRegex)){

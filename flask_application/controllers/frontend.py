@@ -144,14 +144,14 @@ def research(type=False):
 	if not query=="":
 		#results = solr.query(content_type="page", text=query).paginate(start=start, rows=num).highlight("searchable_text", snippets=3, maxAnalyzedChars=-1).execute()
 		#query_tokens = query.split()
-		#combined = ' '.join(query_tokens)
-		#new_query = "'%s'~%d" % (combined, 0)
-		new_query = "'%s'" % query
+		#combined = 'AND '.join(query_tokens)
+		#new_query = "'%s'~%d" % (combined, len(query_tokens))
+		new_query = "%s" % query
 		the_query = solr.query(searchable_text=new_query).filter(content_type="page").filter_exclude(md5_s="7dbf4aee8eb2b19197fe62913e15dda5").sort_by("-score").paginate(start=start, rows=num)
-		# Hack to exclude the card catalogue, which could very well overrun search results
 		results = the_query.execute()
 		# Build list of results 
 		things = []
+		print results
 		for result in results:
 			if '_id' in result:
 				# id[0] is the upload id, id[1] is upload page
