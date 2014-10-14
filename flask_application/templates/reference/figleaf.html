@@ -111,6 +111,7 @@
 var tints = ["#FFFF00", "#00FFFF", "#FF00FF"];
 $(document).ready( function() {
 	var figleafs = Array();
+	var p = window.location.hash.substring(1);
 	$('#figleaf img').each(function() {
 		figleafs.push(figleafLoaded($(this)));
 	});
@@ -134,11 +135,16 @@ $(document).ready( function() {
     });
     return false;
 	});
+	// if there is a reference, go to it
+	if (p) {
+		for (var i = 0; i < figleafs.length; i++) {
+	    figleafs[i].goto_reference(p);
+	   }
+	} 	
 });
 function figleafLoaded() {
 	var $figleaf = document.getElementById("figleaf");
 	var figleaf = new Figleaf($figleaf, "{{ preview|replace('50x72.jpg', '') }}"); 
-	var p = window.location.hash.substring(1);
 	// add user notes
 	{% for note in notes %}
 	{% if note.pos and note.pos_end %}
@@ -170,10 +176,6 @@ function figleafLoaded() {
 			{% endfor %}
 		{% endfor %}
 	{% endif %}
-	// if there is a reference, go to it
-	if (p) {
-    figleaf.goto_reference(p);
-	} 	
 	return figleaf;
 }
 </script>
