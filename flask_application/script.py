@@ -155,7 +155,7 @@ class IndexPDFText(Command):
 		Option('--md5', '-m', dest='md5'),
 		Option('--coll', '-c', dest='coll'),
 	)
-	def run(self, md5):
+	def run(self, md5, coll):
 		if md5:
 			u = Upload.objects.filter(md5=md5).first()
 			indexUpload(u)
