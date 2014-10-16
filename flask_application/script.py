@@ -153,11 +153,17 @@ class IndexPDFText(Command):
 	""" Extracts text from a PDF and indexes it in Solr """
 	option_list = (
 		Option('--md5', '-m', dest='md5'),
+		Option('--coll', '-c', dest='coll'),
 	)
 	def run(self, md5):
 		if md5:
 			u = Upload.objects.filter(md5=md5).first()
 			indexUpload(u)
+		elif coll:
+			c = Collection.objects.filter(id=coll).first()
+			for ct in c.things:
+				for u in ct.thing.files:
+					indexUpload(u)
 		else:
 			for u in Upload.objects().order_by('-created_at').all():
 					try:
