@@ -172,3 +172,16 @@ class IndexPDFText(Command):
 						print '- Skipping... syntax error'
 					except PSEOF:
 						print '- Skipping... unexplained EOF'
+
+class ExtractISBN(Command):
+	""" Extracts text from a PDF and indexes it in Solr """
+	option_list = (
+		Option('--id', '-t', dest='thing_id'),
+	)
+	def run(self, thing_id):
+			if thing_id:
+				t = Thing.objects.filter(id=thing_id).first()
+				for f in t.files:
+					print f.find_isbns()
+				
+

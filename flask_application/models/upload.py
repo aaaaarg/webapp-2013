@@ -1,4 +1,5 @@
 import os, hashlib, unicodedata, re
+import stdnum.isbn
 
 from bson import ObjectId
 
@@ -347,6 +348,25 @@ class Upload(SolrMixin, CreatorMixin, db.Document):
 					return pages
 				else:
 					return everything
+
+	def find_isbns(self):
+		""" Looks through the extracted text to see if an ISBN can be discovered """
+		def normalize_isbn(value):
+			return ''.join([s for s in value if s.isdigit() or s == 'X'])
+		
+		text = self.extract_pdf_text
+		if isinstance(text, bytes):
+			text = text.decode()
+		matches = re.compile('\d[\d\-X\ ]+').findall(text)
+		matches = [normalize_isbn(value) for value in matches]
+		isbns = [isbn for isbn in matches if stdnum.isbn.is_valid(isbn)
+			and len(isbn) in (10, 13)
+			and isbn not in (
+			'0' * 10,
+			'0' * 13,
+		)]	
+		return isbns[0]	if isbns else None
+
 
 	def build_solr(self):
 		# I think this will cause major problems when uploads are saved because it triggers a pdf text extraction
