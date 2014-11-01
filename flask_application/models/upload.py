@@ -355,8 +355,6 @@ class Upload(SolrMixin, CreatorMixin, db.Document):
 			return ''.join([s for s in value if s.isdigit() or s == 'X'])
 		
 		text = self.extract_pdf_text()
-		if isinstance(text, bytes):
-			text = text.decode()
 		matches = re.compile('\d[\d\-X\ ]+').findall(text)
 		matches = [normalize_isbn(value) for value in matches]
 		isbns = [isbn for isbn in matches if stdnum.isbn.is_valid(isbn)
