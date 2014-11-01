@@ -354,7 +354,7 @@ class Upload(SolrMixin, CreatorMixin, db.Document):
 		def normalize_isbn(value):
 			return ''.join([s for s in value if s.isdigit() or s == 'X'])
 		
-		text = self.extract_pdf_text
+		text = self.extract_pdf_text()
 		if isinstance(text, bytes):
 			text = text.decode()
 		matches = re.compile('\d[\d\-X\ ]+').findall(text)
