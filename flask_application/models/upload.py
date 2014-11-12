@@ -137,6 +137,7 @@ class Upload(SolrMixin, CreatorMixin, db.Document):
 		usf = self.unique_structured_file_name(value=value)
 		self.update(set__structured_file_name=usf)
 		self.structured_file_name = usf
+
 		
 	def unique_structured_file_name(self, value=None, appendage=0):
 		"""
@@ -192,6 +193,8 @@ class Upload(SolrMixin, CreatorMixin, db.Document):
 			self.set_structured_file_name("%s %s" % (directory1, directory2))
 			self.save()
 			# @todo: clean up / delete empty directories
+			# create symbolid link from flat directory to file
+			os.symlink(new_path, os.path.join(app.config['UPLOADS_DIR'], app.config['UPLOADS_MAPDIR'], self.structured_file_name))
 		except:
 			print "Error: Failed to move file from",self.full_path(),"to",new_path
 

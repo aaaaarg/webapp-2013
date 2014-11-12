@@ -100,6 +100,16 @@ class FixMD5s(Command):
 			check_md5(md5)
 
 
+class UploadSymlinks(Command):
+	""" Creates symlinks for all uploads """
+	def run(self, **kwargs):
+
+		# purge uploads that are not in use
+		uploads = Upload.objects.all()
+		for u in uploads:
+			os.symlink(u.full_path(), os.path.join(app.config['UPLOADS_DIR'], app.config['UPLOADS_MAPDIR'], u.structured_file_name))
+
+
 def indexUpload(u):
 	""" Attempts to extract text from an uploaded PDF and index in Solr """
 	if u:
