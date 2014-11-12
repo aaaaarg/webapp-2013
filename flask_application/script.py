@@ -107,8 +107,10 @@ class UploadSymlinks(Command):
 		# purge uploads that are not in use
 		uploads = Upload.objects.all()
 		for u in uploads:
-			os.symlink(u.full_path(), os.path.join(app.config['UPLOADS_DIR'], app.config['UPLOADS_MAPDIR'], u.structured_file_name))
-
+			try:
+				os.symlink(u.full_path(), os.path.join(app.config['UPLOADS_DIR'], app.config['UPLOADS_MAPDIR'], u.structured_file_name))
+			except:
+				pass
 
 def indexUpload(u):
 	""" Attempts to extract text from an uploaded PDF and index in Solr """
