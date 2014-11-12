@@ -1,4 +1,4 @@
-import datetime, sys, traceback, re
+import datetime, sys, traceback, re, os
 from unidecode import unidecode
 
 from sunburnt.schema import SolrError
