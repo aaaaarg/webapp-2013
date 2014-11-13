@@ -114,7 +114,7 @@ def figleaf(md5, user_id=None):
 		else:
 			return "Sorry, I only know how to preview pdfs"
 	#preview_url = url_for('upload.serve_upload', filename=preview) if preview else False
-	preview_url = url_for('upload.serve_upload', filename='upload/%s/50x72.jpg' % u.structured_file_name) if preview else False
+	preview_url = url_for('upload.serve_upload', filename='%s/50x72.jpg' % u.structured_file_name) if preview else False
 
 	if not preview_url:
 		abort(404)
