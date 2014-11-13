@@ -292,7 +292,7 @@ class Upload(SolrMixin, CreatorMixin, db.Document):
 		self.update(set__created_at=datetime.datetime.now())
 
 	def preview(self):
-		if u.mimetype=="application/pdf":
+		if self.mimetype=="application/pdf":
 			return os.path.join(self.structured_file_name, '50x72.jpg')
 		return False
 
