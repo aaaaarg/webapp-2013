@@ -144,7 +144,7 @@ $(document).ready( function() {
 });
 function figleafLoaded() {
 	var $figleaf = document.getElementById("figleaf");
-	var figleaf = new Figleaf($figleaf, "{{ preview|replace('50x72.jpg', '') }}"); 
+	var figleaf = new Figleaf($figleaf, "{{ preview|replace('50x72x20.jpg', '') }}"); 
 	// add user notes
 	{% for note in notes %}
 	{% if note.pos and note.pos_end %}
