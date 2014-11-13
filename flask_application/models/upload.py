@@ -292,10 +292,8 @@ class Upload(SolrMixin, CreatorMixin, db.Document):
 		self.update(set__created_at=datetime.datetime.now())
 
 	def preview(self):
-		if self.md5 and 'SCANS_SUBDIR' in app.config:
-			preview_path = os.path.join(app.config['SCANS_SUBDIR'], self.md5, "50x72.jpg")
-			if os.path.exists(os.path.join(app.config['UPLOADS_DIR'], preview_path)):
-				return preview_path
+		if u.mimetype=="application/pdf":
+			return os.path.join(self.structured_file_name, '50x72.jpg')
 		return False
 
 	def preview_dir(self):

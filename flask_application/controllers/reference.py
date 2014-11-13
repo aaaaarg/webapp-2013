@@ -105,17 +105,9 @@ def figleaf(md5, user_id=None):
 	if not u:
 		abort(404)
 	thing = Thing.objects.filter(files=u).first()
+
 	preview = u.preview()
-
-	if not preview:
-		if u.mimetype=="application/pdf":
-			u.request_preview()
-			return "A preview will be generated within the next 15 minutes"
-		else:
-			return "Sorry, I only know how to preview pdfs"
-	#preview_url = url_for('upload.serve_upload', filename=preview) if preview else False
-	preview_url = url_for('upload.serve_upload', filename='%s/50x72.jpg' % u.structured_file_name) if preview else False
-
+	preview_url = url_for('upload.serve_upload', filename=preview) if preview else False
 	if not preview_url:
 		abort(404)
 
