@@ -20,17 +20,6 @@
     {{ upload_js() }}
     {{ collection_js() }}
     {{ sort_thing_js() }}
-    {% if preview %}
-    <script src="{{ url_for('static', filename='js/figleaf.js') }}"></script>
-    <script>
-    var $figleaf = document.getElementById("figleaf");
-    var figleaf = new Figleaf($figleaf, "{{ preview|replace('50x72.jpg', '') }}");
-    var p = window.location.hash.substring(1);
-    if (p) {
-        figleaf.reference(p);
-    } 
-    </script>
-    {% endif %}
 {% endblock %}
 
 {% block title %}

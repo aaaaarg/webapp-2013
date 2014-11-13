@@ -103,9 +103,8 @@ def detail(id):
 	thing = Thing.objects.get_or_404(id=id)
 	threads = Thread.objects.filter(origin=thing)
 	# preview
-	#preview = thing.preview()
-	#preview_url = url_for('upload.serve_upload', filename=preview) if preview else False
-	preview_url = False
+	preview = thing.preview(25,36,40)
+	preview_url = url_for('upload.serve_upload', filename=preview) if preview else False
 	# contributors
 	contributors = []
 	for f in thing.files:
