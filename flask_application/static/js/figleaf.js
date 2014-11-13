@@ -240,7 +240,7 @@
             var $div = this.page_containers[p];
             if($div.children.length == 0) {
                 var $img = document.createElement("img");
-                $img.src = this.basepath + "1024x-" + p + ".jpg";
+                $img.src = this.basepath + "x1024-" + p + ".jpg";
                 $img.style.width = "700";
                 $div.appendChild($img);
             }
