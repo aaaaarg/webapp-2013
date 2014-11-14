@@ -53,15 +53,7 @@
 		<p><u>guide</u></p>
 		click on a page and scroll to start...
 		<hr>
-		<b style="color:#ff0000">ctrl+b</b> gets a bookmark to the current position<br/>
-		<b style="color:#ff0000">' (quote)</b> gets a link to highlighted section -- press <b style="color:#ff0000">'</b> once to begin selection, then scroll a little, then press <b style="color:#ff0000">'</b> again to mark the end of the selection<br/>
-		<b style="color:#ff0000">[ ] (brackets)</b> gets a link to an image of an excerpt -- press <b style="color:#ff0000">[</b> to mark the top of the clip, then scroll a little, then press <b style="color:#ff0000">]</b> for the bottom<br/>
-		<hr>
-		The top of the frame/window is the point of reference for selections, clips, and references.
-		<hr>
-		<b style="color:#ff0000">ctrl+r</b> creates a reference link in the text that points to another text -- you will have to paste in a url, which you can get from one of the above<br/>
-		<b style="color:#ff0000">ctrl+a</b> creates an annotation at the current point in the text.<br/>
-		<b style="color:#ff0000">' (quote)</b> then <b style="color:#ff0000">a</b> saves a highlighted annotation to the text -- first press <b style="color:#ff0000">'</b> once to begin selection, then scroll a little, then press <b style="color:#ff0000">a</b> to mark the end of the selection<br/>
+
 		</div>
 
 		<div style="font-size:12px;">
@@ -102,6 +94,24 @@
 	</div>
 
 </div>
+
+<!-- Modal -->
+<div class="modal fade" id="mm" tabindex="-1" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-header">
+        <button type="button" class="close" data-dismiss="modal"><span aria-hidden="true">&times;</span><span class="sr-only">Close</span></button>
+        <h4 class="modal-title" id="mmt">Modal title</h4>
+      </div>
+      <div class="modal-body" id="mmb">
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
+        <button type="button" class="btn btn-primary">Save changes</button>
+      </div>
+    </div>
+  </div>
+</div>
 {% endblock %}
 
 
@@ -110,11 +120,8 @@
 <script>
 var tints = ["#FFFF00", "#00FFFF", "#FF00FF"];
 $(document).ready( function() {
-	var figleafs = Array();
 	var p = window.location.hash.substring(1);
-	$('#figleaf img').each(function() {
-		figleafs.push(figleafLoaded($(this)));
-	});
+	fl = figleafLoaded($('#figleaf img'));
 	$('#search-inside-form').submit(function(event) {
 		event.preventDefault();
 		console.log('searching');
@@ -126,20 +133,51 @@ $(document).ready( function() {
         	$('.sr').remove();
           $.each(data, function(c,obj) {
 					  $.each(obj, function(p,s) {
-						  for (var i = 0; i < figleafs.length; i++) {
-						  	figleafs[i].tint(p, s, tints[c]);
-						  }
+						  fl.tint(p, s, tints[c]);
 						}); 
 					}); 
         }
     });
     return false;
 	});
+	// keypress
+	var start = false;
+	$(document).on('keypress', function(e) {
+		if (!fl._has_focus) return;
+		p = fl.getPage();
+		if (e.which==61) { // =
+			$('#mmt').text('a reference to a point');
+			t = p-.03; b=p+.03;
+			$img = $("<p><img src=\"{{ preview|replace('50x72x20.jpg', '') }}"+t+"-"+b+"x500.jpg\"></p>");
+			url = "{{ url_for('reference.figleaf', md5=upload.md5, _external=True) }}#"+p;
+			$txt1 = $('<p>A url for this point in the text:<br/><span class="text-primary">'+url+'</span></p>');
+			$txt2 = $('<p>You can also paste in the url of another reference point or clip, which will create a link from this point to that. (For example: a link to the source of a quote)<br/><input class="form-control" type="text" name="url"></p>');
+			$('#mmb').text('');
+			$('#mmb').append($txt1).append($img).append($txt2);
+			$('#mm').modal({show:true});
+
+		} else if (e.which==91) { // [
+			start = fl.getPage();
+		} else if (e.which==93) { // ]
+			if (start) {
+				p = fl.getPage();
+				$('#mmt').text('clipper');
+				url = "{{ preview|replace('50x72x20.jpg', '') }}"+start+"-"+p+"x500.jpg";
+				url2 = "{{ url_for('reference.figleaf', md5=upload.md5, _external=True) }}#"+start+"-"+p;
+				$img = $("<p><img src=\""+url+"\"></p>");
+				$txt1 = $('<p>A url for this clip as an image:<br/><span class="text-primary">'+url+'</span></p>');
+				$txt2 = $('<p>A url to jump to this clip highlighted in the text:<br/><span class="text-primary">'+url2+'</span></p>');
+				$txt3 = $('<p>You can save this clip (in your clips collection)<br/><input class="form-control" type="text" name="note" placeholder="... with a short note (optional)"><br/><input class="form-control" type="text" name="tags" placeholder="... and some comma-separated tags (optional)"></p>');
+				$('#mmb').text('');
+				$('#mmb').append($txt1).append($txt2).append($img).append($txt3);
+				$('#mm').modal({show:true});
+				start = false;
+			}
+		}
+	});
 	// if there is a reference, go to it
 	if (p) {
-		for (var i = 0; i < figleafs.length; i++) {
-	    figleafs[i].goto_reference(p);
-	   }
+		fl.goto_reference(p);
 	} 	
 });
 function figleafLoaded() {

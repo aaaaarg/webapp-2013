@@ -47,6 +47,7 @@
 
         this.$el.appendChild(this.$focus);
 
+        this.pages_populated = false;
         this._has_focus = false;
 
         // Make container <divs> for each page that get lazily filled with images
@@ -107,10 +108,12 @@
     $.Figleaf.prototype.seek = function(page) {
         if(!this._has_focus) {
             this.$focus.style.display = "block";
-            this._populate_pages();
             this._has_focus = true;
         }
-
+        if(!this.pages_populated) {
+            this._populate_pages();
+            this.pages_populated = true;
+        }
         this.$focus.scrollTop = page * SCANR.page_h;
     }
     $.Figleaf.prototype.tint = function(page, ratio, color) {
@@ -247,7 +250,11 @@
             }
         }.bind(this));
     }
+    $.Figleaf.prototype.getPage = function() {
+        return this.$focus.scrollTop / SCANR.page_h;
+    }
     $.Figleaf.prototype._handle_keypress = function(ev) {
+        return;
         if (!this._has_focus) return;
         var t = this;
         if (ev.keyCode == 27) { // escape (hide window)
