@@ -325,7 +325,7 @@
         }
         if (ev.keyCode == 221) { // ] (for the end)
             //var page = this.$focus.scrollTop / SCANR.page_h + SCANR.box_h / SCANR.page_h;
-            window.prompt("Bookmark for this clip: ", window.location.host + '/clip/' + md5 + "/" + this.clip_top + "-" + page + ".jpg");
+            window.prompt("Bookmark for this clip: ", window.location.host + '/pages/' + md5 + "/" + this.clip_top + "-" + page + "x500.jpg");
         } 
         if (ev.keyCode == 222) { // ' (the first time opens the clip, the second time closes it)
             page = Math.round( page * 100 ) / 100
