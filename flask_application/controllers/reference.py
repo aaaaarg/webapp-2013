@@ -233,7 +233,7 @@ def create_annotation(md5, pos):
 			break
 
 	r.save()
-	return ''	
+	return ''
 
 
 @reference.route('/clips/<string:md5>')
@@ -257,8 +257,7 @@ def clips(md5, user_id=None):
 		if a.pos_end:
 			link = url_for("reference.figleaf", md5=a.upload.md5, _anchor=a.pos)
 			if a.pos_end:
-				path = u.preview(filename=)
-				img = url_for("reference.preview", filename=u.preview(filename='%s-%sx%s' % (a.pos, a.pos_end, 500)))
+				img = url_for("reference.preview", filename=u.preview(filename='%s-%sx%s.jpg' % (a.pos, a.pos_end, 500)))
 				clips.append((link,img,a.note))
 
 	return render_template('reference/clips.html',
@@ -283,9 +282,9 @@ def reference_clips(md5):
 		if a.ref_upload and a.ref_pos:
 			link = url_for("reference.figleaf", md5=a.upload.md5, _anchor=a.pos)
 			if a.ref_pos_end:
-				img = url_for("reference.preview", filename=u.preview(filename='%s-%sx%s' % (a.ref_pos, a.ref_pos_end, 500)))
+				img = url_for("reference.preview", filename=u.preview(filename='%s-%sx%s.jpg' % (a.ref_pos, a.ref_pos_end, 500)))
 			else:
-				img = url_for("reference.preview", filename=u.preview(filename='%s-%sx%s' % (int(a.ref_pos), int(a.ref_pos)+1, 500)))
+				img = url_for("reference.preview", filename=u.preview(filename='%s-%sx%s.jpg' % (int(a.ref_pos), int(a.ref_pos)+1, 500)))
 			clips.append((link,img,""))
 
 	return render_template('reference/clips.html',
