@@ -194,7 +194,7 @@ class Upload(SolrMixin, CreatorMixin, db.Document):
 			self.save()
 			# @todo: clean up / delete empty directories
 			# create symbolid link from flat directory to file
-			os.symlink(new_path, os.path.join(app.config['UPLOADS_DIR'], app.config['UPLOADS_MAPDIR'], self.structured_file_name))
+			os.symlink(new_path, os.path.join(app.config['UPLOADS_DIR'], app.config['UPLOADS_MAPDIR'], self.md5))
 		except:
 			print "Error: Failed to move file from",self.full_path(),"to",new_path
 
@@ -294,9 +294,9 @@ class Upload(SolrMixin, CreatorMixin, db.Document):
 	def preview(self, w=50, h=72, c=20, filename=None):
 		if self.mimetype=="application/pdf":
 			if not filename:
-				return os.path.join(self.structured_file_name, '%sx%sx%s.jpg' % (w,h,c))
+				return os.path.join(self.md5, '%sx%sx%s.jpg' % (w,h,c))
 			else:
-				return os.path.join(self.structured_file_name, filename)
+				return os.path.join(self.md5, filename)
 		return False
 
 	def preview_dir(self):
