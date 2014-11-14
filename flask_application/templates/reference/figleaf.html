@@ -121,7 +121,8 @@
 var tints = ["#FFFF00", "#00FFFF", "#FF00FF"];
 $(document).ready( function() {
 	var p = window.location.hash.substring(1);
-	fl = figleafLoaded($('#figleaf img'));
+	$fl = $('#figleaf img');
+	fl = figleafLoaded($fl);
 	$('#search-inside-form').submit(function(event) {
 		event.preventDefault();
 		console.log('searching');
@@ -140,6 +141,14 @@ $(document).ready( function() {
     });
     return false;
 	});
+	$('#figleaf').append('<span class="loading">loading... this can take up to 45 seconds</span>');
+	$fl.on('load', function(){
+		$('#figleaf .loading').remove();
+	  // if there is a reference, go to it
+	  if (p) {
+			fl.goto_reference(p);
+		}
+	}); 	
 	// keypress
 	var start = false;
 	$(document).on('keypress', function(e) {
@@ -175,10 +184,6 @@ $(document).ready( function() {
 			}
 		}
 	});
-	// if there is a reference, go to it
-	if (p) {
-		fl.goto_reference(p);
-	} 	
 });
 function figleafLoaded() {
 	var $figleaf = document.getElementById("figleaf");
