@@ -108,7 +108,7 @@ class UploadSymlinks(Command):
 		uploads = Upload.objects.all()
 		for u in uploads:
 			try:
-				os.symlink(u.full_path(), os.path.join(app.config['UPLOADS_DIR'], app.config['UPLOADS_MAPDIR'], u.md5))
+				os.symlink(u.full_path(), os.path.join(app.config['UPLOADS_DIR'], app.config['UPLOADS_MAPDIR'], '%s.pdf' % u.md5))
 			except:
 				pass
 
