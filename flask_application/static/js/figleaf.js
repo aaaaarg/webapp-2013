@@ -241,7 +241,8 @@
             if($div.children.length == 0) {
                 var $img = document.createElement("img");
                 $img.src = this.basepath + "x" + SCANR.page_h + "-" + p + ".jpg";
-                $img.style.width = "700";
+                //$img.style.width = "700";
+                $img.style.height = SCANR.page_h;
                 $div.appendChild($img);
             }
         }.bind(this));
