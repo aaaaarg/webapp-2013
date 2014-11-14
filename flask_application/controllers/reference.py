@@ -49,6 +49,11 @@ def delete(id):
 	return redirect("%s#%s" % (url_for("reference.figleaf", md5=md5), pos))
 
 
+@reference.route('/pages/<path:filename>')
+def preview(filename):
+	abort(404)
+
+
 @reference.route('/read/<string:md5>.<format>')
 def pdf2html(md5, format):
 	# only text and html conversion allowed
@@ -107,7 +112,7 @@ def figleaf(md5, user_id=None):
 	thing = Thing.objects.filter(files=u).first()
 
 	preview = u.preview()
-	preview_url = url_for('upload.serve_upload', filename=preview) if preview else False
+	preview_url = url_for('reference.preview', filename=preview) if preview else False
 	if not preview_url:
 		abort(404)
 
