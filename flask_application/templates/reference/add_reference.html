@@ -1,0 +1,17 @@
+{%- from "bootstrap/forms/macros.html" import render_field %}
+
+<img src="{{ img }}">
+<p>
+	The URL for this point in the text:<br/>
+	<span class="text-primary">{{ url_for("reference.figleaf", md5=md5, _anchor=pos, _external=True) }}</span>
+</p>
+<hr>
+<p>You can also add a reference to another text (for example, a link to the source of a quotation). Just get the URL for that reference point and paste it below.</p>
+<form action="{{ url_for('reference.add_reference', md5=md5) }}" method="post" name="reference">
+    {{form.hidden_tag()}}
+    <span class="hidden">{{render_field(form.pos, placeholder='Must be a floating point number (such as 1.23)')}}</span>
+    {{render_field(form.ref_url, placeholder='URL to point to')}}
+    <span class="hidden">{{render_field(form.tags_proxy, placeholder='Comma separated (eg: "the essay, communism")')}}</span>
+    <span class="hidden">{{render_field(form.note, placeholder='optional notes')}}</span>
+    <p><button class="btn btn-primary" type="submit">Create reference point</button></p>
+</form>

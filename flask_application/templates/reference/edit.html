@@ -12,6 +12,7 @@
     {{render_field(form.pos, placeholder='Must be a floating point number (such as 1.23)')}}
     {{render_field(form.ref_url, placeholder='URL to point to')}}
     {{render_field(form.note, rows=5)}}
+    
     <p><button class="btn btn-primary" type="submit">Save</button> <a href="{{ url_for('reference.delete', id=reference.id) }}" class="btn btn-danger">Delete</a></p>
 </form>
 {% endblock %}

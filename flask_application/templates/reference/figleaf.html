@@ -53,6 +53,11 @@
 		<p><u>guide</u></p>
 		click on a page and scroll to start...
 		<hr>
+		<b style="color:#ff0000">=</b> reference<br/>
+		<b style="color:#ff0000">[ ] (brackets)</b> clip <b style="color:#ff0000">[</b> to mark the top of the clip, then scroll a little, then press <b style="color:#ff0000">]</b> for the bottom<br/>
+		<hr>
+		The top of the frame/window is the point of reference for selections, clips, and references.
+		<hr>
 
 		</div>
 
@@ -107,7 +112,6 @@
       </div>
       <div class="modal-footer">
         <button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
-        <button type="button" class="btn btn-primary">Save changes</button>
       </div>
     </div>
   </div>
@@ -156,13 +160,18 @@ $(document).ready( function() {
 		p = fl.getPage();
 		if (e.which==61) { // =
 			$('#mmt').text('a reference to a point');
-			t = p-.03; b=p+.03;
-			$img = $("<p><img src=\"{{ preview|replace('50x72x20.jpg', '') }}"+t+"-"+b+"x500.jpg\"></p>");
-			url = "{{ url_for('reference.figleaf', md5=upload.md5, _external=True) }}#"+p;
-			$txt1 = $('<p>A url for this point in the text:<br/><span class="text-primary">'+url+'</span></p>');
-			$txt2 = $('<p>You can also paste in the url of another reference point or clip, which will create a link from this point to that. (For example: a link to the source of a quote)<br/><input class="form-control" type="text" name="url"></p>');
-			$('#mmb').text('');
-			$('#mmb').append($txt1).append($img).append($txt2);
+			$('#mmb').load('{{ url_for("reference.add_reference", md5=upload.md5) }}?pos='+p, function() {
+				$('#mmb').find('form').submit(function (e) {
+					e.preventDefault();
+					$.post($(this).attr('action'), $(this).serialize())
+					.done(function( data ) {
+    				fl.reference(p, $('#mmb').find('#ref_url').val(), "");
+						$('#mm').modal('hide');
+						$('#mmb').html();
+					});
+					return false;
+				});
+			});
 			$('#mm').modal({show:true});
 
 		} else if (e.which==91) { // [
@@ -171,16 +180,20 @@ $(document).ready( function() {
 			if (start) {
 				p = fl.getPage();
 				$('#mmt').text('clipper');
-				url = "{{ preview|replace('50x72x20.jpg', '') }}"+start+"-"+p+"x500.jpg";
-				url2 = "{{ url_for('reference.figleaf', md5=upload.md5, _external=True) }}#"+start+"-"+p;
-				$img = $("<p><img src=\""+url+"\"></p>");
-				$txt1 = $('<p>A url for this clip as an image:<br/><span class="text-primary">'+url+'</span></p>');
-				$txt2 = $('<p>A url to jump to this clip highlighted in the text:<br/><span class="text-primary">'+url2+'</span></p>');
-				$txt3 = $('<p>You can save this clip (in your clips collection)<br/><input class="form-control" type="text" name="note" placeholder="... with a short note (optional)"><br/><input class="form-control" type="text" name="tags" placeholder="... and some comma-separated tags (optional)"></p>');
-				$('#mmb').text('');
-				$('#mmb').append($txt1).append($txt2).append($img).append($txt3);
+				$('#mmb').load('{{ url_for("reference.add_clip", md5=upload.md5) }}?pos='+start+'-'+p, function() {
+					$('#mmb').find('form').submit(function (e) {
+						e.preventDefault();
+						$.post($(this).attr('action'), $(this).serialize())
+						.done(function( data ) {
+	    				fl.highlight(start.toString(), p.toString());
+							$('#mm').modal('hide');
+							$('#mmb').html();
+							start = false;
+  					});
+						return false;
+					});
+				});
 				$('#mm').modal({show:true});
-				start = false;
 			}
 		}
 	});

@@ -80,3 +80,18 @@ def escapejs(val):
 def nl2br(val): 
     return val.replace('\n','<br>\n')
 
+def parse_pos(s):
+    '''
+    Position should be in one of the following formats:
+    123.1 => vertical only
+    123.1-124.2 => vertical range
+    '''
+    try:
+        p = s.split('-')
+        if len(p)==2:
+            return float(p[0]), float(p[1])
+        else:
+            return float(s), None
+    except:
+        return None, None
+

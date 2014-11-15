@@ -2,6 +2,8 @@ import re, datetime, urlparse
 
 from flask.ext.security import current_user 
 
+from flask_application.helpers import parse_pos
+
 from . import db, CreatorMixin
 from .thing import Thing
 from .upload import Upload
@@ -16,6 +18,7 @@ class Annotation(CreatorMixin, db.Document):
 	upload = db.ReferenceField(Upload)
 	thing = db.ReferenceField(Thing)
 	note = db.StringField()
+	tags = db.ListField(db.StringField(max_length=50))
 
 	meta = {
 		'allow_inheritance': True,
@@ -31,23 +34,8 @@ class Annotation(CreatorMixin, db.Document):
 		if 'raw_pos' in kwargs:
 			self.parse_pos(kwargs['raw_pos'])
 
-	def _parse_pos(self, s):
-		'''
-		Position should be in one of the following formats:
-		123 => vertical only
-		123-124 => vertical range
-		'''
-		p = s.split('-')
-		try:
-			if len(p)==2:
-				return float(p[0]), float(p[1])
-			else:
-				return float(s), None
-		except:
-			return None, None
-
 	def parse_pos(self, s):
-		self.pos, self.pos_end = self._parse_pos(s)
+		self.pos, self.pos_end = parse_pos(s)
 
 
 class Reference(Annotation):
@@ -73,7 +61,7 @@ class Reference(Annotation):
 			self._parse_url()
 
 	def parse_ref_pos(self, s):
-		self.ref_pos, self.ref_pos_end = self._parse_pos(s)
+		self.ref_pos, self.ref_pos_end = parse_pos(s)
 
 	def _parse_url(self, url=False):
 		'''

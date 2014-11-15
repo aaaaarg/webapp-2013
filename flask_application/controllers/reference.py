@@ -7,6 +7,7 @@ from PIL import Image
 from flask import Blueprint, request, redirect, flash, url_for, render_template, send_file, abort, jsonify
 from flask.ext.security import (login_required, roles_required, roles_accepted, current_user)
 from flask_application import app
+from flask_application.helpers import parse_pos
 from flask_application.forms import ReferenceForm
 
 from ..models import *
@@ -32,6 +33,75 @@ def edit(id):
 		title = 'Edit',
 		form = form,
 		reference = r)
+
+
+@reference.route('/reference/form', methods=['GET'])
+@reference.route('/reference/form/<md5>', methods=['GET', 'POST'])
+@reference.route('/reference/form/<md5>/<pos>', methods=['GET', 'POST'])
+def add_reference(md5=None, pos=None):
+	"""
+	Create a new reference
+	"""
+	m = request.args.get('md5', None) if md5 is None else md5
+	u = Upload.objects.filter(md5=m).first()
+	if not u:
+		abort(404)	
+	p = request.args.get('pos', None) if pos is None else pos
+	t, b = parse_pos(p)
+	# make the form
+	form = ReferenceForm(formdata=request.form, pos=t, exclude=['creator','thing','upload','ref_pos','ref_pos_end','ref_thing','ref_upload'])
+	
+	if form.validate_on_submit():
+		
+		reference = Reference()
+		form.populate_obj(reference)
+		reference.tags = form.tags_proxy.data
+		reference.upload = u
+		reference.save()
+		return jsonify({'message':'Success! The reference has been created.'})
+	else:
+		img = url_for("reference.preview", filename=u.preview(filename='%s-%sx%s.jpg' % (t-.03, t+.03, 500))) 
+		return render_template('reference/add_reference.html',
+			form=form,
+			img=img,
+			md5=m,
+			pos=t
+	  )
+
+
+@reference.route('/clip/form', methods=['GET'])
+@reference.route('/clip/form/<md5>', methods=['GET', 'POST'])
+@reference.route('/clip/form/<md5>/<pos>', methods=['GET', 'POST'])
+def add_clip(md5=None, pos=None):
+	"""
+	Create a new clip
+	"""
+	m = request.args.get('md5', None) if md5 is None else md5
+	u = Upload.objects.filter(md5=m).first()
+	if not u:
+		abort(404)
+	p = request.args.get('pos', None) if pos is None else pos
+	t, b = parse_pos(p)
+	# make the form
+	form = ReferenceForm(formdata=request.form, pos=t, pos_end=b, exclude=['creator','thing','upload','ref_pos','ref_pos_end','ref_thing','ref_upload'])
+	del form.ref_url
+
+	if form.validate_on_submit():
+		reference = Reference()
+		form.populate_obj(reference)
+		reference.tags = form.tags_proxy.data
+		reference.upload = u
+		reference.save()
+		return jsonify({'message':'Success! The clip has been created.'})
+	else:
+		img = url_for("reference.preview", filename=u.preview(filename='%s-%sx%s.jpg' % (t, b, 500)), _external=True) 
+		highlight = url_for("reference.figleaf", md5=m, _anchor="%s-%s"%(t,b), _external=True)
+		return render_template('reference/add_clip.html',
+			form=form,
+			img=img,
+			md5=m,
+			highlight_url = highlight
+	  )
 
 
 @reference.route('/<id>/delete', methods= ['GET','POST'])
@@ -256,10 +326,9 @@ def clips(md5, user_id=None):
 
 	for a in annotations:
 		if a.pos_end:
-			link = url_for("reference.figleaf", md5=a.upload.md5, _anchor=a.pos)
-			if a.pos_end:
-				img = url_for("reference.preview", filename=u.preview(filename='%s-%sx%s.jpg' % (a.pos, a.pos_end, 500)))
-				clips.append((link,img,a.note))
+			link = url_for("reference.figleaf", md5=a.upload.md5, _anchor='%s-%s' % (a.pos, a.pos_end))
+			img = url_for("reference.preview", filename=u.preview(filename='%s-%sx%s.jpg' % (a.pos, a.pos_end, 500)))
+			clips.append((link,img,a.note))
 
 	return render_template('reference/clips.html',
 		thing = thing,

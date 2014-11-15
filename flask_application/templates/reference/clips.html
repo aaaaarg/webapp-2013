@@ -24,12 +24,14 @@ p a {
 {% endif %}
 
 {% for link, img, note in clips %}
-
+<p>
+	
 {% if note %}
-<p>{{note|urlize(40)|markdown}}</p>
+{{note|urlize(40)|markdown}}<br/>
 {% endif %}
 
 <a target="_new" href="{{link}}" style="border:0; padding: 7px;"><img src="{{img}}"></a>
+</p>
 {% endfor %}
 
 </body>
