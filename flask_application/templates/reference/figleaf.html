@@ -127,7 +127,7 @@ $(document).ready( function() {
 	var p = window.location.hash.substring(1);
 	$fl = $('#figleaf img');
 	fl = figleafLoaded($fl);
-	$loading = $('<span class="loading">loading... this can take up to 45 seconds</span>');
+	$loading = $('<span class="loading">loading... this can take up to 45 seconds<br/></span>');
 	$('#figleaf').prepend($loading);
 	$fl.on('load', function(){
 		$loading.remove();
