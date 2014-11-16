@@ -201,11 +201,11 @@ class ExtractISBN(Command):
 	def run(self, thing_id):
 			if thing_id:
 				t = Thing.objects.filter(id=thing_id).first()
-				extract(t)
+				self.extract(t)
 			else:
 				things = Thing.objects.all()
 				for t in things:
-					extract(t)
+					self.extract(t)
 				
 				
 
