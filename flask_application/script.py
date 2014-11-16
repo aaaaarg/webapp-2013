@@ -190,14 +190,22 @@ class ExtractISBN(Command):
 	option_list = (
 		Option('--id', '-t', dest='thing_id'),
 	)
+	def extract(t):
+			print t.title
+			for f in t.files:
+				txt_dir = os.path.join(app.config['UPLOADS_DIR'], app.config['TXT_SUBDIR'], f.md5)
+				txt_path = os.path.join(txt_dir, "%s.%s" % (f.md5, 'txt'))
+				if os.path.exists(txt_path):
+					print f.find_isbns()
+
 	def run(self, thing_id):
 			if thing_id:
 				t = Thing.objects.filter(id=thing_id).first()
-				print t.title
-				for f in t.files:
-					txt_dir = os.path.join(app.config['UPLOADS_DIR'], app.config['TXT_SUBDIR'], f.md5)
-					txt_path = os.path.join(txt_dir, "%s.%s" % (f.md5, 'txt'))
-					if os.path.exists(txt_path):
-						print f.find_isbns()
+				extract(t)
+			else:
+				things = Thing.objects.all()
+				for t in things:
+					extract(t)
+				
 				
 
