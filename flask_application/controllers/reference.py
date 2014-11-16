@@ -307,8 +307,53 @@ def create_annotation(md5, pos):
 	return ''
 
 
-@reference.route('/clips/<string:md5>')
-@reference.route('/clips/<string:md5>/<user_id>')
+@reference.route('/clips/about/<string:tag>')
+@reference.route('/clips/about/<string:tag>/<user_id>')
+def tag_clips(tag, user_id=None):
+	if user_id is not None:
+		annotations = Reference.objects.filter(creator=user_id, tags=tag).order_by('-created_at')
+	else:
+		annotations = Reference.objects.filter(tags=tag).order_by('-created_at')
+	clips = []
+
+	for a in annotations:
+		if a.pos_end:
+			u = a.upload
+			link = url_for("reference.figleaf", md5=a.upload.md5, _anchor='%s-%s' % (a.pos, a.pos_end))
+			img = url_for("reference.preview", filename=u.preview(filename='%s-%sx%s.jpg' % (a.pos, a.pos_end, 500)))
+			clips.append((link,img,a.note,a.tags))
+
+	return render_template('reference/clips.html',
+		title = "Clips for %s" % tag,
+		thing = thing,
+		clips = clips
+	)
+
+
+@reference.route('/clips')
+@reference.route('/clips/for/<user_id>')
+def user_clips(user_id=None):
+	if user_id is None:
+		user_id = current_user.get_id()
+
+	annotations = Reference.objects.filter(creator=user_id).order_by('-created_at')
+	clips = []
+
+	for a in annotations:
+		if a.pos_end:
+			u = a.upload
+			link = url_for("reference.figleaf", md5=a.upload.md5, _anchor='%s-%s' % (a.pos, a.pos_end))
+			img = url_for("reference.preview", filename=u.preview(filename='%s-%sx%s.jpg' % (a.pos, a.pos_end, 500)))
+			clips.append((link,img,a.note,a.tags))
+
+	return render_template('reference/clips.html',
+		title = "clips",
+		thing = thing,
+		clips = clips
+	)
+
+@reference.route('/clips/from/<string:md5>')
+@reference.route('/clips/from/<string:md5>/<user_id>')
 def clips(md5, user_id=None):
 	"""
 	A page made of clips/ highlights of the text
@@ -328,9 +373,10 @@ def clips(md5, user_id=None):
 		if a.pos_end:
 			link = url_for("reference.figleaf", md5=a.upload.md5, _anchor='%s-%s' % (a.pos, a.pos_end))
 			img = url_for("reference.preview", filename=u.preview(filename='%s-%sx%s.jpg' % (a.pos, a.pos_end, 500)))
-			clips.append((link,img,a.note))
+			clips.append((link,img,a.note,a.tags))
 
 	return render_template('reference/clips.html',
+		title = "Clips from %s" % thing.title,
 		thing = thing,
 		clips = clips
 	)
@@ -355,9 +401,10 @@ def reference_clips(md5):
 				img = url_for("reference.preview", filename=u.preview(filename='%s-%sx%s.jpg' % (a.ref_pos, a.ref_pos_end, 500)))
 			else:
 				img = url_for("reference.preview", filename=u.preview(filename='%s-%sx%s.jpg' % (int(a.ref_pos), int(a.ref_pos)+1, 500)))
-			clips.append((link,img,""))
+			clips.append((link,img,"",a.tags))
 
 	return render_template('reference/clips.html',
+		title = "Clips referencing %s" % thing.title,
 		thing = thing,
 		clips = clips
 	)
