@@ -352,6 +352,25 @@ def user_clips(user_id=None):
 		clips = clips
 	)
 
+@reference.route('/clips/recent')
+@reference.route('/clips/recent/<int:page>')
+def recent_clips(page=1):
+	annotations = Reference.objects(pos_end__gt=0).order_by('-created_at').paginate(page=page, per_page=20)
+	clips = []
+
+	for a in annotations.items:
+		if a.pos_end:
+			u = a.upload
+			link = url_for("reference.figleaf", md5=a.upload.md5, _anchor='%s-%s' % (a.pos, a.pos_end))
+			img = url_for("reference.preview", filename=u.preview(filename='%s-%sx%s.jpg' % (a.pos, a.pos_end, 500)))
+			clips.append((link,img,a.note,a.tags))
+
+	return render_template('reference/clips.html',
+		title = "clips",
+		thing = thing,
+		clips = clips
+	)
+
 @reference.route('/clips/from/<string:md5>')
 @reference.route('/clips/from/<string:md5>/<user_id>')
 def clips(md5, user_id=None):
