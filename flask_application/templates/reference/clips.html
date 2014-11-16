@@ -24,14 +24,15 @@ p a {
 {% for link, img, note, tags in clips %}
 <p>
 
+<a target="_new" href="{{link}}" style="border:0; padding: 7px;"><img src="{{img}}"></a>
 {% if note %}
-{{note|urlize(40)|markdown}}<br/>
+<small>{{note|urlize(40)|markdown}}<br/></small>
+
+{% endif %}
 {% for t in tags %}
 	<small><a href="{{ url_for('reference.tag_clips', tag=t) }}">{{ t }}</a></small>{% if not loop.last %}, {% else %}<br/>{% endif %}
 {% endfor %}
-{% endif %}
 
-<a target="_new" href="{{link}}" style="border:0; padding: 7px;"><img src="{{img}}"></a>
 </p>
 {% endfor %}
 
