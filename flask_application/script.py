@@ -190,7 +190,7 @@ class ExtractISBN(Command):
 	option_list = (
 		Option('--id', '-t', dest='thing_id'),
 	)
-	def extract(t):
+	def extract(self, t):
 			print t.title
 			for f in t.files:
 				txt_dir = os.path.join(app.config['UPLOADS_DIR'], app.config['TXT_SUBDIR'], f.md5)
