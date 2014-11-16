@@ -183,7 +183,7 @@ def figleaf(md5, user_id=None):
 
 	preview = u.preview()
 	preview_url = url_for('reference.preview', filename=preview) if preview else False
-	preview_url = preview_url.replace('/pages', 'http://127.0.0.1:8484')
+	#preview_url = preview_url.replace('/pages', 'http://127.0.0.1:8484')
 	if not preview_url:
 		abort(404)
 
