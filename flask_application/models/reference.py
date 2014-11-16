@@ -33,6 +33,11 @@ class Annotation(CreatorMixin, db.Document):
 				print str(e)
 		if 'raw_pos' in kwargs:
 			self.parse_pos(kwargs['raw_pos'])
+		if self.pos and self.pos_end and self.pos > self.pos_end:
+			x = self.pos
+			self.pos = self.pos_end
+			self.pos_end = x
+
 
 	def parse_pos(self, s):
 		self.pos, self.pos_end = parse_pos(s)

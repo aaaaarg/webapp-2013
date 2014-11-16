@@ -89,7 +89,9 @@ def parse_pos(s):
     try:
         p = s.split('-')
         if len(p)==2:
-            return float(p[0]), float(p[1])
+            a, b = float(p[0]), float(p[1])
+            c, d = (b, a) if a > b else (a, b)
+            return c ,d
         else:
             return float(s), None
     except:
