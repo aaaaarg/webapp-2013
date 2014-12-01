@@ -52,9 +52,6 @@
         <div><p class="lead">{{thing.short_description}}</p></div>
 
         <div>
-            {% if preview and preview_url %}
-            <a href="{{ preview_url }}"><img align="left" src="{{ preview }}" hspace="20" vspace="20"></a>
-            {% endif %}
             <p>{{thing.description|nl2br|markdown}}</p>
         </div>
 
@@ -86,6 +83,11 @@
         {% endif %}
     </div>
     <div class="col-md-3">
+        {% if preview and preview_url %}
+        <div>
+            <a href="{{ preview_url }}"><img align="left" src="{{ preview }}" hspace="20" vspace="20"></a>
+        </div>
+        {% endif %}
         <div class="sortable-thing">
             {{ popover('<h3>+</h3>', thing.title, remote=url_for('thing.sort_actions', id=thing.id, hide='collections')) }}
         </div>
