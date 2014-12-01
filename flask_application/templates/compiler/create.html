@@ -1,0 +1,100 @@
+{% extends "bootstrap/layouts/base.html" %}
+
+{% block title %}
+	{% if title %}
+	{{ title }} 
+	{% endif %}
+{% endblock %}
+
+
+{% block body_classes %}
+	dragging
+{% endblock %}
+
+
+{% block container %}
+
+<div class="row">
+	<div class="col-md-3" style="height:100%;overflow-y:auto;">
+
+		<ul class="compiler">
+
+		{% for link, img, t, note, page_count, u in clips %}
+			<li class="">
+				<a target="_new" href="{{link}}" style="border:0; padding: 7px;" data-toggle="tooltip" title="{{ t }} - {{ note }}" rel="tooltip" data-uri="{{ u }}"><img src="{{img}}"></a><br/>
+				<small class="text-muted">{{page_count}} pgs</small>
+			</li>
+		{% endfor %}
+
+		</ul>
+
+	</div>
+	<div class="col-md-9">
+		<div id="compiled-uri">drag items below here</div>
+		<ul class="compiler" id="toc">
+
+		</ul>
+	</div>
+
+</div>
+
+
+{% endblock %}
+
+
+{% block js_footer %}
+<script src="{{ url_for('static', filename='js/jquery-sortable-min.js') }}"></script>
+<script>
+	$(function  () {
+		var base_url = '{{ url_for("reference.preview", filename="compile/")}}';
+		function build_url() {
+			path = '';
+			$("ul#toc").find('li').each(function () {
+				u = $(this).find('a').attr('data-uri');
+				if (u) {
+					console.log(u);
+					path = path + $(this).find('a').attr('data-uri');
+				}
+			});	
+			if (path!='') {
+				$('#compiled-uri').html('<a href="' + base_url + path + 'pdf.pdf">link to compiled pdf</a>');
+			}
+		}
+  	$("ul.compiler").sortable({
+  		group: 'compiler',
+		  pullPlaceholder: false,
+		  // animation on drop
+		  onDrop: function  (item, targetContainer, _super) {
+		    var clonedItem = $('<li/>').css({height: 0})
+		    item.before(clonedItem)
+		    clonedItem.animate({'height': item.height()})
+		    
+		    item.animate(clonedItem.position(), function  () {
+		      clonedItem.detach()
+		      _super(item)
+		    })
+		    build_url()
+		  },
+
+		  // set item relative to cursor position
+		  onDragStart: function ($item, container, _super) {
+		    var offset = $item.offset(),
+		    pointer = container.rootGroup.pointer
+
+		    adjustment = {
+		      left: pointer.left - offset.left,
+		      top: pointer.top - offset.top
+		    }
+
+		    _super($item, container)
+		  },
+		  onDrag: function ($item, position) {
+		    $item.css({
+		      left: position.left - adjustment.left,
+		      top: position.top - adjustment.top
+		    })
+		  }
+  	})
+	})
+</script>
+{% endblock %}

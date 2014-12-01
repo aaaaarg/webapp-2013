@@ -94,11 +94,15 @@ def add_clip(md5=None, pos=None):
 		reference.save()
 		return jsonify({'message':'Success! The clip has been created.'})
 	else:
+		pdf = None
+		if b-t>1:
+			pdf = url_for("reference.preview", filename='compile/%s.pdf/%s-%s/pdf.pdf' % (m, int(t), int(b)), _external=True)
 		img = url_for("reference.preview", filename=u.preview(filename='%s-%sx%s.jpg' % (t, b, 500)), _external=True) 
 		highlight = url_for("reference.figleaf", md5=m, _anchor="%s-%s"%(t,b), _external=True)
 		return render_template('reference/add_clip.html',
 			form=form,
 			img=img,
+			pdf=pdf,
 			md5=m,
 			highlight_url = highlight
 	  )
@@ -320,7 +324,10 @@ def tag_clips(tag, user_id=None):
 		if a.pos_end:
 			u = a.upload
 			link = url_for("reference.figleaf", md5=a.upload.md5, _anchor='%s-%s' % (a.pos, a.pos_end))
-			img = url_for("reference.preview", filename=u.preview(filename='%s-%sx%s.jpg' % (a.pos, a.pos_end, 500)))
+			y1, y2 = (a.pos, a.pos_end) if a.pos_end-a.pos<1 else (int(a.pos), int(a.pos))
+			if a.pos_end-a.pos>1:
+				a.note = '%s (%s pages)' % (a.note, int(a.pos_end)-int(a.pos)+1)
+			img = url_for("reference.preview", filename=u.preview(filename='%s-%sx%s.jpg' % (y1, y2, 500)))
 			clips.append((link,img,a.note,a.tags))
 
 	return render_template('reference/clips.html',
@@ -343,7 +350,10 @@ def user_clips(user_id=None):
 		if a.pos_end:
 			u = a.upload
 			link = url_for("reference.figleaf", md5=a.upload.md5, _anchor='%s-%s' % (a.pos, a.pos_end))
-			img = url_for("reference.preview", filename=u.preview(filename='%s-%sx%s.jpg' % (a.pos, a.pos_end, 500)))
+			y1, y2 = (a.pos, a.pos_end) if a.pos_end-a.pos<1 else (int(a.pos), int(a.pos))
+			if a.pos_end-a.pos>1:
+				a.note = '%s (%s pages)' % (a.note, int(a.pos_end)-int(a.pos)+1)
+			img = url_for("reference.preview", filename=u.preview(filename='%s-%sx%s.jpg' % (y1, y2, 500)))
 			clips.append((link,img,a.note,a.tags))
 
 	return render_template('reference/clips.html',
@@ -362,7 +372,10 @@ def recent_clips(page=1):
 		if a.pos_end:
 			u = a.upload
 			link = url_for("reference.figleaf", md5=a.upload.md5, _anchor='%s-%s' % (a.pos, a.pos_end))
-			img = url_for("reference.preview", filename=u.preview(filename='%s-%sx%s.jpg' % (a.pos, a.pos_end, 500)))
+			y1, y2 = (a.pos, a.pos_end) if a.pos_end-a.pos<1 else (int(a.pos), int(a.pos))
+			if a.pos_end-a.pos>1:
+				a.note = '%s (%s pages)' % (a.note, int(a.pos_end)-int(a.pos)+1)
+			img = url_for("reference.preview", filename=u.preview(filename='%s-%sx%s.jpg' % (y1, y2, 500)))
 			clips.append((link,img,a.note,a.tags))
 
 	return render_template('reference/clips.html',
@@ -391,7 +404,10 @@ def clips(md5, user_id=None):
 	for a in annotations:
 		if a.pos_end:
 			link = url_for("reference.figleaf", md5=a.upload.md5, _anchor='%s-%s' % (a.pos, a.pos_end))
-			img = url_for("reference.preview", filename=u.preview(filename='%s-%sx%s.jpg' % (a.pos, a.pos_end, 500)))
+			y1, y2 = (a.pos, a.pos_end) if a.pos_end-a.pos<1 else (int(a.pos), int(a.pos))
+			if a.pos_end-a.pos>1:
+				a.note = '%s (%s pages)' % (a.note, int(a.pos_end)-int(a.pos)+1)
+			img = url_for("reference.preview", filename=u.preview(filename='%s-%sx%s.jpg' % (y1, y2, 500)))
 			clips.append((link,img,a.note,a.tags))
 
 	return render_template('reference/clips.html',

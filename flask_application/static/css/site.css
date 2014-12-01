@@ -78,3 +78,46 @@ ul.nav ul.dropdown-menu li a {
 ul.fulltext.results li em {
 	background-color: #FFFF00;
 }
+
+body.dragging, body.dragging * {
+  cursor: move !important;
+}
+
+.dragged {
+  position: absolute;
+  opacity: 0.5;
+  z-index: 2000;
+}
+
+ul.compiler {
+	list-style: none;
+	list-style-type: none;
+}
+
+ul.compiler li {
+	margin: 20px;
+	padding: 20px;
+	background-color: #EEE;
+	width: 130px;
+}
+
+ul.compiler li.placeholder {
+  position: relative;
+  /** More li styles **/
+}
+ul.compiler li.placeholder:before {
+  position: absolute;
+  /** Define arrowhead **/
+}
+
+ul#toc {
+	width: 100%;
+	height: 100%;
+	background-color: #CCFFCC;
+}
+
+ul#toc li {
+	display: inline-block;
+	background-color: #FFF;
+	margin: 10px;
+}

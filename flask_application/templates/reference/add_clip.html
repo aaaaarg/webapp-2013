@@ -1,5 +1,12 @@
 {%- from "bootstrap/forms/macros.html" import render_field %}
 
+
+{% if pdf %}
+<p>
+    A url for this pdf excerpt:
+    <a href="{{ pdf }}">{{ pdf }}</a>
+</p>
+{% endif %}
 <p>
 	A url for this clip as an image:<br/>
 	<span class="text-primary">{{ img }}</span>
@@ -8,7 +15,9 @@
 	A url to jump to this clip highlighted in the text:<br/>
 	<span class="text-primary">{{ highlight_url }}</span>
 </p>
+{% if img and not pdf %}
 <img src="{{ img }}">
+{% endif %}
 <hr>
 <p>You can save this clip (in your clips collection).</p>
 <form action="{{ url_for('reference.add_clip', md5=md5) }}" method="post" name="reference">
