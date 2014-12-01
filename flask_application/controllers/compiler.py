@@ -61,7 +61,7 @@ def create_from_search():
 					if md5==last_md5:
 						pdf_path = '%s,%s' % (pdf_path, id[1])
 					else:
-						pdf_path = '%s/%s/%s' % (pdf_path, md5, id[1])
+						pdf_path = '%s/%s.pdf/%s' % (pdf_path, md5, id[1])
 					last_md5 = md5
 	
 	if pdf_path=='':
