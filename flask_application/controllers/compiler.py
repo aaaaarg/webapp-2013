@@ -67,7 +67,7 @@ def create_from_search():
 	if pdf_path=='':
 		return 'There were no results!'
 	else:
-		return url_for('reference.preview', filename='/compile%s' % pdf_path, _external=True)
+		return url_for('reference.preview', filename='compile%s/pdf.pdf' % pdf_path, _external=True)
 
 
 def build_clips(annotations):

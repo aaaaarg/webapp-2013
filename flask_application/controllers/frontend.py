@@ -151,7 +151,6 @@ def research(type=False):
 		results = the_query.execute()
 		# Build list of results 
 		things = []
-		print results
 		for result in results:
 			if '_id' in result:
 				# id[0] is the upload id, id[1] is upload page
