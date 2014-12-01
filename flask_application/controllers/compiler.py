@@ -15,8 +15,29 @@ compiler = Blueprint('compiler', __name__, url_prefix='/compiler')
 def create():
 	user_id = current_user.get_id()
 	annotations = Reference.objects.filter(creator=user_id).order_by('-created_at')
-	clips = []
+	if not annotations:
+		return create_from_recent()
+	clips = build_clips(annotations)
 
+	return render_template('compiler/create.html',
+		title = "compiler",
+		clips = clips
+	)
+
+@compiler.route('/create/recent', methods= ['GET', 'POST'])
+def create_from_recent():
+	annotations = Reference.objects(pos_end__gt=0).order_by('-created_at').limit(20)
+	clips = build_clips(annotations)
+
+	return render_template('compiler/create.html',
+		title = "compiler",
+		clips = clips
+	)
+
+
+def build_clips(annotations):
+	""" With a result set of annotations, this will build the clips list for display """
+	clips = []
 	for a in annotations:
 		if a.pos_end:
 			u = a.upload
@@ -30,8 +51,4 @@ def create():
 			url_part = '%s.pdf/%s-%s/' % (a.upload.md5, y1, y2) if y2>y1 else '%s.pdf/%s/' % (a.upload.md5, y1)
 			title = t.title
 			clips.append((link,img,title,a.note,page_count, url_part))
-
-	return render_template('compiler/create.html',
-		title = "compiler",
-		clips = clips
-	)
+	return clips
