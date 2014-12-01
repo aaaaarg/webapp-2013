@@ -53,7 +53,7 @@
 
         <div>
             {% if preview and preview_url %}
-            <img align="left" src="{{ preview }}" hspace="20" vspace="20">
+            <a href="{{ preview_url }}"><img align="left" src="{{ preview }}" hspace="20" vspace="20"></a>
             {% endif %}
             <p>{{thing.description|nl2br|markdown}}</p>
         </div>
