@@ -57,7 +57,7 @@ def create_from_search():
 				# id[0] is the upload id, id[1] is upload page
 				md5 = result['md5_s']
 				id = str(result['_id']).split('_')
-				if len(id)==2:
+				if md5 and len(id)==2:
 					if md5==last_md5:
 						pdf_path = '%s,%s' % (pdf_path, id[1])
 					else:
@@ -67,7 +67,7 @@ def create_from_search():
 	if pdf_path=='':
 		return 'There were no results!'
 	else:
-		return url_for('reference.preview', filename='/compile%s' % pdf_path)
+		return url_for('reference.preview', filename='/compile%s' % pdf_path, _external=True)
 
 
 def build_clips(annotations):
