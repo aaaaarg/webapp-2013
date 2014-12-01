@@ -117,7 +117,8 @@ def detail(id):
 	return render_template('thing/detail.html',
 		thing = thing,
 		contributors = contributors,
-		preview = preview_url,
+		preview = preview,
+		preview_url = preview_url,
 		threads = threads,
 		upload_form = uf)
 
