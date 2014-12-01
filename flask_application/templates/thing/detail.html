@@ -51,7 +51,12 @@
 
         <div><p class="lead">{{thing.short_description}}</p></div>
 
-        <div><p>{{thing.description|nl2br|markdown}}</p></div>
+        <div>
+            {% if preview and preview_url %}
+            <img align="left" src="{{ preview }}" hspace="20" vspace="20">
+            {% endif %}
+            <p>{{thing.description|nl2br|markdown}}</p>
+        </div>
 
         <p><small class="text-muted">
             {% set comma = joiner(", ") %}

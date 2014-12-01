@@ -140,16 +140,19 @@ class Thing(SolrMixin, CreatorMixin, FollowersMixin, db.Document):
         return ('', self.title)
 
 
-    def preview(self, w=50, h=72, c=20):
+    def preview(self, w=50, h=72, c=20, filename=None, get_md5=False):
         """
         This assumes that our files have their uploads processed in a particular way!
         Documented via looseleaf, scaaaan.py, etc.
         """
         for f in reversed(self.files):
             try:
-                p = f.preview(w,h,c)
+                p = f.preview(w,h,c,filename)
                 if p:
-                    return p
+                    if get_md5:
+                        return f.md5
+                    else:
+                        return p
             except AttributeError:
                 self.remove_file(f)
         return False

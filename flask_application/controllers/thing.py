@@ -103,8 +103,8 @@ def detail(id):
 	thing = Thing.objects.get_or_404(id=id)
 	threads = Thread.objects.filter(origin=thing)
 	# preview
-	preview = thing.preview(25,36,40)
-	preview_url = url_for('reference.preview', filename=preview) if preview else False
+	preview = thing.preview(filename="x150-0.jpg")
+	preview_url = url_for('reference.figleaf', filename=thing.preview(get_md5=True)) if preview else False
 	# contributors
 	contributors = []
 	for f in thing.files:
