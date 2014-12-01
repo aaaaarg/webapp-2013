@@ -104,6 +104,8 @@ def detail(id):
 	threads = Thread.objects.filter(origin=thing)
 	# preview
 	preview = thing.preview(filename="x150-0.jpg")
+	if preview:
+		preview = url_for('reference.preview', filename=preview)
 	preview_url = url_for('reference.figleaf', md5=thing.preview(get_md5=True)) if preview else False
 	# contributors
 	contributors = []
