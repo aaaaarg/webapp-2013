@@ -60,16 +60,16 @@ def create_from_search():
 					if not md5 in grouped_results:
 						grouped_results[md5] = []
 					grouped_results[md5].append(id[1])
-		print query
-		print grouped_results
+		
+
 		# Go back through the grouped results to build the annotations to return			
 		clips = []
-		for md5, pages in grouped_results.iteritems():
+		for md5 in sorted(grouped_results, key=lambda k: len(grouped_results[k]), reverse=True):
 			u = Upload.objects.get(md5=md5)
 			if u:
 				t = Thing.objects.filter(files=u).first()
 				title = t.title if t else '[unknown title]'
-				sp = sorted(pages)
+				sp = sorted(grouped_results[md5])
 				link = url_for("reference.figleaf", md5=md5, _anchor='%s' % (sp[0]))
 				img = url_for("reference.preview", filename=u.preview(filename='%s-%sx%s.jpg' % (sp[0], sp[0], 75)))
 				page_count = len(sp)
