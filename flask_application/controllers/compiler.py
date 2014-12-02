@@ -38,19 +38,57 @@ def create():
 		clips = clips
 	)
 
-
 @compiler.route('/create/from/search', methods= ['GET', 'POST'])
 def create_from_search():
+	query = request.args.get('query', "")
+	num = 200
+	start = 0
+	content = ""
+
+	if not query=="":
+		new_query = "%s" % query
+		the_query = solr.query(searchable_text=new_query).filter(content_type="page").filter_exclude(md5_s="7dbf4aee8eb2b19197fe62913e15dda5").sort_by("-score").paginate(start=start, rows=num)
+		results = the_query.execute()
+		# Build results grouped by md5 
+		grouped_results = {}
+		for result in results:
+			if '_id' in result:
+				# id[0] is the upload id, id[1] is upload page
+				md5 = result['md5_s']
+				id = str(result['_id']).split('_')
+				if md5 and len(id)==2:
+					if not md5 in grouped_results:
+						grouped_results[md5] = []
+					grouped_results[md5].append(id[1])
+		print query
+		print grouped_results
+		# Go back through the grouped results to build the annotations to return			
+		clips = []
+		for md5, pages in grouped_results.iteritems():
+			u = Upload.objects.get(md5=md5)
+			if u:
+				t = Thing.objects.filter(files=u).first()
+				title = t.title if t else '[unknown title]'
+				sp = sorted(pages)
+				link = url_for("reference.figleaf", md5=md5, _anchor='%s' % (sp[0]))
+				img = url_for("reference.preview", filename=u.preview(filename='%s-%sx%s.jpg' % (sp[0], sp[0], 75)))
+				page_count = len(sp)
+				url_part = '%s.pdf/%s/' % (md5, ','.join(sp))
+				clips.append((link,img,title,'',page_count, url_part))
+
+	return render_template('compiler/create.html',
+		title = "compiler",
+		clips = clips
+	)
+
+@compiler.route('/from/search', methods= ['GET', 'POST'])
+def generate_from_search():
 	query = request.args.get('query', "")
 	num = 100
 	start = 0
 	content = ""
 
 	if not query=="":
-		#results = solr.query(content_type="page", text=query).paginate(start=start, rows=num).highlight("searchable_text", snippets=3, maxAnalyzedChars=-1).execute()
-		#query_tokens = query.split()
-		#combined = 'AND '.join(query_tokens)
-		#new_query = "'%s'~%d" % (combined, len(query_tokens))
 		new_query = "%s" % query
 		the_query = solr.query(searchable_text=new_query).filter(content_type="page").filter_exclude(md5_s="7dbf4aee8eb2b19197fe62913e15dda5").sort_by("-score").paginate(start=start, rows=num)
 		results = the_query.execute()
