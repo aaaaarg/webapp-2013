@@ -13,9 +13,13 @@ body {
 p a {
 	color:#FF0000;
 }
+small {
+	font-size:8px;
+}
 </style>
 </head>
 <body>
+<small>create <a href="{{ compiler }}">a reader</a> from some of these clips</small>
 <h1>{{ title }}</h1>
 {% if thing %}
 <h3><a href="{{ url_for('thing.detail', id=thing.id) }}">{{thing.title}}</a></h3>

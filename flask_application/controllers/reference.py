@@ -333,6 +333,7 @@ def tag_clips(tag, user_id=None):
 	return render_template('reference/clips.html',
 		title = "Clips for %s" % tag,
 		thing = thing,
+		compiler = url_for('compiler.create', mode='tag', value=tag),
 		clips = clips
 	)
 
@@ -359,6 +360,7 @@ def user_clips(user_id=None):
 	return render_template('reference/clips.html',
 		title = "clips",
 		thing = thing,
+		compiler = url_for('compiler.create'),
 		clips = clips
 	)
 
@@ -381,6 +383,7 @@ def recent_clips(page=1):
 	return render_template('reference/clips.html',
 		title = "clips",
 		thing = thing,
+		compiler = url_for('compiler.create', mode='recent'),
 		clips = clips
 	)
 
@@ -413,6 +416,7 @@ def clips(md5, user_id=None):
 	return render_template('reference/clips.html',
 		title = "Clips from %s" % thing.title,
 		thing = thing,
+		compiler = url_for('compiler.create', mode='from', value=md5),
 		clips = clips
 	)
 
@@ -440,6 +444,7 @@ def reference_clips(md5):
 
 	return render_template('reference/clips.html',
 		title = "Clips referencing %s" % thing.title,
+		compiler = '#',
 		thing = thing,
 		clips = clips
 	)
