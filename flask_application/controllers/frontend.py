@@ -166,7 +166,7 @@ def research(type=False):
 					u = Upload.objects.get(id=id[0])
 					if u:
 						t = Thing.objects.filter(files=u).first()
-						things.append((t, result['md5_s'], id[1], id ))
+						things.append((t, result['md5_s'], id[1], result['_id'] ))
 		
 		content = get_template_attribute('frontend/macros.html', 'fulltext_search_results')(things, query)
 	
