@@ -142,16 +142,16 @@ def research(type=False):
 	content = ""
 	ready = False
 
-	if not query=="":
+	if not mlt=="":
+		the_query = solr.mlt_query(fields='searchable_text').query(_id=mlt).paginate(start=start, rows=num)
+		ready = True
+	elif not query=="":
 		#results = solr.query(content_type="page", text=query).paginate(start=start, rows=num).highlight("searchable_text", snippets=3, maxAnalyzedChars=-1).execute()
 		#query_tokens = query.split()
 		#combined = 'AND '.join(query_tokens)
 		#new_query = "'%s'~%d" % (combined, len(query_tokens))
 		new_query = "%s" % query
 		the_query = solr.query(searchable_text=new_query).filter(content_type="page").filter_exclude(md5_s="7dbf4aee8eb2b19197fe62913e15dda5").sort_by("-score").paginate(start=start, rows=num)
-		ready = True
-	elif not mlt=="":
-		the_query = solr.mlt_query().query(_id=mlt).filter(content_type="page").filter_exclude(md5_s="7dbf4aee8eb2b19197fe62913e15dda5").sort_by("-score").paginate(start=start, rows=num)
 		ready = True
 
 	if ready:
