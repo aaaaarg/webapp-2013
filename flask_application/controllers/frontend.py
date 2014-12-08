@@ -143,7 +143,7 @@ def research(type=False):
 	ready = False
 
 	if not mlt=="":
-		the_query = solr.mlt_query(fields='searchable_text').query(_id=mlt).paginate(start=start, rows=num)
+		the_query = solr.mlt_query(fields='searchable_text', mintf=1).query(searchable_text='*').filter(_id=mlt)
 		ready = True
 	elif not query=="":
 		#results = solr.query(content_type="page", text=query).paginate(start=start, rows=num).highlight("searchable_text", snippets=3, maxAnalyzedChars=-1).execute()

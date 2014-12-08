@@ -25,7 +25,7 @@ def create():
 	elif m=='tag' and v is not None:
 		annotations = Reference.objects.filter(tags=v).order_by('-created_at')
 	elif m=='from' and v is not None:
-		u = Upload.objects.filter(md5=md5).first()
+		u = Upload.objects.filter(md5=v).first()
 		if not u:
 			abort(404)
 		annotations = Reference.objects.filter(upload=u).order_by('pos')
