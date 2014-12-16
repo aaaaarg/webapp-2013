@@ -36,8 +36,8 @@ class SolrReindex(Command):
 	)
 	def run(self, todo):
 		if todo:
+			counter = 0
 			if todo=='things' or todo=='all':
-				counter = 0
 				print 'dropping things index'
 				solr.delete(queries=solr.Q(content_type="thing"))
 				solr.commit()
