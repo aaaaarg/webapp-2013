@@ -37,12 +37,17 @@ class SolrReindex(Command):
 	def run(self, todo):
 		if todo:
 			if todo=='things' or todo=='all':
+				counter = 0
 				print 'dropping things index'
 				solr.delete(queries=solr.Q(content_type="thing"))
 				solr.commit()
 				print 'reindexing things'
 				for t in Thing.objects().all():
 					t.add_to_solr(commit=False)
+					if counter==1000:
+						print " 1000 done - at ", t.title
+						counter = 0
+					counter += 1
 				solr.commit()
 			if todo=='collections' or todo=='all':
 				print 'dropping collections index'
@@ -56,6 +61,10 @@ class SolrReindex(Command):
 				print 'reindexing makers'
 				for m in Maker.objects().all():
 					m.add_to_solr(commit=False)
+					if counter==1000:
+						print " 1000 done - at ", m.display_name
+						counter = 0
+					counter += 1
 				solr.commit()
 			if todo=='discussions' or todo=='all':
 				print 'dropping discussions index'
