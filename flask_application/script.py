@@ -41,6 +41,9 @@ class SolrReindex(Command):
 				solr.delete(queries=solr.Q(content_type="thing"))
 				solr.commit()
 				print 'reindexing things'
+				for t in Thing.objects().all():
+					t.add_to_solr(commit=False)
+				solr.commit()
 			if todo=='collections' or todo=='all':
 				print 'dropping collections index'
 				solr.delete(queries=solr.Q(content_type="collection"))
@@ -52,7 +55,8 @@ class SolrReindex(Command):
 				solr.commit()
 				print 'reindexing makers'
 				for m in Maker.objects().all():
-					m.add_to_solr()
+					m.add_to_solr(commit=False)
+				solr.commit()
 			if todo=='discussions' or todo=='all':
 				print 'dropping discussions index'
 				solr.delete(queries=solr.Q(content_type="thread"))
