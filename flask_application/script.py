@@ -44,11 +44,11 @@ class SolrReindex(Command):
 				print 'reindexing things'
 				for t in Thing.objects().all():
 					t.add_to_solr(commit=False)
-					if counter==1000:
+					if counter==100:
+						solr.commit()
 						print " 1000 done - at ", t.title
 						counter = 0
 					counter += 1
-				solr.commit()
 			if todo=='collections' or todo=='all':
 				print 'dropping collections index'
 				solr.delete(queries=solr.Q(content_type="collection"))
@@ -61,11 +61,11 @@ class SolrReindex(Command):
 				print 'reindexing makers'
 				for m in Maker.objects().all():
 					m.add_to_solr(commit=False)
-					if counter==1000:
+					if counter==100:
+						solr.commit()
 						print " 1000 done - at ", m.display_name
 						counter = 0
 					counter += 1
-				solr.commit()
 			if todo=='discussions' or todo=='all':
 				print 'dropping discussions index'
 				solr.delete(queries=solr.Q(content_type="thread"))
