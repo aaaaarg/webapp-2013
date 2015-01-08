@@ -46,7 +46,7 @@ class SolrReindex(Command):
 					t.add_to_solr(commit=False)
 					if counter==100:
 						solr.commit()
-						print " 1000 done - at ", t.title
+						print " 100 done - at ", t.title
 						counter = 0
 					counter += 1
 			if todo=='collections' or todo=='all':
@@ -63,7 +63,7 @@ class SolrReindex(Command):
 					m.add_to_solr(commit=False)
 					if counter==100:
 						solr.commit()
-						print " 1000 done - at ", m.display_name
+						print " 100 done - at ", m.display_name
 						counter = 0
 					counter += 1
 			if todo=='discussions' or todo=='all':
