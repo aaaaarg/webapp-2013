@@ -48,7 +48,7 @@ def serve_upload(filename):
 	The filename here is the structured filename
 	"""
 	u = Upload.objects(structured_file_name=filename).first()
-	try_path = u.full_path() if u else os.path.join(app.config['UPLOADS_DIR'], filename.encode('utf-8'))
+	try_path = u.full_path().encode('utf-8') if u else os.path.join(app.config['UPLOADS_DIR'], filename.encode('utf-8'))
 	
 	if try_path and os.path.exists(try_path):
 		# There is a problem with epub
