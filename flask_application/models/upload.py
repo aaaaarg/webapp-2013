@@ -161,7 +161,8 @@ class Upload(SolrMixin, CreatorMixin, db.Document):
 		"""
 		def safe_name(str):
 			#return "".join([c for c in str if c.isalpha() or c.isdigit() or c==' ']).rstrip()[:64]
-			return "".join([c for c in str if c.isalpha() or c.isdigit() or c==' ']).rstrip().encode('utf-8')
+			s = "".join([c for c in str if c.isalpha() or c.isdigit() or c==' ']).rstrip()
+			return unicodedata.normalize('NFKD', s).encode('ascii','ignore')
 
 		def splitpath(path, maxdepth=20):
 			( head, tail ) = os.path.split(path)
