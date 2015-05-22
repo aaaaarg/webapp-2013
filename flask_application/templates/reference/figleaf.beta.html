@@ -1,0 +1,268 @@
+{% extends "bootstrap/layouts/base.html" %}
+
+{% block title %}
+	{% if thing %}
+	{{ thing.makers_display }}, {{ thing.title }} 
+	{% endif %}
+{% endblock %}
+
+
+{% block post_container %}
+<div>
+
+<p>
+{% if thing %}
+<em><a href="{{ url_for('thing.detail', id=thing.id) }}">{{ thing.title }}</em></a> {{ thing.makers_display }}
+{% endif %}
+
+<span style="font-size:10px">
+(
+<a href="{{url_for('reference.clips', md5=upload.md5) }}">clips</a> /
+{% if current_user %}
+<a href="{{url_for('reference.clips', md5=upload.md5, user_id=current_user.get_id()) }}">your clips</a> /
+{% endif %}
+<a href="{{url_for('reference.reference_clips', md5=upload.md5) }}">ref clips</a>
+)
+</span>
+
+</div>
+
+<div style="width:100%">
+
+
+	{# if current_user.is_authenticated() and preview #}
+	{% if preview %}
+	{#% set preview = preview|replace('upload/processed-jpgs','static/pages') %#}
+	<div id="figleaf-container" class="preview" style="position: relative; float: left;"></div>
+	{% endif %}
+
+	<div style="width: 200px; float: left;">
+		{% if searchable %}
+		<form class="form-inline" id="search-inside-form" role="form">
+			<label class="sr-only" for="search-inside">Search Inside</label>
+			<div class="input-group-btn">
+        <input type="text" class="form-control" id="search-inside" placeholder="search inside">
+        <button type="submit" class="btn btn-default"><i class="glyphicon glyphicon-search"></i></button>
+      </div>
+		</form>
+		{% endif %}
+
+		<div style="padding: 10px; border:1px solid #CCC; font-size: 11px;">
+		<p><u>guide</u></p>
+		click on a page and scroll to start...
+		<hr>
+		<p><b>reference:</b> <b style="color:#ff0000">double click</b> on page<p>
+		<p><b>quote:</b> <b style="color:#ff0000">drag</b> on page to highlight</p>
+		<p><b>excerpt:</b> <b style="color:#ff0000">shift click</b> on page grid to pick the first and last pages</p>
+		<hr>
+
+		</div>
+
+		<div style="font-size:12px;">
+			{% if references %}
+			<b>references</b>
+			{% endif %}
+			{% for reference, data in references.items() %}
+				<p>
+					<em><a href="{{ url_for('thing.detail', id=reference.id) }}">{{ reference.title }}</em></a> {{ reference.makers_display }}
+					{% if data['pages'] %}
+					[ 
+					{% for page in data['pages'] %}
+					<a href="{{ url_for('reference.figleaf', md5=data['md5'], _anchor=page) }}">{{ page|int }}</em></a>
+					{% endfor %}
+					]
+					{% endif %}
+				</p>
+			{% endfor %}
+		</div>
+
+		<div style="font-size:12px;">
+			{% if back_references %}
+			<b>referenced from</b>
+			{% endif %}
+			{% for reference, data in back_references.items() %}
+				<p>
+					<em><a href="{{ url_for('thing.detail', id=reference.id) }}">{{ reference.title }}</em></a> {{ reference.makers_display }}
+					{% if data['pages'] %}
+					[ 
+					{% for page in data['pages'] %}
+					<a href="{{ url_for('reference.figleaf', md5=data['md5'], _anchor=page) }}">{{ page|int }}</em></a>
+					{% endfor %}
+					]
+					{% endif %}
+				</p>
+			{% endfor %}
+		</div>
+	</div>
+
+</div>
+
+<!-- Modal -->
+<div class="modal fade" id="mm" tabindex="-1" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-header">
+        <button type="button" class="close" data-dismiss="modal"><span aria-hidden="true">&times;</span><span class="sr-only">Close</span></button>
+        <h4 class="modal-title" id="mmt">Modal title</h4>
+      </div>
+      <div class="modal-body" id="mmb">
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}
+
+
+{% block js_footer %}
+<script src="{{ url_for('static', filename='js/figleaf.beta.js') }}"></script>
+<script>
+var tints = ["#FFFF00", "#00FFFF", "#FF00FF"];
+$(document).ready( function() {
+	// initialize the viewer
+	fl = openBook(document.getElementById('figleaf-container'), {
+		//base:'/upload/processed-jpgs/', 
+		base:'/static/pages/', 
+		id:'{{ upload.md5 }}', 
+		open_to:window.location.hash.substring(1) 
+	});
+	annotate(fl);
+
+	// Double clicks open modal window for creating references
+	fl.$el.addEventListener("pointer", function(e) {
+		//console.info("Event is: ", e);
+		//console.info("Custom data is: ", e.detail);
+		$('#mmt').text('a reference to a point');
+		$('#mmb').load('{{ url_for("reference.add_reference", md5=upload.md5) }}?pos='+e.detail.ax+','+e.detail.ay, function() {
+			$('#mmb').find('form[name="reference"]').submit(function (e2) {
+				e2.preventDefault();
+				$.post($(this).attr('action'), $(this).serialize())
+				.done(function( data ) {
+					fl.pointer({x:e.detail.ax, y:e.detail.ay, href: data.href, src: data.src});
+  				$('#mm').modal('hide');
+					$('#mmb').html();
+				}, "json");
+				return false;
+			});
+		});
+		$('#mm').modal({show:true});
+	});
+
+	// Dragging a selection open modal window for creating excerpts, highlights, clips
+	fl.$el.addEventListener("excerpt", function(e) {
+		//console.info("Event is: ", e);
+		//console.info("Excerpt is: ", e.detail);
+		$hl = fl.highlight({x1:e.detail.begin.ax, y1:e.detail.begin.ay, x2: e.detail.end.ax, y2: e.detail.end.ay});
+		$('#mmt').text('clipper');
+		$('#mmb').load('{{ url_for("reference.add_clip", md5=upload.md5) }}?pos='+e.detail.begin.ax+','+e.detail.begin.ay+'-'+e.detail.end.ax+','+e.detail.end.ay, function() {
+			$('#mmb').find('form').submit(function (e2) {
+				e2.preventDefault();
+				$.post($(this).attr('action'), $(this).serialize())
+				.done(function( data ) {
+  				//fl.highlight({x1:e.detail.begin.ax, y1:e.detail.begin.ay, x2: e.detail.end.ax, y2: e.detail.end.ay});
+					$('#mm').modal('hide');
+					$('#mmb').html();
+					fl.highlight({x1:e.detail.begin.ax, y1:e.detail.begin.ay, x2: e.detail.end.ax, y2: e.detail.end.ay});
+				});
+				return false;
+			});
+		});
+		$('#mm').modal({show:true});
+		$('#mm').on('hidden.bs.modal', function (e2) {
+		  fl.unhighlight($hl);
+		});
+	});
+
+	fl.$el.addEventListener("section", function(e) {
+		//console.info("Event is: ", e);
+		//console.info("Bounds are: ", e.detail);
+		$('#mmt').text('excerpter');
+		$('#mmb').load('{{ url_for("reference.add_excerpt", md5=upload.md5) }}?pos='+e.detail.begin+'-'+e.detail.end, function() {
+			$('#mmb').find('form').submit(function (e2) {
+				e2.preventDefault();
+				$.post($(this).attr('action'), $(this).serialize())
+				.done(function( data ) {
+					$('#mm').modal('hide');
+					$('#mmb').html();
+				});
+				return false;
+			});
+		});
+		$('#mm').modal({show:true});
+	});
+
+	// Form for searching inside the text
+	$('#search-inside-form').submit(function(event) {
+		event.preventDefault();
+		console.log('searching');
+    $.ajax({
+        type: 'get',
+        data: {'ajax':true, 'query': $('#search-inside').val()},
+        url: '{{ url_for("reference.search_inside", md5=upload.md5) }}',
+        success: function(data) {
+        	$('.sr').remove();
+          $.each(data, function(c,obj) {
+					  $.each(obj, function(p,s) {
+						  fl.tint(p, s, tints[c]);
+						}); 
+					}); 
+        }
+    });
+    return false;
+	}); 	
+});
+function annotate(figleaf) {
+	// add user notes
+	{% for note in notes %}
+	{% if note.pos and note.pos_end %}
+	figleaf.highlight({
+		x1:{{ note.pos_x or "false"}},
+		y1:{{ note.pos }}, 
+		x2:{{ note.pos_end_x or "false" }},
+		y2:{{ note.pos_end or "false" }}
+	});
+	{% endif %}
+	{% if note.note %}
+	figleaf.annotation({{ note.pos }}, "{{ note.note|urlize(40)|escapejs }}");
+	{% endif %}
+	{% endfor %}
+	// add annotations
+	{% for annotation in annotations %}
+		{% if annotation.ref_url %}
+		{% if annotation.thing %}
+		figleaf.pointer({ 
+			x:{{ annotation.pos_x or "false" }}, 
+			y:{{ annotation.pos }}, 
+			href:'{{ annotation.ref_url }}',
+			src:'{{ annotation.preview(800) }}',
+			title:"{{annotation.thing.title|escapejs}}" 
+		});
+		{% else %}
+		figleaf.pointer({ 
+			x:{{ annotation.pos_x or "false" }}, 
+			y:{{ annotation.pos }}, 
+			href:'{{ annotation.ref_url }}',
+			src:'{{ annotation.preview(800) }}'
+		});
+		{% endif %}
+		{% endif %}
+	{% endfor %}
+	// add edit links
+	{% for annotation in editable %}
+	figleaf.edit({{ annotation.pos }}, '{{ url_for("reference.edit", id=annotation.id) }}');
+	{% endfor %}
+	// add search results
+	{% if search_results %}
+		{% for idx, result_set in search_results.items() %}
+			{% for p, s in result_set.items() %}
+			figleaf.tint({{ p }}, {{ s }}, tints[{{ idx }}]);
+			{% endfor %}
+		{% endfor %}
+	{% endif %}
+	return figleaf;
+}
+
+</script>
+{% endblock %}

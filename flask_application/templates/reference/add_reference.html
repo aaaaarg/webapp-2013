@@ -1,17 +1,41 @@
 {%- from "bootstrap/forms/macros.html" import render_field %}
 
-<img src="{{ img }}">
 <p>
 	The URL for this point in the text:<br/>
 	<span class="text-primary">{{ url_for("reference.figleaf", md5=md5, _anchor=pos, _external=True) }}</span>
 </p>
 <hr>
-<p>You can also add a reference to another text (for example, a link to the source of a quotation). Just get the URL for that reference point and paste it below.</p>
+<p>You can also make this point link to another point in another text (e.g., referencing the source of a quotation). How? Find the URL for that reference point and paste it here.</p>
 <form action="{{ url_for('reference.add_reference', md5=md5) }}" method="post" name="reference">
     {{form.hidden_tag()}}
-    <span class="hidden">{{render_field(form.pos, placeholder='Must be a floating point number (such as 1.23)')}}</span>
-    {{render_field(form.ref_url, placeholder='URL to point to')}}
+    <span class="hidden">
+      {{render_field(form.pos, placeholder='Must be a floating point number (such as 1.23)')}}
+      {{render_field(form.pos_x, placeholder='Must be a floating point number (such as 1.23)')}}
+    </span>
+    {{render_field(form.ref_url, rows=1, placeholder='URL to point to')}}
     <span class="hidden">{{render_field(form.tags_proxy, placeholder='Comma separated (eg: "the essay, communism")')}}</span>
     <span class="hidden">{{render_field(form.note, placeholder='optional notes')}}</span>
     <p><button class="btn btn-primary" type="submit">Create reference point</button></p>
 </form>
+<!--
+<hr>
+<p>Launch a search (in a new window) for the reference you're looking for:</p>
+<form action="{{ url_for('frontend.index') }}" method="get" name="search" target="_new">
+  <div class="input-group col-lg-12">
+  	<div class="col-lg-6">
+	    <input type="text" name="author" class="form-control search-query" placeholder="Author">
+    </div>
+    <div class="col-lg-6">
+	    <input type="text" name="title" class="form-control search-query" placeholder="Title">
+    </div>
+  </div><small><br/></small>
+  <div class="input-group col-lg-12">
+  	<div class="col-lg-10">
+	  	<input type="text" name="phrase" class="form-control search-query" placeholder="Phrase (or page number)">
+  	</div>
+  	<div class="input-group-button">
+	  	<button type="submit" class="btn btn-default"><i class="glyphicon glyphicon-search"></i></button>
+    </div>
+  </div>
+</form>
+-->

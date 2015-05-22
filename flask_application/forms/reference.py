@@ -30,10 +30,16 @@ class BaseReferenceForm(Form):
 ReferenceForm = model_form(Reference, base_class=BaseReferenceForm, field_args = {
     'pos' : {
       'validators' : [Required()],
-      'label' : 'Position'
+      'label' : 'Position (vertical)'
+    },
+    'pos_x' : {
+      'label' : 'Position (horizontal)'
     },
     'pos_end' : {
-      'label' : 'Position (end)'
+      'label' : 'Position end (vertical)'
+    },
+    'pos_end_x' : {
+      'label' : 'Position end (horizontal))'
     },
     'note' : {
       'label' : 'A short note'

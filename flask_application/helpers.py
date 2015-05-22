@@ -83,17 +83,28 @@ def nl2br(val):
 def parse_pos(s):
     '''
     Position should be in one of the following formats:
-    123.1 => vertical only
-    123.1-124.2 => vertical range
+    a) 123.1 => vertical only
+    b) 123.1-124.2 => vertical range
+    c) 11.1,123.1 => a point
+    d) 11.1,123.1-200.9,124.2 => range between 2 points
     '''
-    try:
-        p = s.split('-')
-        if len(p)==2:
-            a, b = float(p[0]), float(p[1])
-            c, d = (b, a) if a > b else (a, b)
-            return c ,d
+    def parse_point(x):
+        if ',' in x:
+            return map(float, x.split(','))
         else:
-            return float(s), None
-    except:
-        return None, None
+            return [None, float(x)]
 
+    try:
+        if '-' in s:
+            a, b = map(parse_point, s.split('-'))
+        else:
+            a, b = parse_point(s), [None, None] 
+    except:
+        return None, None, None, None
+    
+    if b[1] is not None and a[1]>b[1]:
+        return b[0], b[1], a[0], a[1]
+    elif a[1]==b[1] and a[0] is not None and b[0] is not None and a[0]>b[0]:
+        return b[0], b[1], a[0], a[1]
+    else:
+        return a[0], a[1], b[0], b[1]

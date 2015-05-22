@@ -178,3 +178,22 @@ def research(type=False):
 		page_next = page + 1,
 		type = type
 	)
+
+@frontend.route('/deepsearch')
+def deepsearch():
+	""" Search full text by author title and some phrase """
+	phrase = request.args.get('phrase', "")
+	author = request.args.get('author', "")
+	title = request.args.get('title', "")
+	
+	new_query = "%s" % phrase
+	the_query = solr.query(searchable_text=new_query).filter(content_type="page").sort_by("-score")
+	#the_query = solr.query(title='plague').filter(content_type="thing").sort_by("-score")
+	#the_query = solr.query(_id='54352bfdc738464b67c2d29c_*').filter(content_type="page").sort_by("-score")
+	#the_query = solr.query(title='plague',makers_string='ahmad').filter(content_type="thing").sort_by("-score")
+	results = the_query.execute()
+	# Build list of results 
+	things = []
+	for result in results:
+		print result
+	return "hello"

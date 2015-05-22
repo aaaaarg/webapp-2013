@@ -1,16 +1,11 @@
 {%- from "bootstrap/forms/macros.html" import render_field %}
 
 <p>
-	A url for this clip as an image:<br/>
-	<span class="text-primary">{{ img }}</span>
+    A url for this pdf excerpt:
+    <a href="{{ pdf }}">{{ pdf }}</a>
 </p>
-<p>
-	A url to jump to this clip highlighted in the text:<br/>
-	<span class="text-primary">{{ highlight_url }}</span>
-</p>
-<img src="{{ img }}">
 <hr>
-<p>You can save this quote (in your clips collection).</p>
+<p>You can save this excerpt (in your clips collection).</p>
 <form action="{{ url_for('reference.add_clip', md5=md5) }}" method="post" name="reference">
     {{form.hidden_tag()}}
     <span class="hidden">{{render_field(form.pos)}}</span>
@@ -19,5 +14,5 @@
     <span class="hidden">{{render_field(form.pos_end_x)}}</span>
     {{render_field(form.note, placeholder='... with a short note (optional)')}}
     {{render_field(form.tags_proxy, placeholder='... and some optional comma-separated tags (eg: "the essay, communism")')}}
-    <p><button class="btn btn-primary" type="submit">Save this quote</button></p>
+    <p><button class="btn btn-primary" type="submit">Save this excerpt</button></p>
 </form>

@@ -1,5 +1,6 @@
 import re, datetime, urlparse
 
+from flask import url_for
 from flask.ext.security import current_user 
 
 from flask_application.helpers import parse_pos
@@ -15,6 +16,9 @@ class Annotation(CreatorMixin, db.Document):
 	'''
 	pos = db.FloatField()
 	pos_end = db.FloatField()
+	pos_x = db.FloatField() # x values introduced in version 2
+	pos_end_x = db.FloatField()
+	
 	upload = db.ReferenceField(Upload)
 	thing = db.ReferenceField(Thing)
 	note = db.StringField()
@@ -33,14 +37,10 @@ class Annotation(CreatorMixin, db.Document):
 				print str(e)
 		if 'raw_pos' in kwargs:
 			self.parse_pos(kwargs['raw_pos'])
-		if self.pos and self.pos_end and self.pos > self.pos_end:
-			x = self.pos
-			self.pos = self.pos_end
-			self.pos_end = x
-
 
 	def parse_pos(self, s):
-		self.pos, self.pos_end = parse_pos(s)
+		self.pos_x, self.pos, self.pos_end_x, self.pos_end = parse_pos(s)
+		print self.pos_x, self.pos, self.pos_end_x, self.pos_end
 
 
 class Reference(Annotation):
@@ -54,6 +54,8 @@ class Reference(Annotation):
 	ref_thing = db.ReferenceField(Thing)
 	ref_pos = db.FloatField()
 	ref_pos_end = db.FloatField()
+	ref_pos_x = db.FloatField()
+	ref_pos_end_x = db.FloatField()
 
 	def __init__(self, *args, **kwargs):
 		super(Reference, self).__init__(*args, **kwargs)
@@ -65,8 +67,11 @@ class Reference(Annotation):
 		if self.ref_url:
 			self._parse_url()
 
+	def preview(self, h, default=""):
+		return url_for("reference.preview", filename=self.upload.preview(filename='x%s-%s.jpg' % (h, int(self.ref_pos))), _external=True) if self.upload and self.ref_pos else default
+
 	def parse_ref_pos(self, s):
-		self.ref_pos, self.ref_pos_end = parse_pos(s)
+		self.ref_pos_x, self.ref_pos, self.ref_pos_end_x, self.ref_pos_end = parse_pos(s)
 
 	def _parse_url(self, url=False):
 		'''

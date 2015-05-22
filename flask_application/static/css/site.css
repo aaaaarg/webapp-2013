@@ -121,3 +121,32 @@ ul#toc li {
 	background-color: #FFF;
 	margin: 10px;
 }
+
+/* figleaf styles */
+div.circle {
+	cursor: pointer;
+  border: 3px solid green;
+  border-radius: 50%;
+  opacity: 0.5;
+  width: 20px; height: 20px;
+  -moz-box-sizing: border-box;
+  box-sizing: border-box;
+}
+div.glance {
+	display: none;
+	z-index: 20;
+	position: absolute;
+	border: 1px dotted green;
+}
+div.glance a {
+	position: absolute;
+	left: 4px;
+	top: 2px;
+	background-color: blue;
+	color: white;
+}
+div.section-select {
+	position: absolute;
+	top: 0px;
+	left: 0px;
+}

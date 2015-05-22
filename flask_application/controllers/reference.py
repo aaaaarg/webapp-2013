@@ -23,7 +23,7 @@ def edit(id):
 	r = Reference.objects.get_or_404(id=id)
 	if not can_edit_reference(r):
 		abort(403)
-	form = ReferenceForm(formdata=request.form, obj=r, exclude=['creator','thing','upload','ref_pos','ref_pos_end','ref_thing','ref_upload'])
+	form = ReferenceForm(formdata=request.form, obj=r, exclude=['creator','thing','upload','ref_pos','ref_pos_x','ref_pos_end','ref_pos_end_x','ref_thing','ref_upload'])
 	if form.validate_on_submit():
 		form.populate_obj(r)
 		r.save() 
@@ -47,23 +47,27 @@ def add_reference(md5=None, pos=None):
 	if not u:
 		abort(404)	
 	p = request.args.get('pos', None) if pos is None else pos
-	t, b = parse_pos(p)
+	xt, t, xb, b = parse_pos(p)
 	# make the form
-	form = ReferenceForm(formdata=request.form, pos=t, exclude=['creator','thing','upload','ref_pos','ref_pos_end','ref_thing','ref_upload'])
+	form = ReferenceForm(formdata=request.form, pos=t, pos_x=xt, exclude=['creator','thing','upload','ref_pos','ref_pos_x','ref_pos_end','ref_pos_end_x','ref_thing','ref_upload'])
 	
 	if form.validate_on_submit():
-		
 		reference = Reference()
 		form.populate_obj(reference)
 		reference.tags = form.tags_proxy.data
 		reference.upload = u
 		reference.save()
-		return jsonify({'message':'Success! The reference has been created.'})
+		# data to return
+		img = reference.preview(800,None)
+		href = reference.ref_url
+		return jsonify({
+			'message':'Success! The reference has been created.', 
+			'src': img,
+			'href': href,
+			})
 	else:
-		img = url_for("reference.preview", filename=u.preview(filename='%s-%sx%s.jpg' % (t-.03, t+.03, 500))) 
 		return render_template('reference/add_reference.html',
 			form=form,
-			img=img,
 			md5=m,
 			pos=t
 	  )
@@ -81,9 +85,9 @@ def add_clip(md5=None, pos=None):
 	if not u:
 		abort(404)
 	p = request.args.get('pos', None) if pos is None else pos
-	t, b = parse_pos(p)
+	xt, t, xb, b = parse_pos(p)
 	# make the form
-	form = ReferenceForm(formdata=request.form, pos=t, pos_end=b, exclude=['creator','thing','upload','ref_pos','ref_pos_end','ref_thing','ref_upload'])
+	form = ReferenceForm(formdata=request.form, pos=t, pos_x=xt, pos_end=b, pos_end_x=xb, exclude=['creator','thing','upload','ref_pos','ref_pos_end','ref_thing','ref_upload'])
 	del form.ref_url
 
 	if form.validate_on_submit():
@@ -97,16 +101,48 @@ def add_clip(md5=None, pos=None):
 		pdf = None
 		if b-t>1:
 			pdf = url_for("reference.preview", filename='compile/%s.pdf/%s-%s/pdf.pdf' % (m, int(t), int(b)), _external=True)
-		img = url_for("reference.preview", filename=u.preview(filename='%s-%sx%s.jpg' % (t, b, 500)), _external=True) 
-		highlight = url_for("reference.figleaf", md5=m, _anchor="%s-%s"%(t,b), _external=True)
+		img = url_for("reference.preview", filename=u.preview(filename='%s-%sx%s.jpg' % (round(t,3), round(b,3), 500)), _external=True) 
+		highlight = url_for("reference.figleaf", md5=m, _anchor="%s,%s-%s,%s"%(round(xt,2),round(t,2),round(xb,2),round(b,2)), _external=True)
 		return render_template('reference/add_clip.html',
 			form=form,
 			img=img,
 			pdf=pdf,
 			md5=m,
-			highlight_url = highlight
+			highlight_url = highlight.replace('%2C',',')
 	  )
+@reference.route('/excerpt/form', methods=['GET'])
+@reference.route('/excerpt/form/<md5>', methods=['GET', 'POST'])
+@reference.route('/excerpt/form/<md5>/<pos>', methods=['GET', 'POST'])
+def add_excerpt(md5=None, pos=None):
+	"""
+	Create a new clip
+	"""
+	m = request.args.get('md5', None) if md5 is None else md5
+	u = Upload.objects.filter(md5=m).first()
+	if not u:
+		abort(404)
+	p = request.args.get('pos', None) if pos is None else pos
+	xt, t, xb, b = parse_pos(p)
+	# make the form
+	form = ReferenceForm(formdata=request.form, pos=t, pos_x=xt, pos_end=b, pos_end_x=xb, exclude=['creator','thing','upload','ref_pos','ref_pos_end','ref_thing','ref_upload'])
+	del form.ref_url
 
+	if form.validate_on_submit():
+		reference = Reference()
+		form.populate_obj(reference)
+		reference.tags = form.tags_proxy.data
+		reference.upload = u
+		reference.save()
+		return jsonify({'message':'Success! The excerpt has been created.'})
+	else:
+		pdf = None
+		if b-t>1:
+			pdf = url_for("reference.preview", filename='compile/%s.pdf/%s-%s/pdf.pdf' % (m, int(t), int(b)), _external=True)
+		return render_template('reference/add_excerpt.html',
+			form=form,
+			pdf=pdf,
+			md5=m,
+	  )
 
 @reference.route('/<id>/delete', methods= ['GET','POST'])
 def delete(id):
@@ -256,7 +292,7 @@ def figleaf(md5, user_id=None):
 		if results:
 			is_searchable = True
 
-	return render_template('reference/figleaf.html',
+	return render_template('reference/figleaf.beta.html',
 		preview = preview_url,
 		upload=u,
 		thing = thing,
@@ -361,6 +397,28 @@ def user_clips(user_id=None):
 		title = "clips",
 		thing = thing,
 		compiler = url_for('compiler.create'),
+		clips = clips
+	)
+
+@reference.route('/commonplace')
+@reference.route('/commonplace/<int:page>')
+def commonplace(page=1):
+	annotations = Reference.objects(pos_end__gt=0).order_by('-created_at').paginate(page=page, per_page=20)
+	clips = []
+
+	for a in annotations.items:
+		if a.pos_end:
+			u = a.upload
+			link = url_for("reference.figleaf", md5=a.upload.md5, _anchor='%s-%s' % (a.pos, a.pos_end))
+			y1, y2 = (a.pos, a.pos_end) if a.pos_end-a.pos<1 else (int(a.pos), int(a.pos))
+			if a.pos_end-a.pos<=1:
+				img = url_for("reference.preview", filename=u.preview(filename='%s-%sx%s.jpg' % (y1, y2, 500)))
+				clips.append((link,img,a.note,a.tags))
+
+	return render_template('reference/commonplace.html',
+		title = "commonplace",
+		thing = thing,
+		compiler = url_for('compiler.create', mode='recent'),
 		clips = clips
 	)
 

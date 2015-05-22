@@ -10,6 +10,7 @@
 <form action="" method="post" name="reference">
     {{form.hidden_tag()}}
     {{render_field(form.pos, placeholder='Must be a floating point number (such as 1.23)')}}
+    {{render_field(form.pos_x, placeholder='Must be a floating point number (between 0 and 1)')}}
     {{render_field(form.ref_url, placeholder='URL to point to')}}
     {{render_field(form.note, rows=5)}}
     
