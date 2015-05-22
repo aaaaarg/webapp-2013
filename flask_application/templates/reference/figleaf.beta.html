@@ -231,13 +231,13 @@ function annotate(figleaf) {
 	// add annotations
 	{% for annotation in annotations %}
 		{% if annotation.ref_url %}
-		{% if annotation.thing %}
+		{% if annotation.ref_thing %}
 		figleaf.pointer({ 
 			x:{{ annotation.pos_x or "false" }}, 
 			y:{{ annotation.pos }}, 
 			href:'{{ annotation.ref_url }}',
 			src:'{{ annotation.preview(800) }}',
-			title:"{{annotation.thing.title|escapejs}}" 
+			title:"{{annotation.ref_thing.title|escapejs}}" 
 		});
 		{% else %}
 		figleaf.pointer({ 
