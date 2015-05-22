@@ -68,7 +68,7 @@ class Reference(Annotation):
 			self._parse_url()
 
 	def preview(self, h, default=""):
-		return url_for("reference.preview", filename=self.upload.preview(filename='x%s-%s.jpg' % (h, int(self.ref_pos))), _external=True) if self.upload and self.ref_pos else default
+		return url_for("reference.preview", filename=self.upload.preview(filename='x%s-%s.jpg' % (h, int(self.ref_pos))), _external=True) if self.upload.md5 and self.ref_pos else default
 
 	def parse_ref_pos(self, s):
 		self.ref_pos_x, self.ref_pos, self.ref_pos_end_x, self.ref_pos_end = parse_pos(s)
