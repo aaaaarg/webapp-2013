@@ -36,7 +36,11 @@ body {
   font-feature-settings:"onum" 1;
   background-color: #FFF;
 }
-img {
+.quote {
+	border-bottom: 1px dashed #CCC;
+	margin-bottom: 25px;
+}
+a.img {
 	border 1px solid #999;
 }
 a {
@@ -56,9 +60,10 @@ small {
 {% endif %}
 
 {% for link, img, note, tags in clips %}
-<p>
 
-<a target="_new" href="{{link}}" style="border:0; padding: 7px;"><img src="{{img}}"></a>
+<div class="quote">
+
+<a target="_new" href="{{link}}" class="image"><img src="{{img}}"></a>
 {% if note %}
 <em>{{note|urlize(40)|markdown}}</em>
 
