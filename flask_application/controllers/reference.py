@@ -407,19 +407,20 @@ def commonplace(page=1):
 	clips = []
 
 	for a in annotations.items:
-		if a.pos_end:
+		if a.pos_end and a.pos_end>a.pos and a.pos_end-a.pos<=1:
 			u = a.upload
 			link = url_for("reference.figleaf", md5=a.upload.md5, _anchor='%s-%s' % (a.pos, a.pos_end))
 			y1, y2 = (a.pos, a.pos_end) if a.pos_end-a.pos<1 else (int(a.pos), int(a.pos))
-			if a.pos_end-a.pos<=1:
-				img = url_for("reference.preview", filename=u.preview(filename='%s-%sx%s.jpg' % (y1, y2, 500)))
-				clips.append((link,img,a.note,a.tags))
+			img = url_for("reference.preview", filename=u.preview(filename='%s-%sx%s.jpg' % (y1, y2, 500)))
+			clips.append((link,img,a.note,a.tags))
 
 	return render_template('reference/commonplace.html',
 		title = "commonplace",
 		thing = thing,
 		compiler = url_for('compiler.create', mode='recent'),
-		clips = clips
+		clips = clips,
+		pagination = annotations,
+		endpoint = 'reference.commonplace'
 	)
 
 @reference.route('/clips/recent')

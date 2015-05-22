@@ -1,3 +1,5 @@
+{%- from "bootstrap/macros.html" import render_pagination %}
+
 <html>
 <head>
 <title>
@@ -75,5 +77,6 @@ small {
 </div>
 {% endfor %}
 
+<small>{{ render_pagination(pagination, endpoint) }}</small>
 </body>
 </html>
