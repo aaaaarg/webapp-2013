@@ -63,9 +63,9 @@ class Reference(Annotation):
 			self._parse_url()
 
 	def save(self, *args, **kwargs):
-		super(Reference, self).save(*args, **kwargs)
 		if self.ref_url:
 			self._parse_url()
+		super(Reference, self).save(*args, **kwargs)
 
 	def preview(self, h, default=""):
 		return url_for("reference.preview", filename=self.ref_upload.preview(filename='x%s-%s.jpg' % (h, int(self.ref_pos))), _external=True) if self.ref_upload and self.ref_pos else default
