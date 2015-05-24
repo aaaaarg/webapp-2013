@@ -285,6 +285,7 @@
         if ($p) {
             this.seek(parseInt($p.style.top)/ SCANR.page_h);
             $p.click();
+            return false;
         }
     }
     $.Figleaf.prototype.annotation = function(pos, str) {

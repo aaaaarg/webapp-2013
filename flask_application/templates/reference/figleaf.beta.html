@@ -215,7 +215,7 @@ $(document).ready( function() {
 
 	// Open up references from sidebar click
 	$('.ref_mark').click(function() {
-		fl.point($(this).attr("id").substr(1));
+		return fl.point($(this).attr("id").substr(1));
 	})
 });
 function annotate(figleaf) {
