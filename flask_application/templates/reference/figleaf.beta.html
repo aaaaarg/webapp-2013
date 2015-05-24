@@ -259,7 +259,7 @@ function annotate(figleaf) {
 		{% if annotation.ref_thing %}
 		figleaf.pointer({ 
 			id:"{{ annotation.id }}",
-			x:{{ annotation.ref_pos_x or "false" }}, 
+			x:.05, 
 			y:{{ annotation.ref_pos }}, 
 			href:'{{ url_for("reference.figleaf", md5=annotation.upload.md5) }}',
 			src:'{{ annotation.preview(800, ref=False) }}',
