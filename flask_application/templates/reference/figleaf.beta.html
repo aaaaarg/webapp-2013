@@ -67,8 +67,8 @@
 					<em><a href="{{ url_for('thing.detail', id=reference.id) }}">{{ reference.title }}</em></a> {{ reference.makers_display }}
 					{% if data['pages'] %}
 					[ 
-					{% for page in data['pages'] %}
-					<a href="{{ url_for('reference.figleaf', md5=data['md5'], _anchor=page) }}">{{ page|int }}</em></a>
+					{% for page, ref_id in data['pages'] %}
+					<a class="ref_mark" id="m{{ ref_id }}" href="{{ url_for('reference.figleaf', md5=data['md5'], _anchor=page) }}">{{ page|int }}</em></a>
 					{% endfor %}
 					]
 					{% endif %}
@@ -123,8 +123,8 @@ var tints = ["#FFFF00", "#00FFFF", "#FF00FF"];
 $(document).ready( function() {
 	// initialize the viewer
 	fl = openBook(document.getElementById('figleaf-container'), {
-		//base:'/upload/processed-jpgs/', 
-		base:'/pages/', 
+		base:'/upload/processed-jpgs/', 
+		//base:'/pages/', 
 		id:'{{ upload.md5 }}', 
 		open_to:window.location.hash.substring(1) 
 	});
@@ -212,6 +212,11 @@ $(document).ready( function() {
     });
     return false;
 	}); 	
+
+	// Open up references from sidebar click
+	$('.ref_mark').click(function() {
+		fl.point($(this).attr("id").substr(1));
+	})
 });
 function annotate(figleaf) {
 	// add user notes
@@ -233,6 +238,7 @@ function annotate(figleaf) {
 		{% if annotation.ref_url %}
 		{% if annotation.ref_thing %}
 		figleaf.pointer({ 
+			id:"{{ annotation.id }}",
 			x:{{ annotation.pos_x or "false" }}, 
 			y:{{ annotation.pos }}, 
 			href:'{{ annotation.ref_url }}',

@@ -60,6 +60,7 @@
 
         // Make container <divs> for each page that get lazily filled with images
         this.page_containers = [];
+        this.pointers = [];
     }
     $.Figleaf.prototype._populate_pages = function() {
         // Use width and height of this.$pdf to set height of focus window
@@ -193,7 +194,7 @@
             this.$focus.removeChild($hl);
         }
     }
-    $.Figleaf.prototype.goto_reference = function(str) {
+    $.Figleaf.prototype.goto = function(str) {
         function isok(n) {
             return (!isNaN(parseFloat(n)) && isFinite(n));
         }
@@ -235,9 +236,13 @@
         y =  opts.y || false,
         src = opts.src || "",
         href = opts.href || false,
-        txt = opts.title || "open";
+        txt = opts.title || "open",
+        id = opts.id || false;
         if (!x || !y) return; // bad coors
         var $div = document.createElement("div");
+        if (id) {
+            $div.id = id;
+        }
         $div.className = "circle";
         $div.style.position = "absolute";
         $div.style.top = SCANR.page_h * y - 10;
@@ -274,6 +279,13 @@
         }
         this.$focus.appendChild($div);
         //console.log("Reference: " + $div.style.top + "," + $div.style.left);
+    }
+    $.Figleaf.prototype.point = function(id) {
+        $p = document.getElementById(id);
+        if ($p) {
+            this.seek(parseInt($p.style.top)/ SCANR.page_h);
+            $p.click();
+        }
     }
     $.Figleaf.prototype.annotation = function(pos, str) {
         var $div = document.createElement("div");
@@ -461,7 +473,7 @@ function openBook($container, opts) {
     // remove loading and allow jumping to a reference
     img.addEventListener('load', function() { 
         $container.removeChild(loading);
-        if (open_to) figleaf.goto_reference(open_to);
+        if (open_to) figleaf.goto(open_to);
     }, false);
     return figleaf;
 }

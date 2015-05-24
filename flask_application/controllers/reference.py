@@ -241,7 +241,7 @@ def figleaf(md5, user_id=None):
 		if a.ref_thing and a.ref_pos and a.ref_url:
 			if not a.ref_thing in references:
 				references[a.ref_thing] = { 'md5':a.ref_upload.md5, 'pages':[] }
-			references[a.ref_thing]['pages'].append(a.ref_pos)
+			references[a.ref_thing]['pages'].append( (a.ref_pos, a.id) )
 
 	# for back references
 	back_annotations = Reference.objects.filter(ref_upload=u).order_by('pos')
