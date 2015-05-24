@@ -132,6 +132,15 @@ div.circle {
   -moz-box-sizing: border-box;
   box-sizing: border-box;
 }
+div.dot {
+	cursor: pointer;
+	background-color: green;
+  border-radius: 50%;
+  opacity: 0.5;
+  width: 12px; height: 12px;
+  -moz-box-sizing: border-box;
+  box-sizing: border-box;
+}
 div.glance {
 	display: none;
 	z-index: 20;

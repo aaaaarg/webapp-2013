@@ -237,13 +237,14 @@
         src = opts.src || "",
         href = opts.href || false,
         txt = opts.title || "open",
-        id = opts.id || false;
+        id = opts.id || false,
+        className = opts.className || "circle";
         if (!x || !y) return; // bad coors
         var $div = document.createElement("div");
         if (id) {
             $div.id = id;
         }
-        $div.className = "circle";
+        $div.className = className;
         $div.style.position = "absolute";
         $div.style.top = SCANR.page_h * y - 10;
         $div.style.left = SCANR.page_w * x - 10;

@@ -83,8 +83,8 @@
 					<em><a href="{{ url_for('thing.detail', id=reference.id) }}">{{ reference.title }}</em></a> {{ reference.makers_display }}
 					{% if data['pages'] %}
 					[ 
-					{% for page in data['pages'] %}
-					<a href="{{ url_for('reference.figleaf', md5=data['md5'], _anchor=page) }}">{{ page|int }}</em></a>
+					{% for page, ref_id in data['pages'] %}
+					<a class="ref_mark" id="m{{ ref_id }}" href="{{ url_for('reference.figleaf', md5=data['md5'], _anchor=page) }}">{{ page|int }}</em></a>
 					{% endfor %}
 					]
 					{% endif %}
@@ -249,6 +249,22 @@ function annotate(figleaf) {
 			y:{{ annotation.pos }}, 
 			href:'{{ annotation.ref_url }}',
 			src:'{{ annotation.preview(800) }}'
+		});
+		{% endif %}
+		{% endif %}
+	{% endfor %}
+	// back annotations
+	{% for annotation in back_annotations %}
+		{% if annotation.ref_url %}
+		{% if annotation.ref_thing %}
+		figleaf.pointer({ 
+			id:"{{ annotation.id }}",
+			x:{{ annotation.ref_pos_x or "false" }}, 
+			y:{{ annotation.ref_pos }}, 
+			href:'{{ url_for("reference.figleaf", md5=annotation.upload.md5) }}',
+			src:'{{ annotation.preview(800, ref=False) }}',
+			title:"{{annotation.thing.title|escapejs}}",
+			className:"dot"
 		});
 		{% endif %}
 		{% endif %}

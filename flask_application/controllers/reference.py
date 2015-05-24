@@ -250,7 +250,7 @@ def figleaf(md5, user_id=None):
 		if a.thing and a.pos:
 			if not a.thing in back_references:
 				back_references[a.thing] = { 'md5':a.upload.md5, 'pages':[] }
-			back_references[a.thing]['pages'].append(a.pos)
+			back_references[a.thing]['pages'].append( (a.pos, a.id))
 
 	print len(back_references)
 	# if we pass a user id then we try and load highlights & notes created by the user
