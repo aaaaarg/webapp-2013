@@ -119,7 +119,7 @@ class UploadSymlinks(Command):
 		Option('--md5', '-m', dest='md5'),
 	)
 	# create the symlink
-	def do_symlink(u, force=False):
+	def do_symlink(self, u, force=False):
 		symlink = os.path.join(app.config['UPLOADS_DIR'], app.config['UPLOADS_MAPDIR'], '%s.pdf' % u.md5)
 		if force or os.path.exists(symlink):
 			os.unlink(symlink)
