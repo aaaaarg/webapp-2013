@@ -115,15 +115,29 @@ class FixMD5s(Command):
 
 class UploadSymlinks(Command):
 	""" Creates symlinks for all uploads """
-	def run(self, **kwargs):
-
-		# purge uploads that are not in use
-		uploads = Upload.objects.all()
-		for u in uploads:
-			try:
-				os.symlink(u.full_path(), os.path.join(app.config['UPLOADS_DIR'], app.config['UPLOADS_MAPDIR'], '%s.pdf' % u.md5))
+	option_list = (
+		Option('--md5', '-m', dest='md5'),
+	)
+	# create the symlink
+	def do_symlink(u, force=False):
+		symlink = os.path.join(app.config['UPLOADS_DIR'], app.config['UPLOADS_MAPDIR'], '%s.pdf' % u.md5)
+		if force or os.path.exists(symlink):
+				os.unlink(symlink)
+		try:
+				os.symlink(u.full_path(), symlink)
 			except:
 				pass
+	# main run
+	def run(self, md5):
+		if md5:
+			u = Upload.objects.filter(md5=md5).first()
+			if u:
+				self.do_symlink(u, force=True)
+		else:
+		# purge uploads that are not in use
+			uploads = Upload.objects.all()
+			for u in uploads:
+				self.do_symlink(u)
 
 def indexUpload(u):
 	""" Attempts to extract text from an uploaded PDF and index in Solr """
