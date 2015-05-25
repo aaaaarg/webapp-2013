@@ -120,6 +120,8 @@ def build_clips(annotations):
 		if a.pos_end:
 			u = a.upload
 			t = a.thing
+			if not t:
+				t = Thing.objects.filter(files=u).first()
 			y1 = int(a.pos)
 			y2 = int(a.pos_end)
 			link = url_for("reference.figleaf", md5=a.upload.md5, _anchor='%s-%s' % (a.pos, a.pos_end))
@@ -127,6 +129,6 @@ def build_clips(annotations):
 			#img = img.replace('/pages/','http://127.0.0.1:8484/')
 			page_count = y2 - y1 + 1
 			url_part = '%s.pdf/%s-%s/' % (a.upload.md5, y1, y2) if y2>y1 else '%s.pdf/%s/' % (a.upload.md5, y1)
-			title = t.title
+			title = t.title if t else "- no title avaliable -"
 			clips.append((link,img,title,a.note,page_count, url_part))
 	return clips
