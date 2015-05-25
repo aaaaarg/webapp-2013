@@ -122,11 +122,11 @@ class UploadSymlinks(Command):
 	def do_symlink(u, force=False):
 		symlink = os.path.join(app.config['UPLOADS_DIR'], app.config['UPLOADS_MAPDIR'], '%s.pdf' % u.md5)
 		if force or os.path.exists(symlink):
-				os.unlink(symlink)
+			os.unlink(symlink)
 		try:
-				os.symlink(u.full_path(), symlink)
-			except:
-				pass
+			os.symlink(u.full_path(), symlink)
+		except:
+			pass
 	# main run
 	def run(self, md5):
 		if md5:
