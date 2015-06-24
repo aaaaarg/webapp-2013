@@ -112,7 +112,7 @@ def detail(id):
 	for f in thing.files:
 		if not f.creator in contributors:
 			contributors.append( f.creator )
-	if not thing.creator in contributors:
+	if not contributors:
 		contributors.append( thing.creator )
 	# Upload form
 	uf = UploadForm()
