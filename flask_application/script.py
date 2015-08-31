@@ -115,25 +115,33 @@ class ESIndex(Command):
 
 	def index_all_things(self):
 		""" Indexes all things """
-		keep_going = True
-		count = 0
+		batch = -1
 		while keep_going:
-			before = count
-			for t in Thing.objects.skip(count).limit(1000):
+			keep_going = False
+			batch += 1
+			for t in Thing.objects.skip(batch*self.batch_size).limit(self.batch_size):
 				self.index_thing(t)
-				count += 1
-			if count==before:
-				keep_going = False
+				keep_going = True
 
 	def index_all_makers(self):
 		""" Indexes all makers """
-		for m in Maker.objects().all():
-			self.index_maker(m)
+		batch = -1
+		while keep_going:
+			keep_going = False
+			batch += 1
+			for m in Maker.objects.skip(batch*self.batch_size).limit(self.batch_size):
+				self.index_maker(m)
+				keep_going = True
 
 	def index_all_collections(self):
 		""" Indexes all collections """
-		for c in Collection.objects().all():
-			self.index_collection(c)
+		batch = -1
+		while keep_going:
+			keep_going = False
+			batch += 1
+			for m in Collection.objects.skip(batch*self.batch_size).limit(self.batch_size):
+				self.index_collection(c)
+				keep_going = True
 
 	def index_all_uploads(self):
 		""" Indexes all uploads, thing by thing """
@@ -142,13 +150,14 @@ class ESIndex(Command):
 				self.index_upload(u)
 
 	def run(self, **kwargs):
+		self.batch_size = 500
 		# Index every thing (quick)
 		# index every collection (quick)
 		# Index every author (quick)
 		# Index every page (slow)
 		#ts = Thing.objects.filter(files=self)
-		#self.index_all_makers()
-		#self.index_all_collections()
+		self.index_all_makers()
+		self.index_all_collections()
 		self.index_all_things()
 		#self.index_all_uploads()
 
@@ -369,5 +378,4 @@ class ExtractISBN(Command):
 					self.extract(t)
 				
 				
-
 
