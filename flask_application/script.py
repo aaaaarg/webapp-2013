@@ -116,6 +116,7 @@ class ESIndex(Command):
 	def index_all_things(self):
 		""" Indexes all things """
 		batch = -1
+		keep_going = True
 		while keep_going:
 			keep_going = False
 			batch += 1
@@ -126,6 +127,7 @@ class ESIndex(Command):
 	def index_all_makers(self):
 		""" Indexes all makers """
 		batch = -1
+		keep_going = True
 		while keep_going:
 			keep_going = False
 			batch += 1
@@ -136,6 +138,7 @@ class ESIndex(Command):
 	def index_all_collections(self):
 		""" Indexes all collections """
 		batch = -1
+		keep_going = True
 		while keep_going:
 			keep_going = False
 			batch += 1
