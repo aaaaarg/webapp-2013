@@ -7,7 +7,7 @@ sys.path.insert(0, os.getcwd())
 from flask_application import app
 from flask.ext.script import Manager, Server
 
-from flask_application.script import ResetDB, PopulateDB, SolrReindex, FixMD5s, UploadSymlinks, IndexPDFText, ExtractISBN
+from flask_application.script import ESIndex, ResetDB, PopulateDB, SolrReindex, FixMD5s, UploadSymlinks, IndexPDFText, ExtractISBN
 
 from flask.ext.security.script import (CreateUserCommand , AddRoleCommand,
         RemoveRoleCommand, ActivateUserCommand, DeactivateUserCommand)
@@ -19,6 +19,7 @@ manager.add_command("reset_db", ResetDB())
 manager.add_command("populate_db", PopulateDB())
 
 manager.add_command("solr_reindex", SolrReindex())
+manager.add_command("es_index", ESIndex())
 
 manager.add_command("fix_md5s", FixMD5s())
 manager.add_command("upload_symlinks", UploadSymlinks())

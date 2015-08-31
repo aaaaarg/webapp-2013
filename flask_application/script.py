@@ -17,6 +17,140 @@ from flask_application.models import db, solr, User, Role, Thing, Maker, Upload,
 from pdfminer.pdfparser import PDFSyntaxError
 from pdfminer.psparser import PSEOF
 
+# elasticsearch
+from elasticsearch import Elasticsearch
+es = Elasticsearch(['http://127.0.0.1:9200/',])
+
+class ESIndex(Command):
+	""" Elastic search index """
+	def index_thing(self, t):
+		""" Indexes a single thing """
+		body = {
+			'title': t.title,
+			'short_description': t.short_description,
+			'description': t.description,
+			'makers': [str(m.maker.id) for m in t.makers],
+			'makers_string': t.format_makers_string(),
+			'makers_sorted': t.makers_sorted,
+			'collections' : [str(c.id) for c in Collection.objects.filter(things__thing=t)]
+		}
+		es.index(
+			index="aaaarg", 
+			doc_type="thing", 
+			id=str(t.id), 
+			body=body)
+
+	def index_maker(self, m):
+		""" Indexes a single maker """
+		things = Thing.objects.filter(makers__maker=m)
+		if things.count()==0:
+			return False
+		searchable = ' '.join(["%s %s" % (t.title, t.short_description) for t in things])
+		searchable = '%s %s' % (searchable, m.display_name)
+		body = {
+			'title': m.display_name,
+			'searchable_text': searchable,
+			'things' : [str(t.id) for t in things]
+		}
+		es.index(
+			index="aaaarg", 
+			doc_type="maker", 
+			id=str(m.id), 
+			body=body)
+
+	def index_collection(self, c):
+		""" Indexes a single collection """
+		if c.accessibility=='private':
+			return {}
+		searchable = ' '.join(["%s %s" % (ct.thing.title, ct.thing.format_makers_string()) for ct in c.things])
+		searchable = '%s %s %s %s' % (searchable, c.title, c.short_description, c.description)
+		body = {
+		'title': c.title,
+		'short_description': c.short_description,
+		'description': c.description,
+		'searchable_text': searchable,
+		'things' : [str(ct.thing.id) for ct in c.things]
+		}
+		es.index(
+			index="aaaarg", 
+			doc_type="collection", 
+			id=str(c.id), 
+			body=body)
+
+	def index_upload(self, u, force=False):
+		""" Indexes a file upload, if possible; forces the issue, if necessary """
+		# try to get the first page
+		try:
+			p = es.get(index="aaaarg", doc_type="page", id="%s_%s" %(str(u.id),1))
+		except:
+			_illegal_xml_chars_RE = re.compile(u'[\x00-\x08\x0b\x0c\x0e-\x1F\uD800-\uDFFF\uFFFE\uFFFF]')
+			print "Opening",u.structured_file_name,"for extraction"
+			pages = u.extract_pdf_text(paginated=True)
+			page_num = 1
+			if pages:
+				t = Thing.objects(files=u)[0]
+				body = {
+					'searchable_text': '',
+					'md5': u.md5,
+					'thing': str(t.id),
+					'title': t.title,
+					'makers': [str(m.maker.id) for m in t.makers],
+					'makers_string': t.format_makers_string(),
+					'collections': [str(c.id) for c in Collection.objects.filter(things__thing=t)],
+					'page_count': len(pages),
+					'page': page_num,
+				}
+				for content in pages:
+					if content:
+						print "Page:",page_num
+						id = "%s_%s" % (str(u.id), page_num)
+						body['searchable_text'] = re.sub(_illegal_xml_chars_RE, '?', content)
+						body['page'] = page_num
+						es.index(
+							index="aaaarg", 
+							doc_type="page", 
+							id=id, 
+							body=body)
+					page_num += 1
+
+	def index_all_things(self):
+		""" Indexes all things """
+		keep_going = True
+		count = 0
+		while keep_going:
+			before = count
+			for t in Thing.objects.skip(count).limit(1000):
+				self.index_thing(t)
+				count += 1
+			if count==before:
+				keep_going = False
+
+	def index_all_makers(self):
+		""" Indexes all makers """
+		for m in Maker.objects().all():
+			self.index_maker(m)
+
+	def index_all_collections(self):
+		""" Indexes all collections """
+		for c in Collection.objects().all():
+			self.index_collection(c)
+
+	def index_all_uploads(self):
+		""" Indexes all uploads, thing by thing """
+		for t in Thing.objects().all():
+			for u in t.files:
+				self.index_upload(u)
+
+	def run(self, **kwargs):
+		# Index every thing (quick)
+		# index every collection (quick)
+		# Index every author (quick)
+		# Index every page (slow)
+		#ts = Thing.objects.filter(files=self)
+		#self.index_all_makers()
+		#self.index_all_collections()
+		self.index_all_things()
+		#self.index_all_uploads()
 
 class ResetDB(Command):
   """Drops all tables and recreates them"""
@@ -235,4 +369,5 @@ class ExtractISBN(Command):
 					self.extract(t)
 				
 				
+
 
