@@ -85,20 +85,6 @@ class ESIndex(Command):
 			body=body)
 
 
-try_path = self.full_path()
-			# Only handle pdfs (with pdf extension)
-			n, e = os.path.splitext(try_path)
-			if not e=='.pdf':
-				return False
-			if try_path and os.path.exists(try_path):
-				try:
-					pages = get_pages(try_path)
-				except:
-					return False
-				if not pages:
-					return False
-
-
 	def index_upload(self, u, force=False):
 		""" Indexes a file upload, if possible; forces the issue, if necessary """
 		# try to get the first page
