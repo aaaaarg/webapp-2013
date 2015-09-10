@@ -121,7 +121,7 @@ class ESIndex(Command):
 					if content:
 						print "Page:",page_num
 						id = "%s_%s" % (str(u.id), page_num)
-						body['searchable_text'] = re.sub(_illegal_xml_chars_RE, '?', content)
+						body['searchable_text'] = content #re.sub(_illegal_xml_chars_RE, '?', content)
 						body['page'] = page_num
 						es.index(
 							index="aaaarg", 
