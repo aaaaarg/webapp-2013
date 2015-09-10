@@ -115,7 +115,7 @@ class ESIndex(Command):
 					'makers_string': t.format_makers_string(),
 					'collections': [str(c.id) for c in Collection.objects.filter(things__thing=t)],
 					'page_count': len(pages),
-					'page': page_num,
+					'page': 1,
 				}
 				for page_num, content in pages.iteritems():
 					if content:
