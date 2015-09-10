@@ -19,9 +19,16 @@ class Pdf:
 		return int(self.meta["Pages"])
 	def dump_pages(self):
 		content = {}
+		some = False
 		for i in range(self.npages):
-			content[i+1] = self.dump_page(i+1)
-		return content
+			s = self.dump_page(i+1)
+			if s.strip()=='':
+				some = True
+			content[i+1] = s
+		if not some:
+			return False
+		else:
+			return content
 	def dump_page(self, p):
 		#print 'pdftotext', '-nopgbrk', '-f', str(p), '-l', str(p), self.path, '-'
 		return subprocess.check_output(['pdftotext', '-nopgbrk', '-f', str(p), '-l', str(p), self.path, '-'])

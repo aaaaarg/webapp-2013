@@ -16,12 +16,19 @@ from flask_application.models import db, solr, User, Role, Thing, Maker, Upload,
 # pdf extraction
 from pdfminer.pdfparser import PDFSyntaxError
 from pdfminer.psparser import PSEOF
+# other pdf extraction!
+from flask_application.pdf_extract import Pdf 
 
 # elasticsearch
 from elasticsearch import Elasticsearch
 es = Elasticsearch(['http://127.0.0.1:9200/',])
 
 class ESIndex(Command):
+	option_list = (
+		Option('--do', '-d', dest='do'),
+		Option('--id', '-i', dest='id'),
+	)
+
 	""" Elastic search index """
 	def index_thing(self, t):
 		""" Indexes a single thing """
@@ -77,16 +84,40 @@ class ESIndex(Command):
 			id=str(c.id), 
 			body=body)
 
+
+try_path = self.full_path()
+			# Only handle pdfs (with pdf extension)
+			n, e = os.path.splitext(try_path)
+			if not e=='.pdf':
+				return False
+			if try_path and os.path.exists(try_path):
+				try:
+					pages = get_pages(try_path)
+				except:
+					return False
+				if not pages:
+					return False
+
+
 	def index_upload(self, u, force=False):
 		""" Indexes a file upload, if possible; forces the issue, if necessary """
 		# try to get the first page
 		try:
 			p = es.get(index="aaaarg", doc_type="page", id="%s_%s" %(str(u.id),1))
+			print u.structured_file_name, "is already indexed (found the first page)"
 		except:
 			_illegal_xml_chars_RE = re.compile(u'[\x00-\x08\x0b\x0c\x0e-\x1F\uD800-\uDFFF\uFFFE\uFFFF]')
 			print "Opening",u.structured_file_name,"for extraction"
-			pages = u.extract_pdf_text(paginated=True)
-			page_num = 1
+			try_path = u.full_path()
+			n, e = os.path.splitext(try_path)
+			# only handle pdfs
+			if not e=='.pdf':
+				return False
+			# Try to index
+			try:
+				pages = Pdf(try_path).dump_pages()
+			except:
+				return False
 			if pages:
 				t = Thing.objects(files=u)[0]
 				body = {
@@ -100,7 +131,7 @@ class ESIndex(Command):
 					'page_count': len(pages),
 					'page': page_num,
 				}
-				for content in pages:
+				for page_num, content in pages.iteritems():
 					if content:
 						print "Page:",page_num
 						id = "%s_%s" % (str(u.id), page_num)
@@ -111,7 +142,6 @@ class ESIndex(Command):
 							doc_type="page", 
 							id=id, 
 							body=body)
-					page_num += 1
 
 	def index_all_things(self):
 		""" Indexes all things """
@@ -152,17 +182,42 @@ class ESIndex(Command):
 			for u in t.files:
 				self.index_upload(u)
 
-	def run(self, **kwargs):
+	def run(self, do, id):
 		self.batch_size = 500
 		# Index every thing (quick)
 		# index every collection (quick)
 		# Index every author (quick)
 		# Index every page (slow)
 		#ts = Thing.objects.filter(files=self)
-		self.index_all_makers()
-		self.index_all_collections()
-		self.index_all_things()
-		#self.index_all_uploads()
+		if do=='maker':
+			if id=='all':
+				self.index_all_makers()
+			else:
+				m = Maker.objects.filter(id=id).first()
+				if m:
+					self.index_maker(m)
+		if do=='collection':
+			if id=='all':
+				self.index_all_collections()
+			else:
+				c = Collection.objects.filter(id=id).first()
+				if c:
+					self.index_collection(c)
+		if do=='thing':
+			if id=='all':
+				self.index_all_things()
+			else:
+				t = Thing.objects.filter(id=id).first()
+				if t:
+					self.index_thing(t)
+		if do=='page':
+			if id=='all':
+				self.index_all_uploads()
+			else:
+				t = Thing.objects.filter(id=id).first()
+				if t:
+					for u in t.files:
+						self.index_upload(u)
 
 class ResetDB(Command):
   """Drops all tables and recreates them"""
