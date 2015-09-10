@@ -109,7 +109,7 @@ try_path = self.full_path()
 			_illegal_xml_chars_RE = re.compile(u'[\x00-\x08\x0b\x0c\x0e-\x1F\uD800-\uDFFF\uFFFE\uFFFF]')
 			print "Opening",u.structured_file_name,"for extraction"
 			try_path = u.full_path()
-			n, e = os.path.splitext(try_path)
+			n,e = os.path.splitext(try_path)
 			# only handle pdfs
 			if not e=='.pdf':
 				return False
