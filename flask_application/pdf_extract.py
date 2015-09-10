@@ -23,4 +23,5 @@ class Pdf:
 			content[i+1] = self.dump_page(i+1)
 		return content
 	def dump_page(self, p):
-		return subprocess.call(['pdftotext', ' -nopgbrk', '-f', str(p), '-l', str(p), self.path, '-'])
+		#print 'pdftotext', '-nopgbrk', '-f', str(p), '-l', str(p), self.path, '-'
+		return subprocess.check_output(['pdftotext', '-nopgbrk', '-f', str(p), '-l', str(p), self.path, '-'])
