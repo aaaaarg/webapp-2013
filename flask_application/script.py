@@ -117,9 +117,7 @@ class ESIndex(Command):
 					'page_count': len(pages),
 					'page': 1,
 				}
-				for k in body:
-					if isinstance(d[k], basestring):
-						body[k] = unidecode(body[k])	
+
 				for page_num, content in pages.iteritems():
 					if content:
 						print "Page:",page_num
