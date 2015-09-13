@@ -21,7 +21,7 @@ from flask_application.pdf_extract import Pdf
 
 # elasticsearch
 from elasticsearch import Elasticsearch
-es = Elasticsearch(['http://127.0.0.1:9200/',])
+es = Elasticsearch(['http://127.0.0.1:9002/',])
 
 class ESIndex(Command):
 	option_list = (
