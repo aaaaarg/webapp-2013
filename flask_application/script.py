@@ -11,7 +11,7 @@ from flask.ext.script import Command, Option
 from flask.ext.security.utils import encrypt_password
 from flask_application import user_datastore, app
 from flask_application.populate import populate_data
-from flask_application.models import db, solr, User, Role, Thing, Maker, Upload, Reference, Collection, SuperCollection, CollectedThing, Thread, Comment, Queue, TextUpload
+from flask_application.models import db, User, Role, Thing, Maker, Upload, Reference, Collection, SuperCollection, CollectedThing, Thread, Comment, Queue, TextUpload
 
 # pdf extraction
 from pdfminer.pdfparser import PDFSyntaxError
@@ -39,7 +39,8 @@ class ESIndex(Command):
 			'makers': [str(m.maker.id) for m in t.makers],
 			'makers_string': t.format_makers_string(),
 			'makers_sorted': t.makers_sorted,
-			'collections' : [str(c.id) for c in Collection.objects.filter(things__thing=t)]
+			'collections' : [str(c.id) for c in Collection.objects.filter(things__thing=t)],
+			'index_files' : 1,
 		}
 		es.index(
 			index="aaaarg", 
@@ -86,54 +87,79 @@ class ESIndex(Command):
 
 
 	def index_upload(self, u, force=False):
-		""" Indexes a file upload, if possible; forces the issue, if necessary """
+		""" Indexes a file upload, if possible; forces the issue, if necessary; update """
 		# try to get the first page
-		try:
-			p = es.get(index="aaaarg", doc_type="page", id="%s_%s" %(str(u.id),1))
-			print u.structured_file_name, "is already indexed (found the first page)"
-		except:
-			_illegal_xml_chars_RE = re.compile(u'[\x00-\x08\x0b\x0c\x0e-\x1F\uD800-\uDFFF\uFFFE\uFFFF]')
-			print "Opening",u.structured_file_name,"for extraction"
-			try_path = u.full_path()
-			n,e = os.path.splitext(try_path)
-			# only handle pdfs
-			if not e=='.pdf':
-				return False
-			# Try to index
+		def upload_already_indexed(upload):
+			''' Has the upload already been indexed? Look for page 1 '''
 			try:
-				pages = Pdf(try_path).dump_pages()
+				p = es.get(index="aaaarg", doc_type="page", id="%s_%s" %(str(upload.id),1), fields='md5')
+				return True
 			except:
 				return False
-			if pages:
-				t = Thing.objects(files=u)[0]
-				body = {
-					'searchable_text': '',
-					'md5': u.md5,
-					'thing': str(t.id),
-					'title': t.title,
-					'makers': [str(m.maker.id) for m in t.makers],
-					'makers_string': t.format_makers_string(),
-					'collections': [str(c.id) for c in Collection.objects.filter(things__thing=t)],
-					'page_count': len(pages),
-					'page': 1,
-				}
+		
+		try_path = u.full_path()
+		n,e = os.path.splitext(try_path)
+		# only handle pdfs
+		if not e=='.pdf':
+			return False
+		# Determine the job
+		is_indexed = upload_already_indexed(u)
+		needs_extraction = force or not is_indexed
+		_illegal_xml_chars_RE = re.compile(u'[\x00-\x08\x0b\x0c\x0e-\x1F\uD800-\uDFFF\uFFFE\uFFFF]')
+		# Try to extract
+		if needs_extraction:
+			print "Opening",u.structured_file_name,"for extraction"	
+			try:
+				pages = Pdf(try_path).dump_pages()
+				num_pages = len(pages)
+			except:
+				return False
+		else:
+			try:
+				num_pages = Pdf(try_path).npages
+			except:
+				return False
+		# This is the base document
+		t = Thing.objects(files=u)[0]
+		body = {
+			'md5': u.md5,
+			'thing': str(t.id),
+			'title': t.title,
+			'makers': [str(m.maker.id) for m in t.makers],
+			'makers_string': t.format_makers_string(),
+			'collections': [str(c.id) for c in Collection.objects.filter(things__thing=t)],
+			'page_count': len(pages),
+			'page': 1,
+		}
 
-				for page_num, content in pages.iteritems():
-					if content:
-						print "Page:",page_num
-						id = "%s_%s" % (str(u.id), page_num)
-						try:
-							content = unicode(content, 'utf-8')
-							content = unidecode(content)
-						except:
-							pass
-						body['searchable_text'] = content #re.sub(_illegal_xml_chars_RE, '?', content)
-						body['page'] = page_num
-						es.index(
-							index="aaaarg", 
-							doc_type="page", 
-							id=id, 
-							body=body)
+		if needs_extraction and pages:
+			for page_num, content in pages.iteritems():
+				if content:
+					print "Page:",page_num
+					id = "%s_%s" % (str(u.id), page_num)
+					try:
+						content = unicode(content, 'utf-8')
+						content = unidecode(content)
+					except:
+						pass
+					body['searchable_text'] = content #re.sub(_illegal_xml_chars_RE, '?', content)
+					body['page'] = page_num
+					es.index(
+						index="aaaarg", 
+						doc_type="page", 
+						id=id, 
+						body=body)
+		elif not needs_extraction:
+			print "Updating ",num_pages,"pages - extraction not needed."
+			for page_num in range(num_pages): # 0 index, needs to be corrected
+				id = "%s_%s" % (str(u.id), page_num+1)
+				body['page'] = page_num+1
+				es.update(
+					index="aaaarg", 
+					doc_type="page", 
+					id=id, 
+					body={'doc':body})
+
 
 	def index_all_things(self):
 		""" Indexes all things """
@@ -170,9 +196,32 @@ class ESIndex(Command):
 
 	def index_all_uploads(self):
 		""" Indexes all uploads, thing by thing """
-		for t in Thing.objects().all():
-			for u in t.files:
-				self.index_upload(u)
+		batch = -1
+		keep_going = True
+		while keep_going:
+			keep_going = False
+			batch += 1
+			for t in Thing.objects.skip(batch*self.batch_size).limit(self.batch_size):
+				for u in t.files:
+					self.index_upload(u, True)
+				keep_going = True
+
+
+	def index_updated_uploads(self):
+		""" Indexes all uploads, thing by thing """
+		r = es.search(index="aaaarg", doc_type="thing", body={'query':{'match':{'index_files':1}}}, fields='title')
+		if 'hits' in r and 'hits' in r['hits'] and r['hits']['hits']:
+			for t in r['hits']['hits']:
+				try:
+					thing = Thing.objects.get(id=t['_id'])
+					for u in thing.files:
+						self.index_upload(u)
+				except:
+					'Bad thing'
+				es.update(index='aaaarg', doc_type='thing', id=t['_id'], body={'doc':{'index_files':0}})
+		else:
+			print "Nothing needs updating."
+
 
 	def run(self, do, id):
 		self.batch_size = 500
@@ -205,6 +254,8 @@ class ESIndex(Command):
 		if do=='page':
 			if id=='all':
 				self.index_all_uploads()
+			elif id=='updated':
+				self.index_updated_uploads()
 			else:
 				t = Thing.objects.filter(id=id).first()
 				if t:
