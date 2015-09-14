@@ -11,7 +11,7 @@ class ES(object):
 		self.index_name = 'aaaarg'
 		self.elastic = Elasticsearch(app.config['ES_SERVER_URLS']) 
 	
-	def build_query_body(self, query=None, filter=None):
+	def build_query_body(self, query=None, filter=None, min_size=None):
 		''' Handles simple keyword queries filtered by something. 
 		query = Lucene query string with no filter or a dict for the query
 		filter = dict of fields to filter by.
@@ -46,14 +46,25 @@ class ES(object):
 					}
 				}
 			}
+		"""
+		if min_size and type(min_size) is dict:
+			size_filter_body = {
+				"script" : "doc['%s'].length > %s" % (min_size.keys()[0], min_size.values()[0])
+			}
+			if filter_body:
+				body['query']['filtered']['filter']['script'] = size_filter_body
+			else:
+				body['filter'] = { 'script' : size_filter_body }
+		"""
 		if query_body and filter_body:
 			body['query']['filtered']['query'] = query_body
 		elif query_body and not filter_body:
 			body['query'] = query_body
+
 		return body
 
 
-	def search(self, doc_type, query, filter=None, highlight=None, fields=None, start=None, num=10):
+	def search(self, doc_type, query, filter=None, highlight=None, fields=None, start=None, num=10, min_size=None):
 		''' Fields should be a list '''
 		kwargs = {
 			'index': self.index_name, 
@@ -65,7 +76,7 @@ class ES(object):
 			if start:
 				kwargs['body'] = {'from': start }
 		else:
-			kwargs['body'] = self.build_query_body(query=query, filter=filter)
+			kwargs['body'] = self.build_query_body(query=query, filter=filter, min_size=min_size)
 			if highlight:
 				kwargs['body']['highlight'] = {
 					"fields" : {

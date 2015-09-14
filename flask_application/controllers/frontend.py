@@ -164,7 +164,8 @@ def research(filter_type=None, filter_id=None):
 				highlight='searchable_text',
 				fields=['page','md5','thing'],
 				start=start,
-				num=num)
+				num=num,
+				min_size={'searchable_text':100})
 		# Build list of results 
 		things = []
 		for comp_id, result, highlight in results:
@@ -175,7 +176,7 @@ def research(filter_type=None, filter_id=None):
 				if u:
 					try:
 						t = Thing.objects.get(id=result['thing'][0])
-						things.append((t, result['md5'][0], result['page'][0], id, highlight ))
+						things.append((t, result['md5'][0], result['page'][0]-1, id, highlight ))
 					except:
 						pass
 		print things
