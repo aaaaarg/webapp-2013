@@ -149,18 +149,21 @@ def research(type=False):
 		ready = True
 
 	if ready:
-		results = elastic.search('page', query={'searchable_text': query})
+		results = elastic.search('page', 
+			query={'searchable_text': query}, 
+			highlight='searchable_text',
+			fields=['page','md5','thing'])
 		# Build list of results 
 		things = []
-		for comp_id, result in results:
+		for comp_id, result, highlight in results:
 			# id[0] is the upload id, id[1] is upload page
 			id = comp_id.split('_')
 			if len(id)==2:
 				u = Upload.objects.get(id=id[0])
 				if u:
 					try:
-						t = Thing.objects.get(id=result['thing'])
-						things.append((t, result['md5'], result['page'], id ))
+						t = Thing.objects.get(id=result['thing'][0])
+						things.append((t, result['md5'][0], result['page'][0], id, highlight ))
 					except:
 						pass
 		content = get_template_attribute('frontend/macros.html', 'fulltext_search_results')(things, query)

@@ -12,10 +12,14 @@ class ES(object):
 		self.elastic = Elasticsearch(app.config['ES_SERVER_URLS']) 
 	
 	def build_query_body(self, query=None, filter=None):
-		''' Handles simple keyword queries filtered by something '''
+		''' Handles simple keyword queries filtered by something. 
+		query = Lucene query string with no filter or a dict for the query
+		filter = dict of fields to filter by.
+		Highlight is an optional field name '''
 		body = { 'query':{ } }
 		query_body = None
 		filter_body = None
+		highlight_body = None
 		if query:
 			if type(query) is dict:
 				query_body = {
@@ -49,7 +53,8 @@ class ES(object):
 		return body
 
 
-	def search(self, doc_type, query):
+	def search(self, doc_type, query, highlight=None, fields=None):
+		''' Fields should be a list '''
 		kwargs = {
 			'index': self.index_name, 
 			'doc_type': doc_type, 
@@ -58,9 +63,23 @@ class ES(object):
 			kwargs['q'] = query
 		else:
 			kwargs['body'] = self.build_query_body(query=query, filter=filter)
+			if highlight:
+				kwargs['body']['highlight'] = {
+					"fields" : {
+						highlight : {}
+					}
+				}
+		if fields:
+			kwargs['fields'] = fields
 		result = self.elastic.search(**kwargs)
 		if 'hits' in result and 'hits' in result['hits']:
-			return [(hit['_id'], hit['_source']) for hit in result['hits']['hits']]
+			if fields:
+				if highlight:
+					return [(hit['_id'], hit['fields'], hit['highlight'][highlight]) for hit in result['hits']['hits']]
+				else:
+					return [(hit['_id'], hit['fields']) for hit in result['hits']['hits']]
+			else:
+				return [(hit['_id'], hit['_source']) for hit in result['hits']['hits']]
 		else:
 			return []
 

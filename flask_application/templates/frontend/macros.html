@@ -34,11 +34,12 @@
 {% macro fulltext_search_results(things, query) %}
 	{% if things %}
 	<ul class="list-group results fulltext">
-	{% for thing, md5, page, id in things %}
+	{% for thing, md5, page, id, hl in things %}
 		<li class="list-group-item">
 			<strong><a href="{{ url_for('thing.detail', id=thing.id) }}">{{ thing.title }}</a></strong> 
 			<small>p.{{ page }}</small> <a href="{{ url_for('frontend.research', mlt=id) }}">.</a><br/>
-			{{ thing.makers_display }}
+			{{ thing.makers_display }}<br/>
+			<small>{{ hl|join(' .. ')|safe }}</small>
 			<p>
 			<a href="{{ url_for('reference.figleaf', md5=md5, query=query) }}#{{page}}"><img src="/pages/{{ md5 }}.pdf/x800-{{ page }}.jpg"></a>
 			</p>
