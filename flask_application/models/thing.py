@@ -62,6 +62,7 @@ class Thing(SolrMixin, CreatorMixin, FollowersMixin, db.Document):
         self.tell_followers(self.title, '''
             A new file has been added to <a href="%s">%s</a> by %s
             ''' % (url_for('thing.detail', id=self.id, _external=True), self.title, self.format_makers_string()))
+        self.add_to_solr()
 
     def remove_file(self, f):
         self.update(pull__files=f)
