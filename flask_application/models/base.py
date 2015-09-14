@@ -129,7 +129,7 @@ class SolrMixin(object):
         if not d:
             # if the dict is empty, then it shouldn't be indexed
             return
-        elastic.reindex( self, d)
+        elastic.index( self, d)
 
     def delete_from_solr(self):
         elastic.delete( self )

@@ -191,7 +191,8 @@ def search_inside(md5):
 			if q_idx==3:
 				continue
 			new_query = "'%s'" % q.strip()
-			results = solr.query(searchable_text=new_query).filter(content_type="page").filter(md5_s=md5).field_limit("_id", score=True).sort_by("-score").execute()
+			#results = solr.query(searchable_text=new_query).filter(content_type="page").filter(md5_s=md5).field_limit("_id", score=True).sort_by("-score").execute()
+			results = []
 			max_score = 0
 			min_score = 100
 			search_results[q_idx] = {}
@@ -270,7 +271,10 @@ def figleaf(md5, user_id=None):
 			if q_idx==3:
 				continue
 			new_query = "'%s'" % q.strip()
-			results = solr.query(searchable_text=new_query).filter(content_type="page").filter(md5_s=md5).field_limit("_id", score=True).sort_by("-score").execute()
+			
+			#results = solr.query(searchable_text=new_query).filter(content_type="page").filter(md5_s=md5).field_limit("_id", score=True).sort_by("-score").execute()
+			results = []
+
 			max_score = 0
 			min_score = 100
 			search_results[q_idx] = {}
@@ -289,7 +293,8 @@ def figleaf(md5, user_id=None):
 
 	# check if this is searchable
 	if not is_searchable:
-		results = solr.query().filter(content_type="page").filter(md5_s=md5).execute()
+		#results = solr.query().filter(content_type="page").filter(md5_s=md5).execute()
+		results = []
 		if results:
 			is_searchable = True
 

@@ -11,7 +11,7 @@ from flask.ext.script import Command, Option
 from flask.ext.security.utils import encrypt_password
 from flask_application import user_datastore, app
 from flask_application.populate import populate_data
-from flask_application.models import db, User, Role, Thing, Maker, Upload, Reference, Collection, SuperCollection, CollectedThing, Thread, Comment, Queue, TextUpload
+from flask_application.models import db, elastic, User, Role, Thing, Maker, Upload, Reference, Collection, SuperCollection, CollectedThing, Thread, Comment, Queue, TextUpload
 
 # pdf extraction
 from pdfminer.pdfparser import PDFSyntaxError
@@ -190,7 +190,7 @@ class ESIndex(Command):
 		while keep_going:
 			keep_going = False
 			batch += 1
-			for m in Collection.objects.skip(batch*self.batch_size).limit(self.batch_size):
+			for c in Collection.objects.skip(batch*self.batch_size).limit(self.batch_size):
 				self.index_collection(c)
 				keep_going = True
 
