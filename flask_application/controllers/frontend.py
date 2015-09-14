@@ -133,7 +133,8 @@ def search(type=False):
 	)
 
 @frontend.route('/research')
-def research(type=False):
+@frontend.route('/research/<filter_type>/<filter_id>')
+def research(filter_type=None, filter_id=None):
 	""" Full text search results """
 	query = request.args.get('query', "")
 	mlt = request.args.get('mlt', "")
@@ -149,10 +150,17 @@ def research(type=False):
 		ready = True
 
 	if ready:
-		results = elastic.search('page', 
-			query={'searchable_text': query}, 
-			highlight='searchable_text',
-			fields=['page','md5','thing'])
+		if filter_type and filter_id:
+			results = elastic.search('page', 
+				query={'searchable_text': query}, 
+				filter={filter_type:filter_id},
+				highlight='searchable_text',
+				fields=['page','md5','thing'])
+		else:
+			results = elastic.search('page', 
+				query={'searchable_text': query}, 
+				highlight='searchable_text',
+				fields=['page','md5','thing'])
 		# Build list of results 
 		things = []
 		for comp_id, result, highlight in results:
@@ -166,6 +174,7 @@ def research(type=False):
 						things.append((t, result['md5'][0], result['page'][0], id, highlight ))
 					except:
 						pass
+		print things
 		content = get_template_attribute('frontend/macros.html', 'fulltext_search_results')(things, query)
 	
 	return render_template(

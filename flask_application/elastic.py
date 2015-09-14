@@ -53,7 +53,7 @@ class ES(object):
 		return body
 
 
-	def search(self, doc_type, query, highlight=None, fields=None):
+	def search(self, doc_type, query, filter=None, highlight=None, fields=None):
 		''' Fields should be a list '''
 		kwargs = {
 			'index': self.index_name, 
