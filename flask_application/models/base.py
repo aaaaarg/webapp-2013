@@ -7,7 +7,7 @@ from flask_application import app, mail
 from flask.ext.mail import Message
 from flask.ext.security import current_user 
 
-from . import db, solr, User
+from . import db, elastic, User
 
 # Gets a user object from the current user
 def current_user_obj():
@@ -119,7 +119,35 @@ class EditorsMixin(object):
 
 
 # Mixes in Solr indexing functionality
+# Even though this is Elastic Search, we still will use the same interface
 class SolrMixin(object):
+
+    solr_dict = {}
+
+    def add_to_solr(self, commit=True):
+        d = self.build_solr()
+        if not d:
+            # if the dict is empty, then it shouldn't be indexed
+            return
+        elastic.reindex( self, d)
+
+    def delete_from_solr(self):
+        elastic.delete( self )
+
+    def build_solr(self):
+        super(SolrMixin, self).build_solr(*args, **kwargs)
+
+    def save(self, *args, **kwargs):
+        super(SolrMixin, self).save(*args, **kwargs)
+        self.add_to_solr()
+
+    def delete(self, *args, **kwargs):
+        self.delete_from_solr()
+        super(SolrMixin, self).delete(*args, **kwargs)
+
+
+"""
+class SolrMixinOld(object):
 
     solr_dict = {}
 
@@ -160,3 +188,4 @@ class SolrMixin(object):
     #def update(self, *args, **kwargs):
     #    super(SolrMixin, self).update(*args, **kwargs)
     #    self.add_to_solr()
+"""

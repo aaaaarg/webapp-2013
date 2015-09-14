@@ -45,6 +45,10 @@ class Thing(SolrMixin, CreatorMixin, FollowersMixin, db.Document):
         self._update_request_status()
         self.makers_display = self.format_makers_string()
 
+    @property
+    def type(self):
+        return 'thing'
+
     def _update_request_status(self):
         self.is_request = False if len(self.files)>0 else True
 
@@ -182,6 +186,18 @@ class Thing(SolrMixin, CreatorMixin, FollowersMixin, db.Document):
     def build_solr(self):
         from .collection import Collection
         return {
+            'title': self.title,
+            'short_description': self.short_description,
+            'description': self.description,
+            'makers': [str(m.maker.id) for m in self.makers],
+            'makers_string': self.format_makers_string(),
+            'makers_sorted': self.makers_sorted,
+            'collections' : [str(c.id) for c in Collection.objects.filter(things__thing=self)],
+            'index_files' : 1,
+        }
+        """
+        # for solr
+        return {
             '_id' : self.id,
             'content_type' : 'thing',
             'title': self.title,
@@ -192,3 +208,4 @@ class Thing(SolrMixin, CreatorMixin, FollowersMixin, db.Document):
             'makers_sorted': self.makers_sorted,
             'collections' : [c.id for c in Collection.objects.filter(things__thing=self)]
         }
+        """

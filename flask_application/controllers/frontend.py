@@ -91,6 +91,7 @@ def unfollow(type, id):
 		'message': get_template_attribute('frontend/macros.html', 'follow')(model)
 	})	
 
+
 @frontend.route('/search')
 @frontend.route('/search/<type>')
 def search(type=False):
@@ -108,16 +109,16 @@ def search(type=False):
 	num = 10
 	start = (page-1)*num
 	if type=='things':
-		results = solr.query(content_type="thing", text=query).boost_relevancy(3, title=query).paginate(start=start, rows=num).execute()
+		results = elastic.search('thing', 'title:"%s" 	%s'%(query,query))
 		content = get_template_attribute('frontend/macros.html', 'search_results')(results, 'thing.detail')			
 	elif type=='makers':
-		results = solr.query(content_type="maker", text=query).boost_relevancy(3, title=query).paginate(start=start, rows=num).execute()
+		results = elastic.search('maker', 'title:"%s" 	%s'%(query,query))
 		content = get_template_attribute('frontend/macros.html', 'search_results')(results, 'maker.detail')
 	elif type=='discussions':
-		results = solr.query(content_type="thread", text=query).boost_relevancy(2, title=query).paginate(start=start, rows=num).execute()
+		results = elastic.search('discussion', 'title:"%s" 	%s'%(query,query))
 		content = get_template_attribute('frontend/macros.html', 'search_results')(results, 'talk.thread')
 	elif type=='collections':
-		results = solr.query(content_type="collection", text=query).boost_relevancy(3, title=query).paginate(start=start, rows=num).execute()
+		results = elastic.search('collection', 'title:"%s" 	%s'%(query,query))
 		content = get_template_attribute('frontend/macros.html', 'search_results')(results, 'collection.detail')
 	if is_ajax:
 		return content
@@ -134,6 +135,7 @@ def search(type=False):
 @frontend.route('/research')
 def research(type=False):
 	""" Full text search results """
+	"""
 	query = request.args.get('query', "")
 	mlt = request.args.get('mlt', "")
 	page = int(request.args.get('page', "1"))
@@ -143,7 +145,7 @@ def research(type=False):
 	ready = False
 
 	if not mlt=="":
-		the_query = solr.mlt_query(fields='searchable_text', mintf=1).query(searchable_text='*').filter(_id=mlt)
+		#the_query = solr.mlt_query(fields='searchable_text', mintf=1).query(searchable_text='*').filter(_id=mlt)
 		ready = True
 	elif not query=="":
 		#results = solr.query(content_type="page", text=query).paginate(start=start, rows=num).highlight("searchable_text", snippets=3, maxAnalyzedChars=-1).execute()
@@ -151,7 +153,7 @@ def research(type=False):
 		#combined = 'AND '.join(query_tokens)
 		#new_query = "'%s'~%d" % (combined, len(query_tokens))
 		new_query = "%s" % query
-		the_query = solr.query(searchable_text=new_query).filter(content_type="page").filter_exclude(md5_s="7dbf4aee8eb2b19197fe62913e15dda5").sort_by("-score").paginate(start=start, rows=num)
+		#the_query = solr.query(searchable_text=new_query).filter(content_type="page").filter_exclude(md5_s="7dbf4aee8eb2b19197fe62913e15dda5").sort_by("-score").paginate(start=start, rows=num)
 		ready = True
 
 	if ready:
@@ -178,6 +180,8 @@ def research(type=False):
 		page_next = page + 1,
 		type = type
 	)
+	"""
+	return "Sorry, the full text search index is being rebuilt"
 
 @frontend.route('/deepsearch')
 def deepsearch():
@@ -187,7 +191,7 @@ def deepsearch():
 	title = request.args.get('title', "")
 	
 	new_query = "%s" % phrase
-	the_query = solr.query(searchable_text=new_query).filter(content_type="page").sort_by("-score")
+	#the_query = solr.query(searchable_text=new_query).filter(content_type="page").sort_by("-score")
 	#the_query = solr.query(title='plague').filter(content_type="thing").sort_by("-score")
 	#the_query = solr.query(_id='54352bfdc738464b67c2d29c_*').filter(content_type="page").sort_by("-score")
 	#the_query = solr.query(title='plague',makers_string='ahmad').filter(content_type="thing").sort_by("-score")

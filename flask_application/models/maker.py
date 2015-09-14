@@ -55,6 +55,11 @@ class Maker(SolrMixin, CreatorMixin, FollowersMixin, db.Document):
     display_name = db.StringField(max_length=256)
     sort_by = db.StringField(max_length=256)
 
+    @property
+    def type(self):
+        return 'maker'
+
+
     def format_name(self, role=None):
         if role is None or role=="":
             return self.display_name
@@ -76,12 +81,19 @@ class Maker(SolrMixin, CreatorMixin, FollowersMixin, db.Document):
             return {}
         searchable = ' '.join(["%s %s" % (t.title, t.short_description) for t in things])
         return {
+            'title': self.display_name,
+            'searchable_text': searchable,
+            'things' : [str(t.id) for t in things]
+        }
+        """
+        return {
             '_id' : self.id,
             'content_type' : 'maker',
             'title': self.display_name,
             'searchable_text': searchable,
             'things' : [t.id for t in things]
-        }    
+        }   
+        """ 
 
 class MakerIndex():
     """

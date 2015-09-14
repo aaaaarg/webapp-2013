@@ -44,6 +44,11 @@ class Collection(SolrMixin, CreatorMixin, EditorsMixin, FollowersMixin, db.Dynam
     things = db.ListField(db.EmbeddedDocumentField(CollectedThing))
     accessibility = db.StringField(max_length=16, choices=TYPES)
 
+    @property
+    def type(self):
+        return 'collection'
+
+
     def has_thing(self, thing):
         if thing is None:
             return False
@@ -73,11 +78,13 @@ class Collection(SolrMixin, CreatorMixin, EditorsMixin, FollowersMixin, db.Dynam
             collected_thing = CollectedThing(thing=thing, note=note)
         if not self.has_thing(collected_thing.thing):
             self.update(add_to_set__things=collected_thing)
+            collected_thing.thing.add_to_solr()
             self.tell_followers(self.title, '''
                 <a href="%s">%s</a> has been added to the collection <a href="%s">%s</a> (%s)
                 ''' % (url_for('thing.detail', id=collected_thing.thing.id, _external=True), collected_thing.thing.title, url_for('collection.detail', id=self.id, _external=True), self.title, note))
 
     def remove_thing(self, thing, return_collected_thing=False):
+        thing.add_to_solr()
         if return_collected_thing:
             ct = self.get_collected_thing(thing)
             self.update(pull__things__thing=thing)
@@ -105,6 +112,14 @@ class Collection(SolrMixin, CreatorMixin, EditorsMixin, FollowersMixin, db.Dynam
             return {}
         searchable = ' '.join(["%s %s" % (ct.thing.title, ct.thing.format_makers_string()) for ct in self.things])
         return {
+            'title': self.title,
+            'short_description': self.short_description,
+            'description': self.description,
+            'searchable_text': searchable,
+            'things' : [str(ct.thing.id) for ct in self.things]
+        }
+        """
+        return {
             '_id' : self.id,
             'content_type' : 'collection',
             'title': self.title,
@@ -112,7 +127,8 @@ class Collection(SolrMixin, CreatorMixin, EditorsMixin, FollowersMixin, db.Dynam
             'description': self.description,
             'searchable_text': searchable,
             'things' : [ct.thing.id for ct in self.things]
-        }    
+        }  
+        """  
 
 class SuperCollection(Collection):
     """

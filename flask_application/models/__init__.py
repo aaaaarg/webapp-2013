@@ -1,8 +1,7 @@
 import datetime
 
-from sunburnt import SolrInterface
-
 from flask_application import app
+from flask_application.elastic import ES
 
 from flask.ext.security import current_user 
 from flask.ext.mongoengine import MongoEngine
@@ -10,8 +9,9 @@ from flask.ext.mongoengine import MongoEngine
 # Create db, which is used across all models
 db = MongoEngine(app)
 
-# Set up solr interface
-solr = SolrInterface(app.config['SOLR_SERVER_URL'])
+# Set up Elastic Search
+elastic = ES(app)
+
 
 # Import user models here, before mixins
 from .user import User, Role
