@@ -212,18 +212,22 @@ class ESIndex(Command):
 
 	def index_updated_uploads(self):
 		""" Indexes all uploads, thing by thing """
-		r = es.search(index="aaaarg", doc_type="thing", body={'query':{'match':{'index_files':1}}}, fields='title')
-		if 'hits' in r and 'hits' in r['hits'] and r['hits']['hits']:
-			for t in r['hits']['hits']:
-				try:
-					thing = Thing.objects.get(id=t['_id'])
-					for u in thing.files:
-						self.index_upload(u)
-				except:
-					'Bad thing'
-				es.update(index='aaaarg', doc_type='thing', id=t['_id'], body={'doc':{'index_files':0}})
-		else:
-			print "Nothing needs updating."
+		keep_going = True
+		while keep_going:
+			r = es.search(index="aaaarg", doc_type="thing", body={'query':{'match':{'index_files':1}}}, fields='title')		
+			if 'hits' in r and 'hits' in r['hits'] and r['hits']['hits']:
+				for t in r['hits']['hits']:
+					try:
+						thing = Thing.objects.get(id=t['_id'])
+						for u in thing.files:
+							self.index_upload(u)
+					except:
+						'Bad thing'
+					es.update(index='aaaarg', doc_type='thing', id=t['_id'], body={'doc':{'index_files':0}})
+			else:
+				keep_going = False
+				print "Nothing needs updating."
+		print "Finished!"
 
 
 	def run(self, do, id):
