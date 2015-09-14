@@ -50,12 +50,19 @@ class ES(object):
 
 
 	def search(self, doc_type, query):
-		result = self.elastic.search(
-			index=self.index_name, 
-			doc_type=doc_type, 
-			q=query)
+		kwargs = {
+			'index': self.index_name, 
+			'doc_type': doc_type, 
+		}
+		if query and not filter and not type(query) is dict:
+			kwargs['q'] = query
+		else:
+			kwargs['body'] = self.build_query_body(query=query, filter=filter)
+		result = self.elastic.search(**kwargs)
 		if 'hits' in result and 'hits' in result['hits']:
 			return [(hit['_id'], hit['_source']) for hit in result['hits']['hits']]
+		else:
+			return []
 
 
 	def count(self, doc_type, query=None, filter=None):

@@ -135,7 +135,6 @@ def search(type=False):
 @frontend.route('/research')
 def research(type=False):
 	""" Full text search results """
-	"""
 	query = request.args.get('query', "")
 	mlt = request.args.get('mlt', "")
 	page = int(request.args.get('page', "1"))
@@ -145,31 +144,25 @@ def research(type=False):
 	ready = False
 
 	if not mlt=="":
-		#the_query = solr.mlt_query(fields='searchable_text', mintf=1).query(searchable_text='*').filter(_id=mlt)
 		ready = True
 	elif not query=="":
-		#results = solr.query(content_type="page", text=query).paginate(start=start, rows=num).highlight("searchable_text", snippets=3, maxAnalyzedChars=-1).execute()
-		#query_tokens = query.split()
-		#combined = 'AND '.join(query_tokens)
-		#new_query = "'%s'~%d" % (combined, len(query_tokens))
-		new_query = "%s" % query
-		#the_query = solr.query(searchable_text=new_query).filter(content_type="page").filter_exclude(md5_s="7dbf4aee8eb2b19197fe62913e15dda5").sort_by("-score").paginate(start=start, rows=num)
 		ready = True
 
 	if ready:
-		results = the_query.execute()
+		results = elastic.search('page', query={'searchable_text': query})
 		# Build list of results 
 		things = []
-		for result in results:
-			if '_id' in result:
-				# id[0] is the upload id, id[1] is upload page
-				id = str(result['_id']).split('_')
-				if len(id)==2:
-					u = Upload.objects.get(id=id[0])
-					if u:
-						t = Thing.objects.filter(files=u).first()
-						things.append((t, result['md5_s'], id[1], result['_id'] ))
-		
+		for comp_id, result in results:
+			# id[0] is the upload id, id[1] is upload page
+			id = comp_id.split('_')
+			if len(id)==2:
+				u = Upload.objects.get(id=id[0])
+				if u:
+					try:
+						t = Thing.objects.get(id=result['thing'])
+						things.append((t, result['md5'], result['page'], id ))
+					except:
+						pass
 		content = get_template_attribute('frontend/macros.html', 'fulltext_search_results')(things, query)
 	
 	return render_template(
@@ -180,8 +173,7 @@ def research(type=False):
 		page_next = page + 1,
 		type = type
 	)
-	"""
-	return "Sorry, the full text search index is being rebuilt"
+
 
 @frontend.route('/deepsearch')
 def deepsearch():

@@ -70,7 +70,10 @@ class ESIndex(Command):
 		""" Indexes a single collection """
 		if c.accessibility=='private':
 			return {}
-		searchable = ' '.join(["%s %s" % (ct.thing.title, ct.thing.format_makers_string()) for ct in c.things])
+		try:
+			searchable = ' '.join(["%s %s" % (ct.thing.title, ct.thing.format_makers_string()) for ct in c.things if ct])
+		except:
+			searchable = ''
 		searchable = '%s %s %s %s' % (searchable, c.title, c.short_description, c.description)
 		body = {
 		'title': c.title,
