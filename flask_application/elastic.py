@@ -53,14 +53,17 @@ class ES(object):
 		return body
 
 
-	def search(self, doc_type, query, filter=None, highlight=None, fields=None):
+	def search(self, doc_type, query, filter=None, highlight=None, fields=None, start=None, num=10):
 		''' Fields should be a list '''
 		kwargs = {
 			'index': self.index_name, 
 			'doc_type': doc_type, 
+			'size': num,
 		}
 		if query and not filter and not type(query) is dict:
 			kwargs['q'] = query
+			if start:
+				kwargs['body'] = {'from': start }
 		else:
 			kwargs['body'] = self.build_query_body(query=query, filter=filter)
 			if highlight:
@@ -69,6 +72,8 @@ class ES(object):
 						highlight : {}
 					}
 				}
+			if start:
+				kwargs['body']['from'] = start
 		if fields:
 			kwargs['fields'] = fields
 		result = self.elastic.search(**kwargs)

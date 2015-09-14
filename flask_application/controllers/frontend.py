@@ -109,16 +109,16 @@ def search(type=False):
 	num = 10
 	start = (page-1)*num
 	if type=='things':
-		results = elastic.search('thing', 'title:"%s" 	%s'%(query,query))
+		results = elastic.search('thing', 'title:"%s" 	%s'%(query,query), start=start, num=num)
 		content = get_template_attribute('frontend/macros.html', 'search_results')(results, 'thing.detail')			
 	elif type=='makers':
-		results = elastic.search('maker', 'title:"%s" 	%s'%(query,query))
+		results = elastic.search('maker', 'title:"%s" 	%s'%(query,query), start=start, num=num)
 		content = get_template_attribute('frontend/macros.html', 'search_results')(results, 'maker.detail')
 	elif type=='discussions':
-		results = elastic.search('discussion', 'title:"%s" 	%s'%(query,query))
+		results = elastic.search('discussion', 'title:"%s" 	%s'%(query,query), start=start, num=num)
 		content = get_template_attribute('frontend/macros.html', 'search_results')(results, 'talk.thread')
 	elif type=='collections':
-		results = elastic.search('collection', 'title:"%s" 	%s'%(query,query))
+		results = elastic.search('collection', 'title:"%s" 	%s'%(query,query), start=start, num=num)
 		content = get_template_attribute('frontend/macros.html', 'search_results')(results, 'collection.detail')
 	if is_ajax:
 		return content
@@ -155,12 +155,16 @@ def research(filter_type=None, filter_id=None):
 				query={'searchable_text': query}, 
 				filter={filter_type:filter_id},
 				highlight='searchable_text',
-				fields=['page','md5','thing'])
+				fields=['page','md5','thing'],
+				start=start,
+				num=num)
 		else:
 			results = elastic.search('page', 
 				query={'searchable_text': query}, 
 				highlight='searchable_text',
-				fields=['page','md5','thing'])
+				fields=['page','md5','thing'],
+				start=start,
+				num=num)
 		# Build list of results 
 		things = []
 		for comp_id, result, highlight in results:

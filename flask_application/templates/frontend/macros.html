@@ -41,7 +41,7 @@
 			{{ thing.makers_display }}<br/>
 			<small>{{ hl|join(' .. ')|safe }}</small>
 			<p>
-			<a href="{{ url_for('reference.figleaf', md5=md5, query=query) }}#{{page}}"><img src="/pages/{{ md5 }}.pdf/x800-{{ page }}.jpg"></a>
+			<a href="{{ url_for('reference.figleaf', md5=md5, query=query) }}#{{page}}"><img src="/pages/{{ md5 }}.pdf/x600-{{ page }}.jpg"></a>
 			</p>
 		</li>
 	{% endfor %}
