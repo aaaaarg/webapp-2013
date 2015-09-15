@@ -15,7 +15,7 @@
 <h2>{{title}}</h2>
 
 <div class="row">
-  <form class="form-search" action="{{ url_for('frontend.research') }}" method="get">
+  <form class="form-search" action="{{ url_for('frontend.research', filter_type=filter_type, filter_id=filter_id) }}" method="get">
     <div class="input-group">
       <input type="text" name="query" class="form-control search-query" placeholder="{{query}}">
       <div class="input-group-btn">

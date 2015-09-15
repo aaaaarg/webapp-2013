@@ -213,7 +213,9 @@ def research(filter_type=None, filter_id=None):
 		content = content,
 		page_next = page + 1,
 		type = type,
-		more = more
+		more = more,
+		filter_type = filter_type,
+		filter_id = filter_id
 	)
 
 
