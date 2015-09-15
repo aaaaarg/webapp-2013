@@ -148,7 +148,7 @@ def research(filter_type=None, filter_id=None):
 	query = request.args.get('query', "")
 	mlt = request.args.get('mlt', "")
 	page = int(request.args.get('page', "1"))
-	num = 10
+	num = 20
 	start = (page-1)*num
 	content = ""
 	ready = False
