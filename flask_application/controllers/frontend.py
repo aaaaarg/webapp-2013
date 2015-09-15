@@ -161,16 +161,13 @@ def research(filter_type=None, filter_id=None):
 	if ready:
 		title = "Search for: %s" % query
 		if filter_type and filter_id:
-			try:
-				if filter_type=='collections':
-					c = Collection.objects.get(filter_id)
-					filter_title = c.title
-				elif filter_type=='makers':
-					m = Maker.objects.get(filter_id)
-					filter_title = m.display_name
-				title = "Search %s for: %s" % (filter_title, query)
-			except:
-				pass
+			if filter_type=='collections':
+				c = Collection.objects.get_or_404(id=filter_id)
+				filter_title = c.title
+			elif filter_type=='makers':
+				m = Maker.objects.get_or_404(id=filter_id)
+				filter_title = m.display_name
+			title = "Search %s for: %s" % (filter_title, query)
 			more = url_for('frontend.research', filter_type=filter_type, filter_id=filter_id, query=query, page=page+1)
 			results = elastic.grouped_search('page', 
 				query={'searchable_text': query}, 
