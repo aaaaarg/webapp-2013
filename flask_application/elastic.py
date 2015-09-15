@@ -126,7 +126,7 @@ class ES(object):
 				'include': fields
 			}
 		if start:
-			kwargs['body']['from'] = start
+			kwargs['body']['aggs']['byField']['aggs']['topFoundHits']['top_hits']['from'] = start
 		result = self.elastic.search(**kwargs)
 		try:
 			buckets = result['aggregations']['byField']['buckets']
