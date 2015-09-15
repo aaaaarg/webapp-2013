@@ -25,7 +25,7 @@ class ES(object):
 				field_str = query.keys()[0]
 				if ',' in field_str:
 					query_body = {
-						"query_string" : {
+						"multi_match" : {
 							"fields" : field_str.split(','),
 							"query" : query.values()[0]
 						}
