@@ -152,7 +152,8 @@ def research(filter_type=None, filter_id=None):
 	start = (page-1)*num
 	content = ""
 	ready = False
-
+	title = "Fulltext Search"
+	
 	if not mlt=="":
 		ready = True
 	elif not query=="":
