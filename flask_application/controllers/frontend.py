@@ -198,7 +198,7 @@ def research(filter_type=None, filter_id=None):
 			pages = []
 			for pid, hit in top_hits:
 				thing_id = hit['thing']
-				pages.append(hit['page'])
+				pages.append(hit['page']-1)
 			try:
 				t = Thing.objects.get(id=thing_id)
 				things.append((t, md5, num_hits, pages))

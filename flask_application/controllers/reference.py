@@ -199,7 +199,7 @@ def search_inside(md5):
 			min_score = 100
 			search_results[q_idx] = {}
 			for id, score, fields in results:
-				search_results[q_idx][fields['page'][0]] = score
+				search_results[q_idx][fields['page'][0]-1] = score
 				max_score = score if score > max_score else max_score
 				min_score = score if score < min_score else min_score
 			min_score = min_score - 0.1
@@ -279,7 +279,7 @@ def figleaf(md5, user_id=None):
 			search_results[q_idx] = {}
 			for id, score, fields in results:
 				is_searchable = True
-				search_results[q_idx][fields['page'][0]] = score
+				search_results[q_idx][fields['page'][0]-1] = score
 				max_score = score if score > max_score else max_score
 				min_score = score if score < min_score else min_score
 			min_score = min_score - 0.1
