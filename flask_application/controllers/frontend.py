@@ -153,6 +153,7 @@ def research(filter_type=None, filter_id=None):
 	content = ""
 	ready = False
 	title = "Fulltext Search"
+	more = url_for('frontend.research')
 	
 	if not mlt=="":
 		ready = True
