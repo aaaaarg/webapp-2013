@@ -190,21 +190,18 @@ def search_inside(md5):
 		for q in subqueries:
 			if q_idx==3:
 				continue
-			new_query = "'%s'" % q.strip()
-			#results = solr.query(searchable_text=new_query).filter(content_type="page").filter(md5_s=md5).field_limit("_id", score=True).sort_by("-score").execute()
-			results = []
+			results = elastic.search('page', 
+				query={'searchable_text': q}, 
+				filter={ 'md5' : md5 },
+				fields=['page'],
+				num=100)
 			max_score = 0
 			min_score = 100
 			search_results[q_idx] = {}
-			for result in results:
-				print result
-				if '_id' in result:
-					# id[0] is the upload id, id[1] is upload page
-					id = str(result['_id']).split('_')
-					if len(id)==2:
-						search_results[q_idx][id[1]] = result['score']
-						max_score = result['score'] if result['score'] > max_score else max_score
-						min_score = result['score'] if result['score'] < min_score else min_score
+			for id, score, pages in results:
+				search_results[q_idx][pages[0]] = score
+				max_score = score if score > max_score else max_score
+				min_score = score if score < min_score else min_score
 			min_score = min_score - 0.1
 			search_results[q_idx].update((x, (y-min_score)/(max_score-min_score)) for x, y in search_results[q_idx].items())
 			q_idx+=1
@@ -253,7 +250,6 @@ def figleaf(md5, user_id=None):
 				back_references[a.thing] = { 'md5':a.upload.md5, 'pages':[] }
 			back_references[a.thing]['pages'].append( (a.pos, a.id))
 
-	print len(back_references)
 	# if we pass a user id then we try and load highlights & notes created by the user
 	if user_id:
 		notes = Reference.objects.filter(upload=u, creator=user_id)
@@ -272,30 +268,28 @@ def figleaf(md5, user_id=None):
 				continue
 			new_query = "'%s'" % q.strip()
 			
-			#results = solr.query(searchable_text=new_query).filter(content_type="page").filter(md5_s=md5).field_limit("_id", score=True).sort_by("-score").execute()
-			results = []
+			results = elastic.search('page', 
+				query={'searchable_text': q}, 
+				filter={ 'md5' : md5 },
+				fields=['page'],
+				num=100)
 
 			max_score = 0
 			min_score = 100
 			search_results[q_idx] = {}
-			for result in results:
+			for id, score, pages in results:
 				is_searchable = True
-				if '_id' in result:
-					# id[0] is the upload id, id[1] is upload page
-					id = str(result['_id']).split('_')
-					if len(id)==2:
-						search_results[q_idx][id[1]] = result['score']
-						max_score = result['score'] if result['score'] > max_score else max_score
-						min_score = result['score'] if result['score'] < min_score else min_score
+				search_results[q_idx][pages[0]] = score
+				max_score = score if score > max_score else max_score
+				min_score = score if score < min_score else min_score
 			min_score = min_score - 0.1
 			search_results[q_idx].update((x, (y-min_score)/(max_score-min_score)) for x, y in search_results[q_idx].items())
 			q_idx+=1
 
 	# check if this is searchable
 	if not is_searchable:
-		#results = solr.query().filter(content_type="page").filter(md5_s=md5).execute()
-		results = []
-		if results:
+		count = elastic.count('page', filter={ 'md5' : md5 })
+		if count>0:
 			is_searchable = True
 
 	return render_template('reference/figleaf.beta.html',

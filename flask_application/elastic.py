@@ -91,11 +91,11 @@ class ES(object):
 		if 'hits' in result and 'hits' in result['hits']:
 			if fields:
 				if highlight:
-					return [(hit['_id'], hit['fields'], hit['highlight'][highlight]) for hit in result['hits']['hits']]
+					return [(hit['_id'], hit['_score'], hit['fields'], hit['highlight'][highlight]) for hit in result['hits']['hits']]
 				else:
-					return [(hit['_id'], hit['fields']) for hit in result['hits']['hits']]
+					return [(hit['_id'], hit['_score'], hit['fields']) for hit in result['hits']['hits']]
 			else:
-				return [(hit['_id'], hit['_source']) for hit in result['hits']['hits']]
+				return [(hit['_id'], hit['_score'], hit['_source']) for hit in result['hits']['hits']]
 		else:
 			return []
 

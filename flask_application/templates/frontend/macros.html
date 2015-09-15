@@ -22,7 +22,7 @@
 {% macro search_results(results, endpoint) %}
 	{% if results %}
 	<ul class="list-group results">
-	{% for id, result in results %}
+	{% for id, score, result in results %}
 		<li class="list-group-item">
 			<a href="{{ url_for(endpoint, id=id) }}">{{ result['title'] }}</a>
 		</li>

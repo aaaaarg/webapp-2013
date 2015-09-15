@@ -160,10 +160,10 @@ def research(filter_type=None, filter_id=None):
 
 	if ready:
 		if filter_type and filter_id:
-			results = elastic.search('page', 
+			results = elastic.grouped_search('page', 
 				query={'searchable_text': query}, 
 				group_field='md5',
-				bucket_size=5,
+				bucket_size=6,
 				filter={filter_type:filter_id},
 				highlight='searchable_text',
 				fields=['page','md5','thing'],
@@ -173,7 +173,7 @@ def research(filter_type=None, filter_id=None):
 			results = elastic.grouped_search('page', 
 				query={'searchable_text': query}, 
 				group_field='md5',
-				bucket_size=5,
+				bucket_size=6,
 				highlight='searchable_text',
 				fields=['page','md5','thing'],
 				start=start,
