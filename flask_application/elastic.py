@@ -2,7 +2,7 @@
 This is an Elastic Search interface that is geared towards the kinds of 
 queries that this application will execute. For example, filtered queries.
 """
-
+import re
 from elasticsearch import Elasticsearch
 
 class ES(object):
@@ -23,18 +23,20 @@ class ES(object):
 		if query:
 			if type(query) is dict:
 				field_str = query.keys()[0]
+				query_str = re.escape(query.values()[0])
+				str = str.gsub(/([#{escaped_characters}])/, '\\\\\1')
 				if ',' in field_str:
 					query_body = {
 						"multi_match" : {
 							"fields" : field_str.split(','),
-							"query" : query.values()[0]
+							"query" : query_str
 						}
 					}
 				else:
 					query_body = {
 						"query_string" : {
 							"default_field" : field_str,
-							"query" : query.values()[0]
+							"query" : query_str
 						}
 					}
 			else:
