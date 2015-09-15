@@ -159,7 +159,19 @@ def research(filter_type=None, filter_id=None):
 		ready = True
 
 	if ready:
+		title = "Search for: %s" % query
 		if filter_type and filter_id:
+			try:
+				if filter_type=='collections':
+					c = Collection.objects.get(filter_id)
+					filter_title = c.title
+				elif filter_type=='makers':
+					m = Maker.objects.get(filter_id)
+					filter_title = m.display_name
+				title = "Search %s for: %s" % (filter_title, query)
+			except:
+				pass
+			more = url_for('frontend.research', filter_type=filter_type, filter_id=filter_id, query=query, page=page+1)
 			results = elastic.grouped_search('page', 
 				query={'searchable_text': query}, 
 				group_field='md5',
@@ -179,6 +191,7 @@ def research(filter_type=None, filter_id=None):
 				start=start,
 				num=num,
 				min_size={'searchable_text':100})
+			more = url_for('frontend.research', query=query, page=page+1)
 		# Build list of results (a set of pages, grouped by upload)
 		things = []
 		for md5, num_hits, top_hits in results:
@@ -197,10 +210,11 @@ def research(filter_type=None, filter_id=None):
 	return render_template(
 		'frontend/search_fulltext.html',
 		query = query,
-		title = 'Search for',
+		title = title,
 		content = content,
 		page_next = page + 1,
-		type = type
+		type = type,
+		more = more
 	)
 
 

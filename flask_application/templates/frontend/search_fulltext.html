@@ -12,7 +12,7 @@
     Experimental. create a new reader from the search results: <a href="{{ url_for('compiler.generate_from_search', query=query) }}">automatically</a> or <a href="{{ url_for('compiler.create_from_search', query=query) }}">drag &amp; drop</a> 
 </div>
 -->
-<h2>{{title}}: {{query}}</h2>
+<h2>{{title}}</h2>
 
 <div class="row">
   <form class="form-search" action="{{ url_for('frontend.research') }}" method="get">
@@ -27,7 +27,7 @@
 
 <div class="row">
   <div class="panel panel-default" id="things">
-    <div class="panel-heading">results <a class="pull-right" href="{{ url_for('frontend.research', query=query, page=page_next) }}">see more?</a></div>
+    <div class="panel-heading">results <a class="pull-right" href="{{ more }}">see more?</a></div>
     {{ content }}
   </div>
 </div>
