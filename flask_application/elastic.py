@@ -24,7 +24,6 @@ class ES(object):
 			if type(query) is dict:
 				field_str = query.keys()[0]
 				query_str = re.escape(query.values()[0])
-				str = str.gsub(/([#{escaped_characters}])/, '\\\\\1')
 				if ',' in field_str:
 					query_body = {
 						"multi_match" : {
