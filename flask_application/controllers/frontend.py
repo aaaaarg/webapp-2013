@@ -109,16 +109,25 @@ def search(type=False):
 	num = 10
 	start = (page-1)*num
 	if type=='things':
-		results = elastic.search('thing', 'title:"%s" 	%s'%(query,query), start=start, num=num)
+		results = elastic.search('thing', 
+			query={ 'title^3,short_description,description':query }, 
+			start=start, 
+			num=num)
 		content = get_template_attribute('frontend/macros.html', 'search_results')(results, 'thing.detail')			
 	elif type=='makers':
-		results = elastic.search('maker', 'title:"%s" 	%s'%(query,query), start=start, num=num)
+		results = elastic.search('maker', 
+			query={ 'title^3,searchable_text':query }, 
+			start=start, 
+			num=num)
 		content = get_template_attribute('frontend/macros.html', 'search_results')(results, 'maker.detail')
 	elif type=='discussions':
-		results = elastic.search('discussion', 'title:"%s" 	%s'%(query,query), start=start, num=num)
+		results = []
 		content = get_template_attribute('frontend/macros.html', 'search_results')(results, 'talk.thread')
 	elif type=='collections':
-		results = elastic.search('collection', 'title:"%s" 	%s'%(query,query), start=start, num=num)
+		results = elastic.search('collection', 
+			query={ 'title^3,short_description^2,description,searchable_text':query }, 
+			start=start, 
+			num=num)
 		content = get_template_attribute('frontend/macros.html', 'search_results')(results, 'collection.detail')
 	if is_ajax:
 		return content

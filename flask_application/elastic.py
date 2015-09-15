@@ -22,12 +22,21 @@ class ES(object):
 		highlight_body = None
 		if query:
 			if type(query) is dict:
-				query_body = {
-					"query_string" : {
-						"default_field" : query.keys()[0],
-						"query" : query.values()[0]
+				field_str = query.keys()[0]
+				if ',' in field_str:
+					query_body = {
+						"query_string" : {
+							"fields" : field_str.split(','),
+							"query" : query.values()[0]
+						}
 					}
-				}
+				else:
+					query_body = {
+						"query_string" : {
+							"default_field" : field_str,
+							"query" : query.values()[0]
+						}
+					}
 			else:
 				query_body = {
 					"query_string" : {
@@ -46,16 +55,6 @@ class ES(object):
 					}
 				}
 			}
-		"""
-		if min_size and type(min_size) is dict:
-			size_filter_body = {
-				"script" : "doc['%s'].length > %s" % (min_size.keys()[0], min_size.values()[0])
-			}
-			if filter_body:
-				body['query']['filtered']['filter']['script'] = size_filter_body
-			else:
-				body['filter'] = { 'script' : size_filter_body }
-		"""
 		if query_body and filter_body:
 			body['query']['filtered']['query'] = query_body
 		elif query_body and not filter_body:
