@@ -28,14 +28,14 @@ class ES(object):
 					query_body = {
 						"multi_match" : {
 							"fields" : field_str.split(','),
-							"query" : query_str
+							"query" : query_str,
+							"type" : "phrase"
 						}
 					}
 				else:
 					query_body = {
-						"query_string" : {
-							"default_field" : field_str,
-							"query" : query_str
+						"match_phrase" : {
+							field_str : query_str
 						}
 					}
 			else:
@@ -98,6 +98,49 @@ class ES(object):
 				return [(hit['_id'], hit['_source']) for hit in result['hits']['hits']]
 		else:
 			return []
+
+	def grouped_search(self, doc_type, query, group_field, highlight=None, num=10, bucket_size=1, start=None, fields=None, min_size=None):
+		kwargs = {
+			'index': self.index_name, 
+			'doc_type': doc_type, 
+			'size': num,
+		}
+		kwargs['body'] = self.build_query_body(query=query, filter=filter, min_size=min_size)
+		kwargs['body']['aggs'] = {
+			'byField': {
+				'terms': {
+					'field': group_field,
+					'size': num
+				},
+				"aggs": {
+					"topFoundHits": {
+						"top_hits": {
+							"size": bucket_size
+						}
+					}
+				}
+			}
+		}
+		if fields:
+			kwargs['body']['aggs']['byField']['aggs']['topFoundHits']['top_hits']['_source'] = {
+				'include': fields
+			}
+		if start:
+			kwargs['body']['from'] = start
+		result = self.elastic.search(**kwargs)
+		try:
+			buckets = result['aggregations']['byField']['buckets']
+		except:
+			return []
+		groups = []
+		for bucket in buckets:
+			groups.append((
+				bucket['key'],
+				bucket['doc_count'],
+				[ (hit['_id'], hit['_source']) for hit in bucket['topFoundHits']['hits']['hits']]
+			))
+		print groups
+		return groups
 
 
 	def count(self, doc_type, query=None, filter=None):

@@ -34,14 +34,15 @@
 {% macro fulltext_search_results(things, query) %}
 	{% if things %}
 	<ul class="list-group results fulltext">
-	{% for thing, md5, page, id, hl in things %}
+	{% for thing, md5, num_hits, pages in things %}
 		<li class="list-group-item">
 			<strong><a href="{{ url_for('thing.detail', id=thing.id) }}">{{ thing.title }}</a></strong> 
-			<small>p.{{ page }}</small> <a href="{{ url_for('frontend.research', mlt=id) }}">.</a><br/>
-			{{ thing.makers_display }}<br/>
-			<small>{{ hl|join(' .. ')|safe }}</small>
+			<small>found in {{ num_hits }} pages</small><br/>
+			{{ thing.makers_display }}
 			<p>
-			<a href="{{ url_for('reference.figleaf', md5=md5, query=query) }}#{{page}}"><img src="/pages/{{ md5 }}.pdf/x600-{{ page }}.jpg"></a>
+			{% for page in pages %}
+			<a href="{{ url_for('reference.figleaf', md5=md5, query=query) }}#{{page}}"><img src="/pages/{{ md5 }}.pdf/x200-{{ page }}.jpg"></a>
+			{% endfor %}
 			</p>
 		</li>
 	{% endfor %}

@@ -162,33 +162,36 @@ def research(filter_type=None, filter_id=None):
 		if filter_type and filter_id:
 			results = elastic.search('page', 
 				query={'searchable_text': query}, 
+				group_field='md5',
+				bucket_size=5,
 				filter={filter_type:filter_id},
 				highlight='searchable_text',
 				fields=['page','md5','thing'],
 				start=start,
 				num=num)
 		else:
-			results = elastic.search('page', 
+			results = elastic.grouped_search('page', 
 				query={'searchable_text': query}, 
+				group_field='md5',
+				bucket_size=5,
 				highlight='searchable_text',
 				fields=['page','md5','thing'],
 				start=start,
 				num=num,
 				min_size={'searchable_text':100})
-		# Build list of results 
+		# Build list of results (a set of pages, grouped by upload)
 		things = []
-		for comp_id, result, highlight in results:
-			# id[0] is the upload id, id[1] is upload page
-			id = comp_id.split('_')
-			if len(id)==2:
-				u = Upload.objects.get(id=id[0])
-				if u:
-					try:
-						t = Thing.objects.get(id=result['thing'][0])
-						things.append((t, result['md5'][0], result['page'][0]-1, id, highlight ))
-					except:
-						pass
-		print things
+		for md5, num_hits, top_hits in results:
+			thing_id = None
+			pages = []
+			for pid, hit in top_hits:
+				thing_id = hit['thing']
+				pages.append(hit['page'])
+			try:
+				t = Thing.objects.get(id=thing_id)
+				things.append((t, md5, num_hits, pages))
+			except:
+				pass
 		content = get_template_attribute('frontend/macros.html', 'fulltext_search_results')(things, query)
 	
 	return render_template(
