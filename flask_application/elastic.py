@@ -99,7 +99,7 @@ class ES(object):
 		else:
 			return []
 
-	def grouped_search(self, doc_type, query, group_field, highlight=None, num=10, bucket_size=1, start=None, fields=None, min_size=None):
+	def grouped_search(self, doc_type, query, group_field, filter=None, highlight=None, num=10, bucket_size=1, start=None, fields=None, min_size=None):
 		kwargs = {
 			'index': self.index_name, 
 			'doc_type': doc_type, 
