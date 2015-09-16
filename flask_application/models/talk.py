@@ -32,6 +32,10 @@ class Thread(SolrMixin, CreatorMixin, FollowersMixin, db.Document):
 	last_comment_text = db.StringField(default="")
 	priority = db.IntField(default=0)
 
+  @property
+  def type(self):
+      return 'thread'
+
 	# Creates a new comment and adds it to Talk thread
 	def add_comment(self, text, user=None, created_at=None):
 		comment = Comment(text=text, created_at=created_at)
