@@ -210,7 +210,7 @@ class ESIndex(Command):
 				keep_going = True
 
 
-	def index_updated_uploads(self):
+	def index_updated_uploads(self, only_once=False):
 		""" Indexes all uploads, thing by thing """
 		keep_going = True
 		while keep_going:
@@ -224,6 +224,8 @@ class ESIndex(Command):
 					except:
 						'Bad thing'
 					es.update(index='aaaarg', doc_type='thing', id=t['_id'], body={'doc':{'index_files':0}})
+				if only_once:
+					keep_going = False
 			else:
 				keep_going = False
 				print "Nothing needs updating."
@@ -263,6 +265,8 @@ class ESIndex(Command):
 				self.index_all_uploads()
 			elif id=='updated':
 				self.index_updated_uploads()
+			elif id=='some':
+				self.index_updated_uploads(True)
 			else:
 				t = Thing.objects.filter(id=id).first()
 				if t:
