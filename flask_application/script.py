@@ -9,7 +9,7 @@ from mongoengine.errors import ValidationError
 
 from flask.ext.script import Command, Option
 from flask.ext.security.utils import encrypt_password
-from flask_application import user_datastore, app
+from flask_application import user_datastore, app, tweeter, do_tweets
 from flask_application.populate import populate_data
 from flask_application.models import db, elastic, User, Role, Thing, Maker, Upload, Reference, Collection, SuperCollection, CollectedThing, Thread, Comment, Queue, TextUpload
 
@@ -22,6 +22,19 @@ from flask_application.pdf_extract import Pdf
 # elasticsearch
 from elasticsearch import Elasticsearch
 es = Elasticsearch(['http://127.0.0.1:9200/',])
+
+class Tweet(Command):
+	option_list = (
+		Option('--id', '-i', dest='id'),
+	)
+	def run(self, id):
+		if tweeter and do_tweets:
+			try:
+				thing = Thing.objects.filter(id=id).first()
+				tweeter.PostUpdate("%s %s" %(thing.short_description[:120], url_for('thing.detail', id=id)))
+			except:
+				print "Unexpected error:", sys.exc_info()[0]
+				print traceback.print_tb(sys.exc_info()[2])
 
 class ESIndex(Command):
 	option_list = (
