@@ -32,7 +32,7 @@ class Tweet(Command):
 		if tweeter and do_tweets:
 			try:
 				thing = Thing.objects.filter(id=id).first()
-				tweeter.PostUpdate("%s %s" %(thing.short_description[:120], url_for('thing.detail', id=id)))
+				tweeter.PostUpdate("%s http://aaaaarg.org%s" %(thing.short_description[:120], url_for('thing.detail', id=id, _external=True)))
 			except:
 				print "Unexpected error:", sys.exc_info()[0]
 				print traceback.print_tb(sys.exc_info()[2])
