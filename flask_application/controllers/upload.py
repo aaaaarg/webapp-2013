@@ -38,7 +38,7 @@ def handle_upload(thing_id=None):
 		# try to tweet the short description
 		if tweeter and do_tweets:
 			try:
-				tweeter.PostUpdate("%s %s" %(thing.short_description[:120], url_for('thing.detail', id=thing_id)))
+				tweeter.PostUpdate("%s %s" %(thing.short_description[:120], url_for('thing.detail', id=thing_id, _external=True)))
 			except:
 				pass
 		return jsonify({'files': uploaded_files})
