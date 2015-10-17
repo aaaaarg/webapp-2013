@@ -3,6 +3,7 @@ This is an Elastic Search interface that is geared towards the kinds of
 queries that this application will execute. For example, filtered queries.
 """
 import re
+from urllib3 import ConnectionTimeout
 from elasticsearch import Elasticsearch
 
 class ES(object):
@@ -87,7 +88,10 @@ class ES(object):
 				kwargs['body']['from'] = start
 		if fields:
 			kwargs['fields'] = fields
-		result = self.elastic.search(**kwargs)
+		try:
+			result = self.elastic.search(**kwargs)
+		except ConnectionTimeout:
+			return []
 		if 'hits' in result and 'hits' in result['hits']:
 			if fields:
 				if highlight:
@@ -127,7 +131,10 @@ class ES(object):
 			}
 		#if start:
 		#		kwargs['body']['aggs']['aggs']['topFoundHits']['from'] = start
-		result = self.elastic.search(**kwargs)
+		try:
+			result = self.elastic.search(**kwargs)
+		except ConnectionTimeout:
+			return []
 		try:
 			buckets = result['aggregations']['byField']['buckets']
 		except:
@@ -174,7 +181,19 @@ class ES(object):
 			print "Unexpected error:", sys.exc_info()[0]
 			print traceback.print_tb(sys.exc_info()[2])
 			print d
-		
+	
+
+	def get(self, doc_type, id):
+		result = self.elastic.get(
+			index=self.index_name, 
+			doc_type=doc_type, 
+			id=id
+			)
+		if '_source' in result:
+			return result['_source']
+		else:
+			return {}
+
 	def delete(self, obj):
 		self.elastic.delete(
 			index=self.index_name, 

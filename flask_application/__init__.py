@@ -73,6 +73,19 @@ if not os.path.exists(assets_upload_dir):
 from flask.ext.mail import Mail
 mail = Mail(app)
 
+# Twitter
+import twitter
+tweeter = False
+try:
+    tweeter = twitter.Api(consumer_key=app.config['TWITTER_KEY'],
+        consumer_secret=app.config['TWITTER_SECRET'],
+        access_token_key=app.config['TWITTER_TOKEN'],
+        access_token_secret=app.config['TWITTER_TOKEN_SECRET'])
+    if not api.VerifyCredentials():
+        tweeter = False
+except:
+    pass
+
 # Memcache
 from werkzeug.contrib.cache import MemcachedCache
 app.cache = MemcachedCache(app.config['MEMCACHED_SERVERS'])
