@@ -75,8 +75,10 @@ mail = Mail(app)
 
 # Twitter
 import twitter
+do_tweets = False
 tweeter = False
 try:
+    do_tweets = app.config['TWITTER_ENABLED']
     tweeter = twitter.Api(consumer_key=app.config['TWITTER_KEY'],
         consumer_secret=app.config['TWITTER_SECRET'],
         access_token_key=app.config['TWITTER_TOKEN'],

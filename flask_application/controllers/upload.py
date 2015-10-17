@@ -3,7 +3,7 @@ import os
 from flask import Blueprint, render_template, flash, request, redirect, url_for, abort, jsonify, send_file
 from flask.ext.security import (login_required, roles_required, roles_accepted)
 
-from flask_application import app
+from flask_application import app, tweeter, do_tweets
 from flask_application.models import *
 
 #from ..permissions.thing import can_edit_thing
@@ -35,6 +35,12 @@ def handle_upload(thing_id=None):
 				'file_size': u.file_size,
 				'mimetype': u.mimetype
 			})
+		# try to tweet the short description
+		if tweeter and do_tweets:
+			try:
+				tweeter.PostUpdate("%s %s" %(thing.short_description[:120], url_for('thing.detail', id=thing_id)))
+			except:
+				pass
 		return jsonify({'files': uploaded_files})
 	except:
 		raise
