@@ -28,6 +28,8 @@ class Tweet(Command):
 		Option('--id', '-i', dest='id'),
 	)
 	def run(self, id):
+		print tweeter
+		print tweeter.VerifyCredentials()
 		if tweeter and do_tweets:
 			try:
 				thing = Thing.objects.filter(id=id).first()
