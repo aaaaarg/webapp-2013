@@ -3,7 +3,7 @@ This is an Elastic Search interface that is geared towards the kinds of
 queries that this application will execute. For example, filtered queries.
 """
 import re
-from urllib3 import ConnectionTimeout
+from elasticsearch.exceptions import ConnectionTimeout
 from elasticsearch import Elasticsearch
 
 class ES(object):
