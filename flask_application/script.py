@@ -7,6 +7,7 @@ from pymongo import MongoClient
 
 from mongoengine.errors import ValidationError
 
+from flask import url_for
 from flask.ext.script import Command, Option
 from flask.ext.security.utils import encrypt_password
 from flask_application import user_datastore, app, tweeter, do_tweets
@@ -28,8 +29,6 @@ class Tweet(Command):
 		Option('--id', '-i', dest='id'),
 	)
 	def run(self, id):
-		print tweeter
-		print tweeter.VerifyCredentials()
 		if tweeter and do_tweets:
 			try:
 				thing = Thing.objects.filter(id=id).first()
