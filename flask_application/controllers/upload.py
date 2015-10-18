@@ -36,7 +36,7 @@ def handle_upload(thing_id=None):
 				'mimetype': u.mimetype
 			})
 		# try to tweet the short description
-		if tweeter and do_tweets:
+		if tweeter and do_tweets and thing:
 			try:
 				text_part = "%s - %s" % (thing.short_description, thing.title)
 				tweeter.PostUpdate("%s %s" %(text_part[:120], url_for('thing.detail', id=thing_id, _external=True)))
