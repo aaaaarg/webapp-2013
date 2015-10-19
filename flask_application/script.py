@@ -35,11 +35,11 @@ class Tweet(Command):
 			try:
 				thing = Thing.objects.filter(id=id).first()
 				text_part = "%s - %s" % (thing.short_description, thing.title)
-				tweeter.PostUpdate("%s %s" %(text_part[:117].encode('utf8'), url_for('thing.detail', id=id, _external=True)))
+				tweeter.PostUpdate("%s %s" %(text_part[:116].encode('utf8'), url_for('thing.detail', id=id, _external=True)))
 			except TwitterError, e:
 				print "Twitter Error:"
 				print e
-				print "%s %s" % (text_part[:117].encode('utf8'), url_for('thing.detail', id=id, _external=True))
+				print "%s %s" % (text_part[:116].encode('utf8'), url_for('thing.detail', id=id, _external=True))
 			except:
 				print "Unexpected error:", sys.exc_info()[0]
 				print traceback.print_tb(sys.exc_info()[2])
