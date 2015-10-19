@@ -24,6 +24,8 @@ from flask_application.pdf_extract import Pdf
 from elasticsearch import Elasticsearch
 es = Elasticsearch(['http://127.0.0.1:9200/',])
 
+from twitter import TwitterError
+
 class Tweet(Command):
 	option_list = (
 		Option('--id', '-i', dest='id'),
@@ -34,6 +36,9 @@ class Tweet(Command):
 				thing = Thing.objects.filter(id=id).first()
 				text_part = "%s - %s" % (thing.short_description, thing.title)
 				tweeter.PostUpdate("%s %s" %(text_part[:119], url_for('thing.detail', id=id, _external=True)))
+			except TwitterError, e:
+				print "Twitter Error:"
+				print e
 			except:
 				print "Unexpected error:", sys.exc_info()[0]
 				print traceback.print_tb(sys.exc_info()[2])
