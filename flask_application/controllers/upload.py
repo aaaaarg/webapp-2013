@@ -39,7 +39,7 @@ def handle_upload(thing_id=None):
 		if tweeter and do_tweets and thing:
 			try:
 				text_part = "%s - %s" % (thing.short_description, thing.title)
-				tweeter.PostUpdate("%s %s" %(text_part[:119].encode('utf8'), url_for('thing.detail', id=thing_id, _external=True)))
+				tweeter.PostUpdate("%s %s" %(text_part[:117].encode('utf8'), url_for('thing.detail', id=thing_id, _external=True)))
 			except:
 				pass
 		return jsonify({'files': uploaded_files})

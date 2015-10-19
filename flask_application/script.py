@@ -35,7 +35,7 @@ class Tweet(Command):
 			try:
 				thing = Thing.objects.filter(id=id).first()
 				text_part = "%s - %s" % (thing.short_description, thing.title)
-				tweeter.PostUpdate("%s %s" %(text_part[:119], url_for('thing.detail', id=id, _external=True)))
+				tweeter.PostUpdate("%s %s" %(text_part[:117], url_for('thing.detail', id=id, _external=True)))
 			except TwitterError, e:
 				print "Twitter Error:"
 				print e
