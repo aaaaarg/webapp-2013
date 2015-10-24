@@ -2,7 +2,7 @@
 
 import datetime
 
-from flask import Blueprint, request, redirect, url_for, render_template, get_template_attribute, abort, jsonify, send_from_directory
+from flask import Blueprint, request, redirect, url_for, make_response, render_template, get_template_attribute, abort, jsonify, send_from_directory
 from flask_application import app
 from flask.ext.security import login_required, current_user
 
@@ -15,13 +15,17 @@ def index():
 	recent_collections = Collection.objects(accessibility__ne='private').limit(3).order_by('-things.created_at')
 	recent_comments = Thread.objects(origin__exists=False).exclude('comments').order_by('-priority','-last_comment').limit(3)
 	recent_things = Thing.objects(files__0__exists=True).order_by('-modified_at', '-created_at').paginate(page=1, per_page=10)
-	return render_template('frontend/home.html',
+	rt = render_template('frontend/home.html',
 		title = app.config['SITE_NAME'],
 		things = recent_things.items,
 		collections = recent_collections,
 		comments = recent_comments,
 		pagination = recent_things,
 		endpoint = 'thing.list_nonrequests')
+	resp = make_response(rt)
+	if current_user.get_id():
+		resp.set_cookie('id', current_user.get_id())
+	return resp
 
 
 @frontend.route('/robots.txt')
