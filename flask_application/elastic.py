@@ -160,7 +160,10 @@ class ES(object):
 			kwargs['q'] = query
 		else:
 			kwargs['body'] = self.build_query_body(query=query, filter=filter)
-		r = self.elastic.count(**kwargs)
+		try:
+			r = self.elastic.count(**kwargs)
+		except:
+			return 0
 		if 'count' in r:
 			return int(r['count'])
 		else:
