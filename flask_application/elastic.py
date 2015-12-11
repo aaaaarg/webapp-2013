@@ -92,6 +92,8 @@ class ES(object):
 			result = self.elastic.search(**kwargs)
 		except ConnectionTimeout:
 			return []
+		except:
+			return []
 		if 'hits' in result and 'hits' in result['hits']:
 			if fields:
 				if highlight:

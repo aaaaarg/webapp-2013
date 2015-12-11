@@ -44,6 +44,19 @@ class Tweet(Command):
 				print "Unexpected error:", sys.exc_info()[0]
 				print traceback.print_tb(sys.exc_info()[2])
 
+class GetPath(Command):
+        option_list = (
+                Option('--md5', '-m', dest='md5'),
+        )
+	def get_path_from_md5(self, md5):
+		u = Upload.objects.filter(md5=md5).first()
+		if u:
+			print u.full_path()
+		else:
+			return False
+	def run(self, md5):
+		return self.get_path_from_md5(md5)
+
 class ESIndex(Command):
 	option_list = (
 		Option('--do', '-d', dest='do'),
