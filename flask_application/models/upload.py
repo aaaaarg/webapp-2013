@@ -168,6 +168,10 @@ class Upload(SolrMixin, CreatorMixin, db.Document):
 			( head, tail ) = os.path.split(path)
 			return splitpath(head, maxdepth - 1) + [ tail ] if maxdepth and head and head != path else [ head or tail ]
 
+		def splitpath(path, maxdepth=20):
+			( head, tail ) = os.path.split(path)
+			return splitpath(head, maxdepth - 1) + [ tail ] if maxdepth and head and head != path else [ head or tail ]
+
 		author, title = data
 		# Get the original extension
 		orig_path, ext = os.path.splitext(self.file_name)

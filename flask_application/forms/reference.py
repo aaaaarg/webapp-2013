@@ -41,6 +41,9 @@ ReferenceForm = model_form(Reference, base_class=BaseReferenceForm, field_args =
     'pos_end_x' : {
       'label' : 'Position end (horizontal))'
     },
+    'pos_end' : {
+      'label' : 'Position (end)'
+    },
     'note' : {
       'label' : 'A short note'
     },

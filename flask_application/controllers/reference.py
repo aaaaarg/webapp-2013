@@ -250,6 +250,7 @@ def figleaf(md5, user_id=None):
 				back_references[a.thing] = { 'md5':a.upload.md5, 'pages':[] }
 			back_references[a.thing]['pages'].append( (a.pos, a.id))
 
+	print len(back_references)
 	# if we pass a user id then we try and load highlights & notes created by the user
 	if user_id:
 		notes = Reference.objects.filter(upload=u, creator=user_id)
@@ -443,6 +444,25 @@ def recent_clips(page=1):
 		title = "clips",
 		thing = thing,
 		compiler = url_for('compiler.create', mode='recent'),
+		clips = clips
+	)
+
+@reference.route('/clips/recent')
+@reference.route('/clips/recent/<int:page>')
+def recent_clips(page=1):
+	annotations = Reference.objects(pos_end__gt=0).order_by('-created_at').paginate(page=page, per_page=20)
+	clips = []
+
+	for a in annotations.items:
+		if a.pos_end:
+			u = a.upload
+			link = url_for("reference.figleaf", md5=a.upload.md5, _anchor='%s-%s' % (a.pos, a.pos_end))
+			img = url_for("reference.preview", filename=u.preview(filename='%s-%sx%s.jpg' % (a.pos, a.pos_end, 500)))
+			clips.append((link,img,a.note,a.tags))
+
+	return render_template('reference/clips.html',
+		title = "clips",
+		thing = thing,
 		clips = clips
 	)
 
