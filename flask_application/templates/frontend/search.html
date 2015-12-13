@@ -7,10 +7,17 @@
 
 {% block content %}
 
+<!--
 <div class="alert alert-info">
     <a href="#" class="close" data-dismiss="alert">&times;</a>
     <a href="{{ url_for('frontend.research', query=query) }}">Click here for full text search</a>
 </div>
+-->
+<div class="alert alert-info">
+    <a href="#" class="close" data-dismiss="alert">&times;</a>
+    The search index is being rebuilt. You probably won't find what you're looking for this way.
+</div>
+
 
 
 <h2>{{title}}: {{query}}</h2>
