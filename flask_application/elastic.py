@@ -57,6 +57,16 @@ class ES(object):
 					}
 				}
 			}
+		"""
+		if min_size and type(min_size) is dict:
+			size_filter_body = {
+				"script" : "doc['%s'].length > %s" % (min_size.keys()[0], min_size.values()[0])
+			}
+			if filter_body:
+				body['query']['filtered']['filter']['script'] = size_filter_body
+			else:
+				body['filter'] = { 'script' : size_filter_body }
+		"""
 		if query_body and filter_body:
 			body['query']['filtered']['query'] = query_body
 		elif query_body and not filter_body:
