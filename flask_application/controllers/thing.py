@@ -108,12 +108,10 @@ def detail(id):
 		preview = url_for('reference.preview', filename=preview)
 	preview_url = url_for('reference.figleaf', md5=thing.preview(get_md5=True)) if preview else False
 	# contributors
-	contributors = []
+	contributors = [ thing.creator ]
 	for f in thing.files:
 		if not f.creator in contributors:
 			contributors.append( f.creator )
-	if not contributors:
-		contributors.append( thing.creator )
 	# Upload form
 	uf = UploadForm()
 	return render_template('thing/detail.html',
