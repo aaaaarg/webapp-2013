@@ -5,8 +5,10 @@ import sys, os
 root_dir = os.path.normpath(os.path.abspath(os.path.dirname(__file__)))
 os.chdir(root_dir)
 
+# TODO: this should be moved into the wsgi file
 activate_this = os.path.join(root_dir, 'venv2', 'bin', 'activate_this.py')
-execfile(activate_this, dict(__file__=activate_this))
+if os.path.exists(activate_this):
+    execfile(activate_this, dict(__file__=activate_this))
 
 sys.path.pop(0)
 sys.path.insert(0, os.getcwd())
