@@ -39,3 +39,5 @@ lxml==3.3.1
 unidecode==0.4.14
 rfc3987==1.3.4
 pdfminer
+elasticsearch==2.1.0
+python-stdnum==1.2
