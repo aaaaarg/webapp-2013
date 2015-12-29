@@ -1,5 +1,6 @@
 import datetime, sys, traceback, re, os
 from unidecode import unidecode
+import subprocess
 
 from sunburnt.schema import SolrError
 
@@ -13,6 +14,9 @@ from flask.ext.security.utils import encrypt_password
 from flask_application import user_datastore, app, tweeter, do_tweets
 from flask_application.populate import populate_data
 from flask_application.models import db, elastic, User, Role, Thing, Maker, Upload, Reference, Collection, SuperCollection, CollectedThing, Thread, Comment, Queue, TextUpload
+
+# writing calibre library data
+from lxml import etree
 
 # pdf extraction
 from pdfminer.pdfparser import PDFSyntaxError
@@ -532,4 +536,61 @@ class ExtractISBN(Command):
 					self.extract(t)
 				
 				
+DC = "http://purl.org/dc/elements/1.1/"
+DCNS = "{http://purl.org/dc/elements/1.1/}"
+OPF = 'http://www.idpf.org/2007/opf'
+LIBRARIES_PATH = '/lockers/hmmmmm/collections'
 
+def write_opf(meta_info, primary_id=None, path='/tmp/metadata.opf'):
+	if primary_id is None:
+		for k, v, a in meta_info:
+			if k == DCNS + 'identifier':
+				primary_id = a.setdefault('id', 'primary_id')
+				break
+
+	root = etree.Element('package', {
+		'xmlns' : OPF,
+		'unique-identifier' : primary_id,
+		'version' : '2.0'
+		}, nsmap = {'dc' : DC, 'opf' : OPF})
+
+	metadata = etree.SubElement(root, 'metadata')
+	for key, text, attrs in meta_info:
+		el = etree.SubElement(metadata, key, attrs)
+		el.text = text
+
+	tree_str = etree.tostring(root, pretty_print=True, encoding='utf-8')
+	with open(path, 'w') as f:
+		f.write(tree_str)
+	return path
+
+def thing2opf(thing):
+	meta = [
+		('{%s}identifier'%DC,'Unknown',{'{%s}scheme'%OPF:'uuid', 'id':'uuid_id'}),
+		('{%s}title'%DC,thing.title,{})
+	]
+	makers = [m.maker.display_name for m in thing.makers]
+	for m in makers:
+		meta.append(('{%s}creator'%DC,m,{'{%s}file-as'%OPF:'Unknown', '{%s}role'%OPF:'aut'}))
+	return write_opf(meta, None)
+
+class BuildLibrary(Command):
+	""" Converts a collection into a calibre library """
+	option_list = (
+                Option('--id', '-c', dest='collection_id'),
+        )
+        def add_thing_to_library(self, thing, library_path):
+                makers = [m.maker.display_name for m in thing.makers]
+                makers_str = (' & ').join(makers)
+                subprocess.call(['calibredb','add','-e','-a',makers_str,'-t',thing.title,'--library-path=%s'%library_path])
+        def construct_library(self, c):
+                library_path = os.path.join(LIBRARIES_PATH, str(c.id))
+                for t in c.things:
+                                #opf_path = thing2opf(t.thing)
+                                print "Adding",t.thing.title
+                                self.add_thing_to_library(t.thing, library_path)
+                                #subprocess.call(['calibredb','add','--library-path=%s'%library_path,opf_path]) 
+	def run(self, collection_id):
+		if collection_id:
+			c = Collection.objects.filter(id=collection_id).first()
+			self.construct_library(c)

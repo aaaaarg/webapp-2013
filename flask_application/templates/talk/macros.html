@@ -12,10 +12,16 @@
 	<small><span class="text-muted">{{ thread.last_comment_text|truncate}}</span></small>
 {% endmacro %}
 
-
 {% macro show_comment(comment) %}
 <p>
-		<div class="text-muted">{{ comment.created_at|datetimeformat}} by <a href="{{ url_for('user.public_profile', id=comment.creator.id|trim) }}">{{ comment.creator.username}}</a></div>
+        <div class="text-muted">{{ comment.created_at|datetimeformat}} by <a href="/">{{ comment.creator.username}}</a></div>
+        <p>{{ comment.text|markdown }}</p>
+</p>
+{% endmacro %}
+
+{% macro show_comment_2(comment) %}
+<p>
+	<div class="text-muted">{{ comment.created_at|datetimeformat}} by <a href="{{ url_for('user.public_profile', id=comment.creator.id|trim) }}">{{ comment.creator.username}}</a></div>
   	<p>{{ comment.text|markdown }}</p> 
 </p>
 {% endmacro %}
