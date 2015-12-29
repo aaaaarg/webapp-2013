@@ -37,11 +37,28 @@ ul.nav ul.dropdown-menu li a {
 	font-weight:bold;
 	top:-200px;
 	color: #666;
+    width: 100%;
+    overflow: hidden;
+}
+
+/* increase bottom margin so logo doesn't overlap and interfere with hyperlinks in sidebar */
+.navbar {
+    margin-bottom: 34px;
 }
 
 .navbar.navbar-inverse a,
 .navbar-inverse .navbar-nav > li > a {
 	color: #ddd;
+}
+
+/* next two rules override bootstrap defaults that cause a gap between the input group of input + button */
+.navbar input[type="text"] {
+    /* bootstrap sets width to 'auto' which doesn't extend all the way across */
+    width: 100%;
+}
+.navbar button {
+    /* bootstrap's default padding makes this too small */
+    padding: 9px 12px;
 }
 
 .listed-thing.request {

@@ -46,7 +46,7 @@ def list(letter=None):
 	"""
 	ci = CollectionIndex()
 	if letter is None:
-		letter = ci.first_nonempty() # default
+		letter = ci.first_nonempty() or "" # default
 	collections = Collection.objects.filter(title__istartswith=letter, accessibility__ne='private', supercollection__exists=False )
 
 	return render_template('collection/list.html',

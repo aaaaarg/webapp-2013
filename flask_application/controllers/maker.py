@@ -20,7 +20,7 @@ def list(letter=None):
 	"""
 	mi = MakerIndex()
 	if letter is None:
-		letter = mi.first_nonempty() # default
+		letter = mi.first_nonempty() or "" # default
 	makers = Maker.objects.filter(sort_by__istartswith=letter)
 
 	return render_template('maker/list.html',
