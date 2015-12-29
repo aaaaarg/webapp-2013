@@ -32,6 +32,8 @@ class Config(object):
 
     # Solr
     SOLR_SERVER_URL = 'http://localhost:8983/solr/core3'
+    # Elastic Search
+    ES_SERVER_URLS =  [ 'http://localhost:9200/' ]
     
     # For showing on the front page
     INFO_BLOCK = '''
