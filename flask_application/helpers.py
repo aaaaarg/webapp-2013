@@ -2,8 +2,17 @@ import dateutil.parser
 import datetime
 import math
 import json
+import time
 from flask import abort, Blueprint
 from functools import wraps
+
+from lxml import etree
+import xmltodict
+
+# opf writing
+DC = "http://purl.org/dc/elements/1.1/"
+DCNS = "{http://purl.org/dc/elements/1.1/}"
+OPF = 'http://www.idpf.org/2007/opf'
 
 # Caching
 def cached(app, timeout=5 * 60, key='view/%s'):
@@ -108,3 +117,85 @@ def parse_pos(s):
         return b[0], b[1], a[0], a[1]
     else:
         return a[0], a[1], b[0], b[1]
+
+
+
+
+def write_opf(meta_info, primary_id=None, path=None):
+    if primary_id is None:
+        for k, v, a in meta_info:
+            if k == DCNS + 'identifier':
+                primary_id = a.setdefault('id', 'primary_id')
+                break
+
+    root = etree.Element('package', {
+        'xmlns' : OPF,
+        'unique-identifier' : primary_id,
+        'version' : '2.0'
+        }, nsmap = {'dc' : DC, 'opf' : OPF})
+
+    metadata = etree.SubElement(root, 'metadata')
+    for key, text, attrs in meta_info:
+        el = etree.SubElement(metadata, key, attrs)
+        el.text = text
+
+    tree_str = etree.tostring(root, pretty_print=True, encoding='utf-8')
+    if path:
+        with open(path, 'w') as f:
+            f.write(tree_str)
+        return path
+    else:
+        return tree_str
+
+def thing2opf(thing, path=None):
+    d = datetime.datetime.now()
+    meta = [
+        ('{%s}identifier'%DC,'Unknown',{'{%s}scheme'%OPF:'uuid', 'id':'uuid_id'}),
+        ('{%s}identifier'%DC,str(thing.id),{'{%s}scheme'%OPF:'ARG'}),
+        ('{%s}title'%DC,thing.title,{}),
+        ('{%s}date'%DC,d.strftime('%Y-%m-%dT%H:%M:%S+00:00'),{})
+    ]
+    if thing.description:
+        meta.append(('{%s}description'%DC,thing.description,{}))
+    makers = [(m.maker.display_name, m.maker.sort_by) for m in thing.makers]
+    for display, sort_by in makers:
+        meta.append(('{%s}creator'%DC,display,{'{%s}file-as'%OPF:sort_by, '{%s}role'%OPF:'aut'}))
+    return write_opf(meta, None, path)
+
+def opf2dict(opf_str):
+    opf_str = opf_str.replace("<?xml version='1.0' encoding='utf-8'?>","")
+    try:
+        return xmltodict.parse(opf_str)
+    except:
+        return {}
+
+""" Given some text (.opf file as xml), this looks for an aaaarg id """
+def opf2id(opf_str):
+    try:
+        d = opf2dict(opf_str)
+        ids = d['package']['metadata']['dc:identifier']
+        for id in ids:
+            if id['@opf:scheme']=='ARG':
+                return id['#text']
+    except:
+        return None
+    return None
+
+""" Given some text (.opf file as xml), this looks for its date """
+def opf_date(opf_str):
+    d = opf2dict(opf_str)
+    try:
+        # check for calibre timestamp first
+        for m in d['package']['metadata']['meta']:
+            if m['@name']=='calibre:timestamp':
+                ts = time.strptime(m['@content'],'%Y-%m-%dT%H:%M:%S.%f+00:00')
+                return datetime.datetime(*ts[:6])
+    except:
+        pass
+    try:
+        # this is the arg timestamp given on creation
+        ts = time.strptime(d['package']['metadata']['dc:date'],'%Y-%m-%dT%H:%M:%S+00:00')
+        return datetime.datetime(*ts[:6])
+    except:
+        return None
+    return None

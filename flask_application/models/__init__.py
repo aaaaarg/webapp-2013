@@ -26,3 +26,4 @@ from .talk import Thread, Comment
 from .queue import Queue, QueuedThing
 from .reference import Reference, Annotation
 from .cache import Cache
+from .metadata import Metadata

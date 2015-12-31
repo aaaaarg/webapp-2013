@@ -13,16 +13,15 @@ from flask.ext.script import Command, Option
 from flask.ext.security.utils import encrypt_password
 from flask_application import user_datastore, app, tweeter, do_tweets
 from flask_application.populate import populate_data
-from flask_application.models import db, elastic, User, Role, Thing, Maker, Upload, Reference, Collection, SuperCollection, CollectedThing, Thread, Comment, Queue, TextUpload
-
-# writing calibre library data
-from lxml import etree
+from flask_application.models import db, elastic, User, Role, Thing, Maker, Upload, Reference, Collection, SuperCollection, CollectedThing, Thread, Comment, Queue, TextUpload, Metadata
 
 # pdf extraction
 from pdfminer.pdfparser import PDFSyntaxError
 from pdfminer.psparser import PSEOF
 # other pdf extraction!
 from flask_application.pdf_extract import Pdf 
+# opf writing
+from flask_application.helpers import thing2opf, opf2id, opf_date
 
 # elasticsearch
 from elasticsearch import Elasticsearch
@@ -534,50 +533,35 @@ class ExtractISBN(Command):
 				things = Thing.objects.all()
 				for t in things:
 					self.extract(t)
-				
-				
-DC = "http://purl.org/dc/elements/1.1/"
-DCNS = "{http://purl.org/dc/elements/1.1/}"
-OPF = 'http://www.idpf.org/2007/opf'
+
+testing_xml = """
+<?xml version='1.0' encoding='utf-8'?>
+<package xmlns="http://www.idpf.org/2007/opf" unique-identifier="uuid_id" version="2.0">
+    <metadata xmlns:dc="http://purl.org/dc/elements/1.1/" xmlns:opf="http://www.idpf.org/2007/opf">
+        <dc:identifier opf:scheme="calibre" id="calibre_id">144</dc:identifier>
+        <dc:identifier opf:scheme="uuid" id="uuid_id">d6ee9785-cd28-4c86-a8e2-e0924744418c</dc:identifier>
+        <dc:title>THEORY AND THE COMMON FROM MARX TO BADIOU</dc:title>
+        <dc:creator opf:file-as="McGee, Patrick" opf:role="aut">Patrick McGee</dc:creator>
+        <dc:contributor opf:file-as="calibre" opf:role="bkp">calibre (2.47.0) [http://calibre-ebook.com]</dc:contributor>
+        <dc:date>2015-12-30T22:46:41+00:00</dc:date>
+        <dc:description>Using a method that combines analysis, memoir, and polemic, McGee writes experimentally about a series of thinkers who ruptured linguistic and social hierarchies, from Marx, to Gramsci, to Badiou.</dc:description>
+        <dc:identifier opf:scheme="ARG">51c58bfe6c3a0eda0b267600</dc:identifier>
+        <dc:language>en</dc:language>
+        <meta content="{&quot;Patrick McGee&quot;: &quot;&quot;}" name="calibre:author_link_map"/>
+        <meta content="2015-12-30T14:54:44.576569+00:00" name="calibre:timestamp"/>
+        <meta content="THEORY AND THE COMMON FROM MARX TO BADIOU" name="calibre:title_sort"/>
+    </metadata>
+    <guide>
+        <reference href="cover.jpg" title="Cover" type="cover"/>
+    </guide>
+</package>
+"""
 LIBRARIES_PATH = '/lockers/hmmmmm/collections'
-
-def write_opf(meta_info, primary_id=None, path='/tmp/metadata.opf'):
-	if primary_id is None:
-		for k, v, a in meta_info:
-			if k == DCNS + 'identifier':
-				primary_id = a.setdefault('id', 'primary_id')
-				break
-
-	root = etree.Element('package', {
-		'xmlns' : OPF,
-		'unique-identifier' : primary_id,
-		'version' : '2.0'
-		}, nsmap = {'dc' : DC, 'opf' : OPF})
-
-	metadata = etree.SubElement(root, 'metadata')
-	for key, text, attrs in meta_info:
-		el = etree.SubElement(metadata, key, attrs)
-		el.text = text
-
-	tree_str = etree.tostring(root, pretty_print=True, encoding='utf-8')
-	with open(path, 'w') as f:
-		f.write(tree_str)
-	return path
-
-def thing2opf(thing):
-	meta = [
-		('{%s}identifier'%DC,'Unknown',{'{%s}scheme'%OPF:'uuid', 'id':'uuid_id'}),
-		('{%s}title'%DC,thing.title,{})
-	]
-	makers = [m.maker.display_name for m in thing.makers]
-	for m in makers:
-		meta.append(('{%s}creator'%DC,m,{'{%s}file-as'%OPF:'Unknown', '{%s}role'%OPF:'aut'}))
-	return write_opf(meta, None)
-
 class BuildLibrary(Command):
 	""" Converts a collection into a calibre library """
 	option_list = (
                 Option('--id', '-c', dest='collection_id'),
+                Option('--tid', '-t', dest='thing_id'),
         )
         def add_thing_to_library(self, thing, library_path):
                 makers = [m.maker.display_name for m in thing.makers]
@@ -590,7 +574,11 @@ class BuildLibrary(Command):
                                 print "Adding",t.thing.title
                                 self.add_thing_to_library(t.thing, library_path)
                                 #subprocess.call(['calibredb','add','--library-path=%s'%library_path,opf_path]) 
-	def run(self, collection_id):
+	def run(self, collection_id, thing_id):
 		if collection_id:
 			c = Collection.objects.filter(id=collection_id).first()
 			self.construct_library(c)
+		elif thing_id:
+			t = Thing.objects.filter(id=thing_id).first()
+			m = Metadata.objects.get(thing=t)
+			m.set_opf(testing_xml)

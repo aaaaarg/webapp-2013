@@ -1,6 +1,6 @@
 from urlparse import urljoin
 
-from flask import Blueprint, render_template, flash, request, redirect, url_for, abort
+from flask import Blueprint, render_template, flash, request, redirect, url_for, abort, Response
 from flask.ext.security import (login_required, roles_required, roles_accepted, current_user)
 
 from flask_application.models import *
@@ -217,3 +217,17 @@ def sort_actions(id):
 		queues=queues,
 		thing=model
 	)
+
+@thing.route('/<id>/opf', methods= ['GET', 'POST'])
+def opf(id):
+	"""
+	Get opf metadata for a thing
+	"""
+	thing = Thing.objects.get_or_404(id=id)
+	try:
+		metadata = Metadata.objects.get(thing=thing)
+	except:
+		metadata = Metadata(thing=thing)
+	return Response(metadata.opf,
+		mimetype="application/oebps-package+xml",
+    headers={"Content-Disposition": "attachment;filename=%s.opf" % thing.id})

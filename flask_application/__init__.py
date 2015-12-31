@@ -115,7 +115,7 @@ Markdown(app)
 # Business Logic
 # http://flask.pocoo.org/docs/patterns/packages/
 # http://flask.pocoo.org/docs/blueprints/
-from flask_application.controllers import frontend, thing, maker, collection, queue, talk, user, upload, admin, reference, compiler
+from flask_application.controllers import frontend, thing, maker, collection, queue, talk, user, upload, admin, reference, compiler#, metadata
 app.register_blueprint(frontend.frontend)
 app.register_blueprint(thing.thing)
 app.register_blueprint(collection.collection)
@@ -126,6 +126,7 @@ app.register_blueprint(talk.talk)
 app.register_blueprint(user.user)
 app.register_blueprint(reference.reference)
 app.register_blueprint(compiler.compiler)
+#app.register_blueprint(metadata.metadata)
 #app.register_blueprint(admin.admin)
 
 # Setup Flask-Security
