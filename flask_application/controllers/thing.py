@@ -218,7 +218,7 @@ def sort_actions(id):
 		thing=model
 	)
 
-@thing.route('/<id>/opf', methods= ['GET', 'POST'])
+@thing.route('/<id>.opf', methods= ['GET', 'POST'])
 def opf(id):
 	"""
 	Get opf metadata for a thing
