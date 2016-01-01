@@ -118,7 +118,11 @@ def parse_pos(s):
     else:
         return a[0], a[1], b[0], b[1]
 
-
+def merge_dicts(*dict_args):
+    result = {}
+    for dictionary in dict_args:
+        result.update(dictionary)
+    return result
 
 
 def write_opf(meta_info, primary_id=None, path=None):

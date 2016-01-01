@@ -5,6 +5,7 @@ from bson import ObjectId
 from flask import url_for
 from flask.ext.security import current_user 
 
+from flask_application.helpers import merge_dicts
 from . import *
 
 
@@ -82,3 +83,18 @@ class Thread(SolrMixin, CreatorMixin, FollowersMixin, db.Document):
 			'title': self.title,
 			'searchable_text': searchable 
 		}  
+
+	def populate_comment_creators(self):
+		"""
+		Fetches all comment creators (i.e. users) for this thread
+		in a single query, and populates the Comment documents with them.
+
+		Calling this method is useful when you're iterating
+		through all comments and their creators, and you want to avoid
+		the N+1 performance problem (making a database hit each iteration).
+		"""
+		user_ids = set(map(lambda comment: str(comment._data['creator'].id), self.comments))
+		users = User.objects.filter(id__in=user_ids)
+		user_ids_to_users = reduce(lambda reduced, user: merge_dicts(reduced, {str(user.id) : user}), users, dict())
+		for comment in self.comments:
+			comment.creator = user_ids_to_users[str(comment._data['creator'].id)]

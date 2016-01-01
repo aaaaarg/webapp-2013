@@ -83,6 +83,7 @@ def thread(id):
 	See a comment thread
 	"""
 	thread = Thread.objects.get_or_404(id=id)
+	thread.populate_comment_creators()
 	form = CommentForm(exclude=['creator'])
 	return render_template('talk/detail.html',
 		thread = thread,
