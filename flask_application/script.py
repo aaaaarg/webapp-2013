@@ -570,10 +570,10 @@ class BuildLibrary(Command):
         def construct_library(self, c):
                 library_path = os.path.join(LIBRARIES_PATH, str(c.id))
                 for t in c.things:
-                                #opf_path = thing2opf(t.thing)
+                                opf_path = thing2opf(t.thing, path='/tmp/metadata.opf')
                                 print "Adding",t.thing.title
-                                self.add_thing_to_library(t.thing, library_path)
-                                #subprocess.call(['calibredb','add','--library-path=%s'%library_path,opf_path]) 
+                                #self.add_thing_to_library(t.thing, library_path)
+                                subprocess.call(['calibredb','add','--library-path=%s'%library_path,opf_path]) 
 	def run(self, collection_id, thing_id):
 		if collection_id:
 			c = Collection.objects.filter(id=collection_id).first()
