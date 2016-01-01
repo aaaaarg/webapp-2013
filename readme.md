@@ -1,96 +1,90 @@
 Grrrr
 =====
-Uses Flask Boilerplate project as a base, removing the social login stuff. The install instructions for that will take you a long way to getting this installed. You will also need MongoDB and Solr running. (@todo: add Solr's schema.xml to this repo)
 
-Flask Boilerplate Project
--------------------------
-http://flask.pocoo.org/
+A platform for collective archives.
 
-This project is meant to be helpful for those who want to quickly jump into a new flask project. Social Media Accounts, UserAccounts, Caching, Mail, User Registration, Roles, Python Script Commands, and Twitter Bootstrap are already configured. 
+Prerequisites
+-------------
 
-The Flask Boilerplate Project consists of many projects merged into one to provide the most comprehensive boilerplate for your flask project. It is set up to quickly connect to Google Apps to start sending emails and is fully configurable.
+Install the following on your system:
+
+* memcached
+* elasticsearch (using the [official repositories](https://www.elastic.co/guide/en/elasticsearch/reference/current/setup-repositories.html) is recommended)
+* mongodb
+* curl
+* git
+* python
+* pip
+* [VirtualEnv](https://virtualenv.readthedocs.org/en/latest/) and [VirtualEnvWrapper](http://www.doughellmann.com/docs/virtualenvwrapper/)
+* development libraries for python, libjpeg8, libxml2, libxslt1, zlib1g (needed for python libraries to build successfully)
+
+If you are running Ubuntu 14.04, you can install all the above with
+these commands. This probably also works on other recent versions of
+Ubuntu.
+
+        sudo apt-get install openjdk-7-jdk mongodb elasticsearch memcached curl git python-pip python-virtualenv virtualenvwrapper python-dev libxml2 libxml2-dev libxslt1-dev zlib1g-dev libjpeg8-dev
+        # start elasticsearch on startup
+        sudo update-rc.d elasticsearch defaults
 
 Installation
 ------------
-1. Download via git:
 
-        git clone git://github.com/hansonkd/FlaskBootstrapSecurity.git
+1. Clone this repository:
+
+        git clone git@github.com:aaaaarg/webapp-2013.git
 
 2. Change into the cloned directory
 
-        cd FlaskBootstrapSecurity
+        cd webapp-2013
 
-2. Get VirtualEnv and VirtualEnvWrapper set up. See here for further details: http://www.doughellmann.com/docs/virtualenvwrapper/
-	
-3. Create a virtualenvironment
+3. Create a new virtualenvironment and switch to it
 
-        mkvirtualenv environment
+        mkvirtualenv grrrr
+        workon grrrr
 
-4. Install the required python dependancies:
+4. Install the required python dependencies
 
         pip install -r requirements.txt
     
-5. As a temporary workaround, run this command to get a version of Flask-Social that works with the current mongoengine
+5. As a temporary workaround, run this command to get a version of
+   Flask-Social that works with the current mongoengine (TODO: this
+   didn't work for me; is it still needed?)
 
         pip install --upgrade https://github.com/mattupstate/flask-social/tball/develop
 
-6. Edit `flask_application/config.py` to change your mail server and other settings:
+6. Copy `flask_application/config.py.example` to
+   `flask_application/config.py` and edit the settings as appropriate.
 
-        class Config(object):
-            SECRET_KEY = '{SECRET_KEY}'
-            SITE_NAME = 'Flask Site'
-            SITE_ROOT_URL = 'http://example.com'
-            MEMCACHED_SERVERS = ['localhost:11211']
-            SYS_ADMINS = ['foo@example.com']
-    
-            # Mongodb support
-            MONGODB_DB = 'testing'
-            MONGODB_HOST = 'localhost'
-            MONGODB_PORT = 27017
+        cd flask_application
+        cp config.py.example config.py
+        vi config.py
 
+7. Create an elasticsearch index named 'aaaarg'.
 
-            # Configured for GMAIL
-            MAIL_SERVER = 'smtp.gmail.com'
-            MAIL_PORT = 465
-            MAIL_USE_SSL = True
-            MAIL_USERNAME = 'username@gmail.com'
-            MAIL_PASSWORD = '*********'
-            DEFAULT_MAIL_SENDER = 'Admin < username@gmail.com >'
-    
-            # Flask-Security setup
-            SECURITY_LOGIN_WITHOUT_CONFIRMATION = True
-            SECURITY_REGISTERABLE = True
-            SECURITY_RECOVERABLE = True
-            SECURITY_URL_PREFIX = '/auth'
-            SECUIRTY_POST_LOGIN = '/'
-    
-            # Flask-Social setup
-            SOCIAL_TWITTER = {
-                'consumer_key': '',
-                'consumer_secret': ''
-            }
+        curl -XPUT 'localhost:9200/aaaarg?pretty'
 
+8. Populate the database with some data
 
-7. Run a development server:
-        
+        python manage.py populate_db
+
+9. Run the development server. You should be able to access the
+application at http://localhost:5000/
+
+        # set environment
+        export DEV=yes
+        # run server
         python manage.py runserver
+
+  If you're running the app from inside a virtual machine and want to
+  be able to access it from outside the VM, run this command instead,
+  and load use the IP address in the browser, i.e. something like
+  http://192.168.1.10:5000/
+
+        python manage.py runserver -t 0.0.0.0
+
 
 Credit
 ------
-####Required Python Projects:
-
-* unittest2
-* Flask
-* Flask-Assets
-* cssmin
-* Flask-WTF
-* Flask-Script
-* Flask-Mail
-* Flask-Cache
-* python-memcached
-* Flask-Security
-* Flask-Social
-* Flask-MongoEngine
 
 ####Non-Python Projects:
 * Twitter Bootstrap
