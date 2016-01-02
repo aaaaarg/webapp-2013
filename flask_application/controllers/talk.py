@@ -152,7 +152,7 @@ def follow(id):
 	collection.add_follower(user)
 	return jsonify({
 			'result': 'success',
-			'message': get_template_attribute('collection/macros.html', 'unfollow')(collection)
+			'message': unicode(get_template_attribute('collection/macros.html', 'unfollow')(collection))
 			})
 
 
@@ -171,7 +171,7 @@ def unfollow(id):
 	collection.remove_follower(user)
 	return jsonify({
 			'result': 'success',
-			'message': get_template_attribute('collection/macros.html', 'follow')(collection)
+			'message': unicode(get_template_attribute('collection/macros.html', 'follow')(collection))
 			})
 
 

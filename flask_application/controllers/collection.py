@@ -154,7 +154,7 @@ def add_thing(thing_id):
 		return jsonify({
 			'result':'success', 
 			'message':'Added to <a href="%s">%s</a>!' % (url_for('collection.detail', id=collection.id), collection.title), 
-			'collection':get_template_attribute('collection/macros.html', 'show_collections_list_item')(collection, thing)})
+			'collection':unicode(get_template_attribute('collection/macros.html', 'show_collections_list_item')(collection, thing))})
 	return jsonify({'result':'error', 'message':'Sorry, there was a problem'})
 
 

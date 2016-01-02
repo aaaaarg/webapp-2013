@@ -61,7 +61,7 @@ def follow(type, id):
 			cached.delete()
 	return jsonify({
 		'result': 'success',
-		'message': get_template_attribute('frontend/macros.html', 'unfollow')(model)
+		'message': unicode(get_template_attribute('frontend/macros.html', 'unfollow')(model))
 	})
 
 
@@ -92,7 +92,7 @@ def unfollow(type, id):
 			cached.delete()
 	return jsonify({
 		'result': 'success',
-		'message': get_template_attribute('frontend/macros.html', 'follow')(model)
+		'message': unicode(get_template_attribute('frontend/macros.html', 'follow')(model))
 	})	
 
 
