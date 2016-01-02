@@ -56,7 +56,7 @@ class CollectionQuerySetSelectField(QuerySetSelectField):
 		self.queryset = {}
 		self.queryset['following'] = Collection.objects.filter(supercollection__exists=False, followers=current_user.get_id()).order_by('title')
 		self.queryset['contributing'] = Collection.objects.filter(supercollection__exists=False, editors=current_user.get_id()).order_by('title')
-		self.queryset['created'] = Collection.objects.filter(supercollection__exists=False, followers=current_user.get_id()).order_by('title')
+		self.queryset['created'] = Collection.objects.filter(supercollection__exists=False, creator=current_user.get_id()).order_by('title')
 
 	def process_formdata(self, valuelist):
 		"""
