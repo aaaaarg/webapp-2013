@@ -590,7 +590,7 @@ class BuildLibrary(Command):
                                 #subprocess.call(['calibredb','add','--library-path=%s'%library_path,opf_path]) 
                                 d = self.add_thing_folder_to_library(t.thing, str(c.id))
                                 cover = os.path.join(d, 'cover.jpg')
-                subprocess.call(['calibredb','add','-r','--library-path=%s'%library_path,'/tmp/test-collection']) 
+                subprocess.call(['calibredb','add','-r','--library-path=%s'%library_path,os.path.join('/tmp',tmp_path)]) 
 
 	def run(self, collection_id, thing_id):
 		if collection_id:
