@@ -143,6 +143,9 @@ def write_opf(meta_info, primary_id=None, path=None):
         el = etree.SubElement(metadata, key, attrs)
         el.text = text
 
+    guide = etree.SubElement(root, 'guide')
+    el = etree.SubElement(guide, 'reference', {'href':'cover.jpg','type':'cover','title':'Cover'})
+
     tree_str = etree.tostring(root, pretty_print=True, encoding='utf-8')
     if path:
         with open(path, 'w') as f:

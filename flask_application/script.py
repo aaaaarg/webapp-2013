@@ -1,6 +1,7 @@
 import datetime, sys, traceback, re, os
 from unidecode import unidecode
 import subprocess
+import urllib
 
 from sunburnt.schema import SolrError
 
@@ -556,13 +557,27 @@ testing_xml = """
     </guide>
 </package>
 """
-LIBRARIES_PATH = '/lockers/hmmmmm/collections'
+#LIBRARIES_PATH = '/lockers/hmmmmm/collections'
+LIBRARIES_PATH = '/Users/dddd/Documents/dev/calibre/data/testing'
 class BuildLibrary(Command):
 	""" Converts a collection into a calibre library """
 	option_list = (
                 Option('--id', '-c', dest='collection_id'),
                 Option('--tid', '-t', dest='thing_id'),
         )
+        def add_thing_folder_to_library(self, thing, tmp_path):
+                thing_dir = os.path.join('/tmp',tmp_path, str(thing.id))        	
+                if not os.path.exists(thing_dir):
+                	os.makedirs(thing_dir)
+                thing2opf(thing, path=os.path.join(thing_dir, 'metadata.opf'))
+                preview = thing.preview(filename="x350-0.jpg")
+                #preview = 'http://ecx.images-amazon.com/images/I/51fMBpPKSZL._SX331_BO1,204,203,200_.jpg'
+                if preview:
+                	try:
+                		urllib.urlretrieve(preview, os.path.join(thing_dir, "cover.jpg"))
+                	except:
+                		print "Could not generate cover"
+                	return thing_dir
         def add_thing_to_library(self, thing, library_path):
                 makers = [m.maker.display_name for m in thing.makers]
                 makers_str = (' & ').join(makers)
@@ -570,10 +585,14 @@ class BuildLibrary(Command):
         def construct_library(self, c):
                 library_path = os.path.join(LIBRARIES_PATH, str(c.id))
                 for t in c.things:
-                                opf_path = thing2opf(t.thing, path='/tmp/metadata.opf')
+                                #opf_path = thing2opf(t.thing, path='/tmp/metadata.opf')
                                 print "Adding",t.thing.title
                                 #self.add_thing_to_library(t.thing, library_path)
-                                subprocess.call(['calibredb','add','--library-path=%s'%library_path,opf_path]) 
+                                #subprocess.call(['calibredb','add','--library-path=%s'%library_path,opf_path]) 
+                                d = self.add_thing_folder_to_library(t.thing, library_path, str(c.id))
+                                cover = os.path.join(d, 'cover.jpg')
+                subprocess.call(['calibredb','add','-r','--library-path=%s'%library_path,'/tmp/test-collection']) 
+                
 	def run(self, collection_id, thing_id):
 		if collection_id:
 			c = Collection.objects.filter(id=collection_id).first()

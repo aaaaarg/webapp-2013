@@ -1,4 +1,7 @@
 from urlparse import urljoin
+import urllib
+import zipfile
+import StringIO
 
 from flask import Blueprint, render_template, flash, request, redirect, url_for, abort, Response
 from flask.ext.security import (login_required, roles_required, roles_accepted, current_user)
@@ -231,3 +234,26 @@ def opf(id):
 	return Response(metadata.opf,
 		mimetype="application/oebps-package+xml",
     headers={"Content-Disposition": "attachment;filename=%s.opf" % thing.id})
+
+@thing.route('/<id>/calibre')
+def calibre(id):
+	"""
+	Export a zip of metadata and cover
+	"""
+	thing = Thing.objects.get_or_404(id=id)
+	try:
+		metadata = Metadata.objects.get(thing=thing)
+	except:
+		metadata = Metadata(thing=thing)
+	# Set up zip
+	s = StringIO.StringIO()
+	zf = zipfile.ZipFile(s, "w")
+	zf.writestr('metadata.opf', metadata.opf)
+	preview = thing.preview(filename="x350-0.jpg")
+	if preview:
+		image_file = StringIO.StringIO(urllib.urlopen(preview).read())
+		zf.writestr("cover.jpg", image_file.getvalue())
+	zf.close()
+	return Response(s.getvalue(),
+		mimetype="application/x-zip-compressed",
+    headers={"Content-Disposition": "attachment;filename=%s.zip" % thing.id})
