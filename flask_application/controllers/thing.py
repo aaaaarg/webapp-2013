@@ -1,9 +1,9 @@
 from urlparse import urljoin
 import urllib
 import zipfile
-import StringIO
+from io import BytesIO
 
-from flask import Blueprint, render_template, flash, request, redirect, url_for, abort, Response
+from flask import Blueprint, render_template, flash, request, redirect, url_for, abort, send_file, Response
 from flask.ext.security import (login_required, roles_required, roles_accepted, current_user)
 
 from flask_application.models import *
@@ -246,14 +246,15 @@ def calibre(id):
 	except:
 		metadata = Metadata(thing=thing)
 	# Set up zip
-	s = StringIO.StringIO()
-	zf = zipfile.ZipFile(s, "w")
-	zf.writestr('metadata.opf', metadata.opf)
-	preview = thing.preview(filename="x350-0.jpg")
-	if preview:
-		image_file = StringIO.StringIO(urllib.urlopen(url_for('reference.preview', filename=preview, _external=True)).read())
-		zf.writestr("cover.jpg", image_file.getvalue())
-	zf.close()
+	s = BytesIO()
+	with zipfile.ZipFile(s, "w") as zf:
+		zf.writestr('metadata.opf', str(metadata.opf))
+		preview = thing.preview(filename="x350-0.jpg")
+		if preview:
+			image_file = BytesIO(urllib.urlopen(url_for('reference.preview', filename=preview, _external=True)).read())
+			zf.writestr("cover.jpg", image_file.getvalue())
+	s.seek(0)
+	return send_file(s, attachment_filename="%s.zip" % str(thing.id), as_attachment=True)
 	return Response(s.getvalue(),
 		mimetype="application/x-zip-compressed",
     headers={"Content-Disposition": "attachment;filename=%s.zip" % thing.id})

@@ -2,6 +2,8 @@ import datetime, sys, traceback, re, os
 from unidecode import unidecode
 import subprocess
 import urllib
+import fnmatch
+import shutil
 
 from sunburnt.schema import SolrError
 
@@ -573,24 +575,39 @@ class BuildLibrary(Command):
                 #preview = 'http://ecx.images-amazon.com/images/I/51fMBpPKSZL._SX331_BO1,204,203,200_.jpg'
                 if preview:
                 	try:
-                		urllib.urlretrieve(preview, os.path.join(thing_dir, "cover.jpg"))
+                		urllib.urlretrieve('http://aaaaarg.fail/pages/'+preview, os.path.join(thing_dir, "cover.jpg"))
                 	except:
-                		print "Could not generate cover"
-                	return thing_dir
+                		print "Could not generate cover: ", preview
+                return thing_dir
         def add_thing_to_library(self, thing, library_path):
                 makers = [m.maker.display_name for m in thing.makers]
                 makers_str = (' & ').join(makers)
-                subprocess.call(['calibredb','add','-e','-a',makers_str,'-t',thing.title,'--library-path=%s'%library_path])
+		preview = thing.preview(filename="x350-0.jpg")
+		cover = None
+		if preview:
+			cover = os.path.join('/tmp/', "%s.jpg"%str(thing.id))
+                        urllib.urlretrieve('http://aaaaarg.fail/pages/'+preview, cover)
+		if cover:
+			subprocess.call(['calibredb','add','-e','-I','arg:%s'%str(thing.id),'-c',cover,'-a',makers_str,'-t',thing.title,'--library-path=%s'%library_path])
+		else:
+	                subprocess.call(['calibredb','add','-e','-I','arg:%s'%str(thing.id),'-a',makers_str,'-t',thing.title,'--library-path=%s'%library_path])
         def construct_library(self, c):
                 library_path = os.path.join(LIBRARIES_PATH, str(c.id))
                 for t in c.things:
-                                #opf_path = thing2opf(t.thing, path='/tmp/metadata.opf')
                                 print "Adding",t.thing.title
-                                #self.add_thing_to_library(t.thing, library_path)
-                                #subprocess.call(['calibredb','add','--library-path=%s'%library_path,opf_path]) 
                                 d = self.add_thing_folder_to_library(t.thing, str(c.id))
-                                cover = os.path.join(d, 'cover.jpg')
-                subprocess.call(['calibredb','add','-r','--library-path=%s'%library_path,os.path.join('/tmp',tmp_path)]) 
+				#self.add_thing_to_library(t.thing, library_path)
+		subprocess.call(['calibredb','add','-r','--library-path=%s'%library_path,os.path.join('/tmp',str(c.id))])
+		# now move covers
+		for root, dirnames, filenames in os.walk(library_path):
+			for filename in fnmatch.filter(filenames, '*.opf'):
+				with open(os.path.join(root, filename), 'r') as f:
+					id = opf2id(f.read())
+					cover = os.path.join('/tmp',str(c.id),id,'cover.jpg')
+					if os.path.exists(cover):
+						dest = os.path.join(root,'cover.jpg')
+						print 'Moving ',cover,'to',dest
+						shutil.move(cover,dest)
 
 	def run(self, collection_id, thing_id):
 		if collection_id:
