@@ -4,7 +4,7 @@
 	{% if thread.title=="General discussion" and thread.origin %}
 		<a href="{{url_for('talk.thread', id=thread.id)}}">{{thread.origin_title()|truncate}}</a>
 	{% elif thread.origin %}
-		<a href="{{url_for('talk.thread', id=thread.id)}}">{{thread.title}}</a> {{ thread.origin_title()|truncate }}
+		<a href="{{url_for('talk.thread', id=thread.id)}}">{{thread.title}}</a> <span class="text-muted">in</span> {{ thread.origin_title()|truncate }}
 	{% else %}
 		<a href="{{url_for('talk.thread', id=thread.id)}}">{{thread.title}}</a> 
 	{% endif %}
