@@ -251,7 +251,7 @@ def calibre(id):
 	zf.writestr('metadata.opf', metadata.opf)
 	preview = thing.preview(filename="x350-0.jpg")
 	if preview:
-		image_file = StringIO.StringIO(urllib.urlopen(url_for('reference.preview', filename=preview)).read())
+		image_file = StringIO.StringIO(urllib.urlopen(url_for('reference.preview', filename=preview, _external=True)).read())
 		zf.writestr("cover.jpg", image_file.getvalue())
 	zf.close()
 	return Response(s.getvalue(),
