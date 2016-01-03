@@ -4,7 +4,8 @@ class Config(object):
     SITE_ROOT_URL = 'http://example.com'
     MEMCACHED_SERVERS = ['localhost:11211']
     SYS_ADMINS = ['foo@example.com']
-    UPLOADS_DIR = '/home/xyz/uploads/'
+    # note: NO trailing slash!
+    UPLOADS_DIR = '/home/xyz/uploads'
     UPLOADS_SUBDIR = 'processed'
 
     # Mongodb support
