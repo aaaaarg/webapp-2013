@@ -557,8 +557,7 @@ testing_xml = """
     </guide>
 </package>
 """
-#LIBRARIES_PATH = '/lockers/hmmmmm/collections'
-LIBRARIES_PATH = '/Users/dddd/Documents/dev/calibre/data/testing'
+LIBRARIES_PATH = '/lockers/hmmmmm/collections'
 class BuildLibrary(Command):
 	""" Converts a collection into a calibre library """
 	option_list = (
