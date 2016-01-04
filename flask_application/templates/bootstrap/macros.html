@@ -59,7 +59,7 @@
     $(".popover-trigger.remote").click(function() {
         el = $(this);
         // Show loading...
-        el.unbind('click').popover('show');
+        el.popover('show');
         $.get(el.attr('data-poload'), function(response) {
             el.attr('data-content', response);
             el.popover('show');
