@@ -3,6 +3,7 @@ import datetime, sys, traceback
 from unidecode import unidecode
 from sunburnt.schema import SolrError
 
+import elasticsearch.exceptions
 from flask_application import app, mail
 from flask.ext.mail import Message
 from flask.ext.security import current_user 
@@ -132,7 +133,11 @@ class SolrMixin(object):
         elastic.index( self, d)
 
     def delete_from_solr(self):
-        elastic.delete( self )
+        try:
+            elastic.delete( self )
+        except elasticsearch.exceptions.NotFoundError, e:
+            # don't assume object was successfully indexed to begin with
+            app.logger.error("Couldn't delete missing document from Solr/ES, ignoring: " + str(e))
 
     def build_solr(self):
         super(SolrMixin, self).build_solr(*args, **kwargs)
