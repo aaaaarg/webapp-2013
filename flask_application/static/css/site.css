@@ -51,13 +51,15 @@ ul.nav ul.dropdown-menu li a {
 	color: #ddd;
 }
 
-/* next two rules override bootstrap defaults that cause a gap between the input group of input + button */
+/* this rule overrides bootstrap defaults that cause a gap between the input group of input + button */
 .navbar input[type="text"] {
     /* bootstrap sets width to 'auto' which doesn't extend all the way across */
     width: 100%;
 }
-.navbar button {
-    /* bootstrap's default padding makes this too small */
+
+/* for some reason, using a glyph as button text causes padding to be messed up. I suspect this is a problem
+specific to the version of bootstrap currently in use. when that's upgraded, we should we able to remove this hack. */
+.button-with-glyph-hack {
     padding: 9px 12px;
 }
 
