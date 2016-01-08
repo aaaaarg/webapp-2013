@@ -1,4 +1,6 @@
-from flask import Blueprint, render_template, get_template_attribute, flash, request, redirect, url_for, abort, jsonify
+import os
+
+from flask import Blueprint, render_template, get_template_attribute, flash, request, redirect, url_for, abort, jsonify, Response
 from flask.ext.security import (login_required, roles_required, roles_accepted, current_user)
 from mongoengine import Q
 from flask.ext.mongoengine.wtf import model_form
@@ -6,6 +8,7 @@ from flask.ext.mongoengine.wtf import model_form
 from flask_application import app
 from flask_application.models import *
 from flask_application.forms import CollectionForm, AddThingToCollectionsForm
+from flask_application.helpers import archive_things
 
 # Set up perms for use in views and templates
 from ..permissions.collection import *
@@ -271,3 +274,39 @@ def remove_editor(id, user_id):
 	flash("%s removed as editor from %s" % (u.username, c.title))
 	return redirect(url_for("collection.detail", id=id))
 
+
+@collection.route('/<id>/calibre')
+def calibre(id):
+	"""
+	Export a zip of metadata and cover
+	"""
+	c = Collection.objects.get_or_404(id=id)
+	things = [ct.thing for ct in c.things]
+	archive = archive_things(things)
+	return Response(archive,
+		mimetype="application/x-zip-compressed",
+    headers={"Content-Disposition": "attachment;filename=%s.zip" % id})
+
+@collection.route('/<id>/calibre/status')
+def calibre_status(id):
+	"""
+	Export a zip of metadata and cover
+	"""
+	c = Collection.objects.get_or_404(id=id)
+	things = [ct.thing for ct in c.things]
+	data = {}
+	for thing in things:
+		try:
+			metadata = Metadata.objects.get(thing=thing)
+		except:
+			metadata = Metadata(thing=thing)
+			metadata.reload()
+		data[str(thing.id)] = metadata.version
+
+	return jsonify({
+		'message': 'Success',
+		'data': data,
+		'request': {
+			'id': id
+		}
+	})

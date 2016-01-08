@@ -1,13 +1,11 @@
 from urlparse import urljoin
-import urllib
-import zipfile
-from io import BytesIO
 
-from flask import Blueprint, render_template, flash, request, redirect, url_for, abort, send_file, Response
+from flask import Blueprint, render_template, flash, request, redirect, url_for, abort, send_file, jsonify, Response
 from flask.ext.security import (login_required, roles_required, roles_accepted, current_user)
 
 from flask_application.models import *
 from flask_application.forms import ThingForm, AddThingToCollectionsForm, UploadForm, ThreadForm
+from flask_application.helpers import archive_thing
 
 from werkzeug.contrib.atom import AtomFeed
 
@@ -241,20 +239,54 @@ def calibre(id):
 	Export a zip of metadata and cover
 	"""
 	thing = Thing.objects.get_or_404(id=id)
+	archive = archive_thing(thing)
+	return Response(archive,
+		mimetype="application/x-zip-compressed",
+    headers={"Content-Disposition": "attachment;filename=%s.zip" % thing.id})
+
+@thing.route('/<id>/calibre/status')
+def calibre_status(id):
+	"""
+	Export a zip of metadata and cover
+	"""
+	thing = Thing.objects.get_or_404(id=id)
 	try:
 		metadata = Metadata.objects.get(thing=thing)
 	except:
 		metadata = Metadata(thing=thing)
-	# Set up zip
-	s = BytesIO()
-	with zipfile.ZipFile(s, "w") as zf:
-		zf.writestr('metadata.opf', str(metadata.opf))
-		preview = thing.preview(filename="x350-0.jpg")
-		if preview:
-			image_file = BytesIO(urllib.urlopen(url_for('reference.preview', filename=preview, _external=True)).read())
-			zf.writestr("cover.jpg", image_file.getvalue())
-	s.seek(0)
-	return send_file(s, attachment_filename="%s.zip" % str(thing.id), as_attachment=True)
-	return Response(s.getvalue(),
-		mimetype="application/x-zip-compressed",
-    headers={"Content-Disposition": "attachment;filename=%s.zip" % thing.id})
+		metadata.reload()
+
+	return jsonify({
+		'message': 'Success',
+		'data': {
+			'id': id,
+			'version': metadata.version
+			},
+		'request': {
+			'id': id
+		}
+	})
+
+
+@thing.route('/<id>/calibre/commit', methods= ['POST'])
+def calibre_commit(id):
+	"""
+	Ingests
+	"""
+	from flask_application.helpers import opf2id, opf_date
+	thing = Thing.objects.get_or_404(id=id)
+	opf = request.form['opf'] if 'opf' in request.form else None
+	if not opf:
+		return {'message': 'No opf was posted', 'data':{}, 'request':{}}
+	try:
+		metadata = Metadata.objects.get(thing=thing)
+	except:
+		metadata = Metadata(thing=thing)
+		metadata.reload()
+
+	success = metadata.set_opf(opf)
+	if success:
+		retval = {'message': '%s successfully updated' % thing.title, 'data':{}, 'request':{'opf': opf}}
+	else:
+		retval = {'message': '%s failed. A newer version seems to exist already.' % thing.title, 'data':{}, 'request':{'opf': opf}}
+	return jsonify(retval)

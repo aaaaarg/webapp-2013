@@ -1,7 +1,10 @@
-from flask import Blueprint, render_template, flash, request, redirect, url_for, abort, jsonify
+import os
+
+from flask import Blueprint, render_template, flash, request, redirect, url_for, abort, jsonify, Response
 from flask.ext.security import (login_required, roles_required, roles_accepted)
 
 from flask_application.models import *
+from flask_application.helpers import archive_things
 
 from ..permissions.thing import can_add_thing
 from ..permissions.talk import can_create_thread
@@ -72,3 +75,40 @@ def merge(from_id=None, to_id=None):
 	maker_from.delete()
 	return jsonify({'status':'moved %s things' % len(things)})
 
+
+@maker.route('/<id>/calibre')
+def calibre(id):
+	"""
+	Export a zip of metadata and cover
+	"""
+	m = Maker.objects.get_or_404(id=id)
+	things = Thing.objects.filter(makers__maker=m)
+	archive = archive_things(things)
+	return Response(archive,
+		mimetype="application/x-zip-compressed",
+    headers={"Content-Disposition": "attachment;filename=%s.zip" % id})
+
+
+@maker.route('/<id>/calibre/status')
+def calibre_status(id):
+	"""
+	Export a zip of metadata and cover
+	"""
+	m = Maker.objects.get_or_404(id=id)
+	things = Thing.objects.filter(makers__maker=m)
+	data = {}
+	for thing in things:
+		try:
+			metadata = Metadata.objects.get(thing=thing)
+		except:
+			metadata = Metadata(thing=thing)
+			metadata.reload()
+		data[str(thing.id)] = metadata.version
+
+	return jsonify({
+		'message': 'Success',
+		'data': data,
+		'request': {
+			'id': id
+		}
+	})

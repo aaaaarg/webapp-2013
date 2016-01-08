@@ -96,6 +96,36 @@ def unfollow(type, id):
 	})	
 
 
+@frontend.route('/api/search', methods= ['POST'])
+def api_search(type=False):
+	type = request.form['type'] if 'type' in request.form else 'things'
+	query = request.form['query'] if 'query' in request.form else 'communism'
+	num = request.form['num'] if 'num' in request.form else 10
+	original_request = {'type':type, 'query':query, 'num':num}
+	
+	if type=='things':
+		results = elastic.search('thing', 
+			query={ 'title^3,short_description,description':query }, 
+			num=num)
+	elif type=='makers':
+		results = elastic.search('maker', 
+			query={ 'title^3,searchable_text':query }, 
+			num=num)
+	elif type=='collections':
+		results = elastic.search('collection', 
+			query={ 'title^3,short_description^2,description,searchable_text':query }, 
+			num=num)
+	else:
+		results = {}
+	
+	retval = {'message':'', 'data':{}, 'request':original_request}
+	for id, score, result in results:
+		retval['data'][id] = result['title']
+		if type=='collections':
+			retval['data'][id] = "%s (%s items)" % (result['title'], len(result['things'])) 
+	return jsonify(retval)
+
+
 @frontend.route('/search')
 @frontend.route('/search/<type>')
 def search(type=False):

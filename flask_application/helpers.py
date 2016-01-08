@@ -1,3 +1,4 @@
+import os
 import dateutil.parser
 import datetime
 import math
@@ -8,6 +9,11 @@ from functools import wraps
 
 from lxml import etree
 import xmltodict
+
+from zipfile import ZipFile
+import urllib2
+from io import BytesIO
+
 
 # opf writing
 DC = "http://purl.org/dc/elements/1.1/"
@@ -158,9 +164,9 @@ def thing2opf(thing, path=None):
     d = datetime.datetime.now()
     meta = [
         ('{%s}identifier'%DC,'Unknown',{'{%s}scheme'%OPF:'uuid', 'id':'uuid_id'}),
-        ('{%s}identifier'%DC,str(thing.id),{'{%s}scheme'%OPF:'ARG'}),
+        ('{%s}identifier'%DC,'%s.1'%str(thing.id),{'{%s}scheme'%OPF:'ARG'}),
         ('{%s}title'%DC,thing.title,{}),
-        ('{%s}date'%DC,d.strftime('%Y-%m-%dT%H:%M:%S+00:00'),{})
+        ('{%s}date'%DC,d.strftime('%Y-%m-%dT%H:%M:%S+00:00'),{}),
     ]
     if thing.description:
         meta.append(('{%s}description'%DC,thing.description,{}))
@@ -183,10 +189,22 @@ def opf2id(opf_str):
         ids = d['package']['metadata']['dc:identifier']
         for id in ids:
             if id['@opf:scheme']=='ARG':
-                return id['#text']
+                return id['#text'].split('.')[0]
     except:
         return None
     return None
+
+""" Given some text (.opf file as xml), this looks for its revision """
+def opf_version(opf_str):
+    try:
+        d = opf2dict(opf_str)
+        ids = d['package']['metadata']['dc:identifier']
+        for id in ids:
+            if id['@opf:scheme']=='ARG':
+                return int(id['#text'].split('.')[1])
+    except:
+        return 0
+    return 0
 
 """ Given some text (.opf file as xml), this looks for its date """
 def opf_date(opf_str):
@@ -206,3 +224,44 @@ def opf_date(opf_str):
     except:
         return None
     return None
+
+
+""" Given a list of things to put in a folder """
+def archive_things(things):
+    s = BytesIO()
+    with ZipFile(s, "w") as zf:
+        for thing in things:
+            archive_thing(thing, zf)
+    return s.getvalue()
+
+
+""" Given a thing, create a calibre folder... if a zipfile is provided, simply add to it """
+def archive_thing(thing, zip_file=None):
+    from flask_application.models import Metadata
+    if not zip_file:
+        s = BytesIO()
+        zf = ZipFile(s, "w")
+        cover_file = 'cover.jpg'
+        opf_file = 'metadata.opf'
+    else:
+        zf = zip_file
+        cover_file = os.path.join(str(thing.id), 'cover.jpg')
+        opf_file = os.path.join(str(thing.id), 'metadata.opf')
+    # Put in the content
+    try:
+        metadata = Metadata.objects.get(thing=thing)
+    except:
+        metadata = Metadata(thing=thing)
+        metadata.reload()
+    opf = metadata.opf.encode('utf-8')
+    zf.writestr(opf_file, opf)
+    preview = thing.preview(filename="x500-0.jpg")
+    if preview:
+        try:
+            image_file = BytesIO(urllib2.urlopen(url_for('reference.preview', filename=preview, _external=True), timeout=2).read())
+            zf.writestr(cover_file, image_file.getvalue())
+        except:
+            print "Failed to load image: ", preview
+    if not zip_file:
+        return s.getvalue()
+    
