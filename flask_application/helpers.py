@@ -287,7 +287,7 @@ def archive_thing(thing, zip_file=None):
         preview = thing.preview(filename="x500-0.jpg")
         if preview:
             try:
-                im = urllib2.urlopen(url_for('reference.preview', filename=preview, _external=True), timeout=2).read()
+                im = urllib2.urlopen(url_for('reference.preview', filename=preview, _external=True), timeout=2)
                 cp = compute_thing_file_path(thing, 'cover.jpg', makedirs=True)
                 with open(cp, 'wb') as f:
                     f.write(im.read())
