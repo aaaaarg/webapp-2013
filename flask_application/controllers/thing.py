@@ -5,7 +5,7 @@ from flask.ext.security import (login_required, roles_required, roles_accepted, 
 
 from flask_application.models import *
 from flask_application.forms import ThingForm, AddThingToCollectionsForm, UploadForm, ThreadForm
-from flask_application.helpers import archive_thing
+from flask_application.helpers import archive_thing, 
 
 from werkzeug.contrib.atom import AtomFeed
 
@@ -275,6 +275,13 @@ def calibre_commit(id):
 	"""
 	from flask_application.helpers import opf2id, opf_date
 	thing = Thing.objects.get_or_404(id=id)
+	# first try and save the cover
+	cover = request.form['cover'] if 'cover' in request.form else None
+	cover_ext = request.form['cover_ext'] if 'cover_ext' in request.form else None # not used for now
+	if cover:
+		cover.save(compute_thing_file_path(thing, 'cover.jpg', makedirs=True))
+	
+	# now try metadata
 	opf = request.form['opf'] if 'opf' in request.form else None
 	if not opf:
 		return {'message': 'No opf was posted', 'data':{}, 'request':{}}
