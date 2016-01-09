@@ -4,6 +4,7 @@ import datetime
 import math
 import json
 import time
+import unicodedata
 from flask import abort, Blueprint, url_for
 from functools import wraps
 
@@ -226,6 +227,30 @@ def opf_date(opf_str):
     return None
 
 
+"""
+Calibre names things in this way: Author Name/Title of Book/Title of Book.xyz
+but we might also put metadata.opf or cover.jpg here, so this function just 
+returns the full system path ending with "Author Name/Title of Book"
+"""
+def compute_thing_file_path(thing, filename, makedirs=False):
+    from flask_application import app
+
+    def safe_name(str):
+        #return "".join([c for c in str if c.isalpha() or c.isdigit() or c==' ']).rstrip()[:64]
+        s = "".join([c for c in str if c.isalpha() or c.isdigit() or c==' ']).rstrip()
+        return unicodedata.normalize('NFKD', unicode(s)).encode('ascii','ignore')
+
+    author, title = thing.get_maker_and_title()
+    # Get the parts of the new path
+    directory1 = safe_name(author)
+    directory2 = safe_name(title)
+    # put together the new path
+    p = os.path.join(app.config['UPLOADS_DIR'], app.config['UPLOADS_SUBDIR'], directory1, directory2)
+    if makedirs and not os.path.exists(p):
+        os.makedirs(p)
+    return os.path.join(p, filename)    
+
+
 """ Given a list of things to put in a folder """
 def archive_things(things):
     s = BytesIO()
@@ -255,13 +280,20 @@ def archive_thing(thing, zip_file=None):
         metadata.reload()
     opf = metadata.opf.encode('utf-8')
     zf.writestr(opf_file, opf)
-    preview = thing.preview(filename="x500-0.jpg")
-    if preview:
-        try:
-            image_file = BytesIO(urllib2.urlopen(url_for('reference.preview', filename=preview, _external=True), timeout=2).read())
-            zf.writestr(cover_file, image_file.getvalue())
-        except:
-            print "Failed to load image: ", preview
+    # now add the cover, first looking in filesystem and then trying to generate it
+    if os.path.exists(compute_thing_file_path(thing, 'cover.jpg')):
+        zf.write(compute_thing_file_path(thing, 'cover.jpg'), cover_file) 
+    else:
+        preview = thing.preview(filename="x500-0.jpg")
+        if preview:
+            try:
+                im = urllib2.urlopen(url_for('reference.preview', filename=preview, _external=True), timeout=2).read()
+                cp = compute_thing_file_path(thing, 'cover.jpg', makedirs=True)
+                with open(cp, 'wb') as f:
+                    f.write(im.read())
+                zf.write(cp, cover_file) 
+            except:
+                print "Failed to load image: ", preview
     if not zip_file:
         return s.getvalue()
     
