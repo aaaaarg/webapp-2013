@@ -5,7 +5,7 @@ from flask.ext.security import (login_required, roles_required, roles_accepted, 
 
 from flask_application.models import *
 from flask_application.forms import ThingForm, AddThingToCollectionsForm, UploadForm, ThreadForm
-from flask_application.helpers import archive_thing, 
+from flask_application.helpers import archive_thing, compute_thing_file_path
 
 from werkzeug.contrib.atom import AtomFeed
 
