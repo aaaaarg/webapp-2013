@@ -7,14 +7,9 @@
 
 {% block content %}
 
-<div class="alert alert-info hidden">
-    <a href="#" class="close" data-dismiss="alert">&times;</a>
-    <a href="{{ url_for('frontend.research', query=query) }}">Click here for full text search</a>
-</div>
-
 <div class="alert alert-info">
     <a href="#" class="close" data-dismiss="alert">&times;</a>
-    <p>Search is down until server maintenance in January.</p>
+    <a href="{{ url_for('frontend.research', query=query) }}">Click here for full text search</a>
 </div>
 
 <h2>{{title}}: {{query}}</h2>
