@@ -320,10 +320,10 @@ def opensearch_search():
 	q = request.args.get('q')
 	start = request.args.get('start')
 
-	num = 10
+	num = 25
 
 	results = elastic.search('thing',
-		query={ 'title^3,short_description,description,makers_string':q },
+		query=q,
 		start=start,
 		num=num)
 
