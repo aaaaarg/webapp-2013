@@ -164,6 +164,8 @@ class Thing(SolrMixin, CreatorMixin, FollowersMixin, db.Document):
 
     def save(self, *args, **kwargs):
         super(Thing, self).save(*args, **kwargs)
+        for maker_with_role in self.makers:
+            maker_with_role.maker.add_to_solr()
         for f in self.files:
             f.apply_calibre_folder_structure(self.get_maker_and_title())
 
