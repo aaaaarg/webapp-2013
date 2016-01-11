@@ -1,10 +1,12 @@
 #!/usr/bin/env python
 
 import datetime
+githubfrom lxml import etree
 
-from flask import Blueprint, request, redirect, url_for, make_response, render_template, get_template_attribute, abort, jsonify, send_from_directory
+from flask import Blueprint, request, redirect, url_for, make_response, render_template, get_template_attribute, abort, jsonify, send_from_directory, Response
 from flask_application import app
 from flask.ext.security import login_required, current_user
+from werkzeug.contrib.atom import AtomFeed, FeedEntry
 
 from ..models import *
 
@@ -271,3 +273,81 @@ def deepsearch():
 	for result in results:
 		print result
 	return "hello"
+
+
+@frontend.route('/opensearch.xml')
+@login_required
+def opensearch():
+	"""
+	Returns an XML description document for OpenSearch API
+	See http://www.opensearch.org/
+	"""
+
+	# TODO: This description XML can be extended to specify additional
+	# search parameters, such as ISBN, thing ids, etc.
+
+	root = etree.Element('OpenSearchDescription', {
+		'xmlns': 'http://a9.com/-/spec/opensearch/1.1/'
+	})
+	etree.SubElement(root, 'ShortName').text = app.config.get('SITE_NAME')
+	etree.SubElement(root, 'Description').text = 'Search ' + app.config.get('SITE_NAME')
+	etree.SubElement(root, 'Url',
+					 { 'type': 'application/atom+xml',
+					   'template': "http://%s/opensearch/search?q={searchTerms}&amp;start={startPage?}" % (request.host,),
+					   })
+
+	xml = etree.tostring(root, pretty_print=True, encoding='utf-8', xml_declaration=True)
+
+	return Response(xml,
+		mimetype="application/atom+xml"
+					)
+
+def _create_link_dict(upload, hostname):
+	return {
+				'href': "http://%s%s" % (hostname, url_for('upload.serve_upload', filename=upload.structured_file_name)),
+				'type': upload.mimetype,
+				'rel': 'http://opds-spec.org/acquisition',
+	}
+
+
+@frontend.route('/opensearch/search')
+@login_required
+def opensearch_search():
+	"""
+	OpenSearch search endpoint
+	See http://www.opensearch.org/
+	"""
+	q = request.args.get('q')
+	start = request.args.get('start')
+
+	num = 10
+
+	results = elastic.search('thing',
+		query={ 'title^3,short_description,description,makers_string':q },
+		start=start,
+		num=num)
+
+	id_list = [result[0] for result in results]
+	things = Thing.objects.filter(id__in=id_list)
+
+	feed = AtomFeed("Search results for '%s'" % (q,), feed_url=request.url, url=request.url_root)
+	for thing in things:
+
+		# TODO: only send the last Upload per mimetype?
+		links = [_create_link_dict(upload, request.host) for upload in thing.files]
+
+		authors = [maker.maker.format_name().strip() for maker in thing.makers]
+
+		# http://werkzeug.pocoo.org/docs/0.11/contrib/atom/#werkzeug.contrib.atom.FeedEntry
+		feed.add(FeedEntry(
+			title=thing.title,
+			summary=thing.short_description,
+			content=thing.description,
+			author=authors,
+			url="http://%s%s" % (request.host, url_for('thing.detail', id=thing.id),),
+			links=links,
+			updated=thing.created_at,
+			published=thing.created_at
+		))
+
+	return feed.get_response()
