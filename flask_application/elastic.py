@@ -24,13 +24,12 @@ class ES(object):
 		if query:
 			if type(query) is dict:
 				field_str = query.keys()[0]
-				query_str = re.escape(query.values()[0])
+				query_str = query.values()[0]
 				if ',' in field_str:
 					query_body = {
 						"multi_match" : {
 							"fields" : field_str.split(','),
 							"query" : query_str,
-							"type" : "phrase"
 						}
 					}
 				else:
