@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 
 import datetime
-githubfrom lxml import etree
+from lxml import etree
 
 from flask import Blueprint, request, redirect, url_for, make_response, render_template, get_template_attribute, abort, jsonify, send_from_directory, Response
 from flask_application import app
