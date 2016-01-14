@@ -340,7 +340,7 @@ def opensearch_search():
 
 		# http://werkzeug.pocoo.org/docs/0.11/contrib/atom/#werkzeug.contrib.atom.FeedEntry
 		feed.add(FeedEntry(
-			title=thing.title,
+			title=thing.title or "N/A",
 			summary=thing.short_description,
 			content=thing.description,
 			author=authors,
