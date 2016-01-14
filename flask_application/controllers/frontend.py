@@ -146,7 +146,7 @@ def search(type=False):
 	start = (page-1)*num
 	if type=='things':
 		results = elastic.search('thing', 
-			query={ 'title^3,short_description,description':query }, 
+			query={ 'title^3,short_description,description,makers_string':query },
 			start=start, 
 			num=num)
 		content = get_template_attribute('frontend/macros.html', 'search_results')(results, 'thing.detail')			

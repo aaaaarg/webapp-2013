@@ -30,6 +30,8 @@ class ES(object):
 						"multi_match" : {
 							"fields" : field_str.split(','),
 							"query" : query_str,
+							"type" : "cross_fields",
+							"operator" : "and",
 						}
 					}
 				else:
