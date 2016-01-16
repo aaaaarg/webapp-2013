@@ -323,7 +323,7 @@ def opensearch_search():
 	num = 25
 
 	results = elastic.search('thing',
-		query=q,
+		query={ 'title^3,short_description,description,makers_string': q },
 		start=start,
 		num=num)
 
