@@ -24,7 +24,7 @@ from pdfminer.psparser import PSEOF
 # other pdf extraction!
 from flask_application.pdf_extract import Pdf 
 # opf writing
-from flask_application.helpers import thing2opf, opf2id, opf_date
+from flask_application.helpers import thing2opf, opf2id, opf_date, queryset_batch
 
 # elasticsearch
 from elasticsearch import Elasticsearch
@@ -617,3 +617,19 @@ class BuildLibrary(Command):
 			t = Thing.objects.filter(id=thing_id).first()
 			m = Metadata.objects.get(thing=t)
 			m.set_opf(testing_xml)
+
+
+class AddToIpfsTest(Command):
+
+	def run(self):
+
+		test_uploads = Upload.objects.filter(file_name__istartswith="b")
+
+		print "Adding some test uploads to IPFS..."
+
+		for upload in queryset_batch(test_uploads, 50):
+			try:
+				upload.ipfs_add()
+				print "Successfully added %s" % (upload.full_path(),)
+			except Exception, e:
+				print "Error adding %s: %s" % (upload.full_path(), e)

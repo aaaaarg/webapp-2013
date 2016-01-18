@@ -35,7 +35,11 @@ class Config(object):
     SOLR_SERVER_URL = 'http://localhost:8983/solr/core3'
     # Elastic Search
     ES_SERVER_URLS =  [ 'http://localhost:9200/' ]
-    
+
+    IPFS_ENABLED = True
+    IPFS_BIN = '/opt/ipfs/ipfs'
+    IPFS_HTTP_GATEWAY_HOST = 'gateway.ipfs.io'
+
     # For showing on the front page
     INFO_BLOCK = '''
     piddle paddle puddle

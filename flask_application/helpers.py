@@ -298,3 +298,19 @@ def archive_thing(thing, zip_file=None):
     if not zip_file:
         return s.getvalue()
     
+
+def queryset_batch(queryset, batch_size=50):
+    """
+    Generator over a queryset that fetches results in batches, transparently to the caller.
+    :param queryset: QuerySet object
+    :param batch_size:
+    :return:
+    """
+    batch = -1
+    keep_going = True
+    while keep_going:
+        keep_going = False
+        batch += 1
+        for t in queryset.skip(batch*batch_size).limit(batch_size):
+            yield t
+            keep_going = True

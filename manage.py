@@ -16,7 +16,7 @@ sys.path.insert(0, os.getcwd())
 from flask_application import app
 from flask.ext.script import Manager, Server
 
-from flask_application.script import Tweet, ESIndex, GetPath, ResetDB, PopulateDB, SolrReindex, FixMD5s, UploadSymlinks, IndexPDFText, ExtractISBN, BuildLibrary
+from flask_application.script import Tweet, ESIndex, GetPath, ResetDB, PopulateDB, SolrReindex, FixMD5s, UploadSymlinks, IndexPDFText, ExtractISBN, BuildLibrary, AddToIpfsTest
 
 from flask.ext.security.script import (CreateUserCommand , AddRoleCommand,
         RemoveRoleCommand, ActivateUserCommand, DeactivateUserCommand)
@@ -47,6 +47,7 @@ manager.add_command('activate_user', ActivateUserCommand())
 
 manager.add_command('tweet', Tweet())
 
+manager.add_command('add_to_ipfs_test', AddToIpfsTest())
 
 if __name__ == "__main__":
     manager.run()

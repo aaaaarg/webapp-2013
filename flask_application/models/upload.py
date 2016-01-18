@@ -1,5 +1,6 @@
 import os, hashlib, unicodedata, re
 import stdnum.isbn
+import subprocess
 
 from bson import ObjectId
 
@@ -44,6 +45,8 @@ class Upload(SolrMixin, CreatorMixin, db.Document):
 	# precompute some identifiers
 	sha1 = db.StringField(max_length=255)
 	md5 = db.StringField(max_length=255)
+	# ipfs (InterPlanetary File System) hash id
+	ipfs = db.StringField(max_length=255)
 
 	def delete(self, *args, **kwargs):
 		# first remove some references to this thing
@@ -392,6 +395,37 @@ class Upload(SolrMixin, CreatorMixin, db.Document):
 			'content_type' : 'upload',
 			'searchable_text': content,
 		}
+
+	def ipfs_add(self):
+		"""
+		Adds this upload to ipfs. Raises exceptions on failures.
+		"""
+		if os.path.exists(self.full_path()):
+			ipfs_bin = app.config.get("IPFS_BIN") or "ipfs"
+			output = subprocess.check_output([ipfs_bin, "add", self.full_path()],
+											 stderr=subprocess.STDOUT)
+			if "added" in output:
+				line = output.strip()
+				hash_id = line.split()[1]
+				self.ipfs = hash_id
+				self.save()
+			else:
+				raise Exception("error calling ipfs add: %s" % (output,))
+		else:
+			raise Exception("ipfs_add couldn't add non-existent file: %s" %(self.full_path(),))
+
+	def ipfs_accessible(self):
+		"""
+		:return: True if this upload can be downloaded via ipfs
+		"""
+		return bool(self.ipfs) and app.config.get("IPFS_ENABLED", False)
+
+	def ipfs_http_link(self):
+		"""
+		:return: string of ipfs download link
+		"""
+		host = app.config.get('IPFS_HTTP_GATEWAY_HOST')
+		return "http://%s/ipfs/%s/%s" % (host, self.ipfs, self.structured_file_name)
 
 
 class TextUpload(Upload):
