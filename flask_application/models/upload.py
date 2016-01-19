@@ -402,15 +402,20 @@ class Upload(SolrMixin, CreatorMixin, db.Document):
 		"""
 		if os.path.exists(self.full_path()):
 			ipfs_bin = app.config.get("IPFS_BIN") or "ipfs"
-			output = subprocess.check_output([ipfs_bin, "add", self.full_path()],
+			try:
+				output = subprocess.check_output([ipfs_bin, "add", self.full_path()],
 											 stderr=subprocess.STDOUT)
+			except subprocess.CalledProcessError, e:
+				raise Exception("Error calling ipfs add: %s" % (e.output,))
+
+			print "output from ipfs: %s" % (output,)
 			if "added" in output:
 				line = output.strip()
 				hash_id = line.split()[1]
 				self.ipfs = hash_id
 				self.save()
 			else:
-				raise Exception("error calling ipfs add: %s" % (output,))
+				raise Exception("couldn't parse output from ipfs add: %s" % (output,))
 		else:
 			raise Exception("ipfs_add couldn't add non-existent file: %s" %(self.full_path(),))
 
