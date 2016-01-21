@@ -9,6 +9,8 @@ from flask_application import app
 from werkzeug import secure_filename
 from mongoengine.base import ValidationError
 
+import ipfsApi
+
 import codecs
 
 from . import db, CreatorMixin, SolrMixin
@@ -166,10 +168,6 @@ class Upload(SolrMixin, CreatorMixin, db.Document):
 			#return "".join([c for c in str if c.isalpha() or c.isdigit() or c==' ']).rstrip()[:64]
 			s = "".join([c for c in str if c.isalpha() or c.isdigit() or c==' ']).rstrip()
 			return unicodedata.normalize('NFKD', unicode(s)).encode('ascii','ignore')
-
-		def splitpath(path, maxdepth=20):
-			( head, tail ) = os.path.split(path)
-			return splitpath(head, maxdepth - 1) + [ tail ] if maxdepth and head and head != path else [ head or tail ]
 
 		def splitpath(path, maxdepth=20):
 			( head, tail ) = os.path.split(path)
@@ -401,21 +399,13 @@ class Upload(SolrMixin, CreatorMixin, db.Document):
 		Adds this upload to ipfs. Raises exceptions on failures.
 		"""
 		if os.path.exists(self.full_path()):
-			ipfs_bin = app.config.get("IPFS_BIN") or "ipfs"
-			try:
-				output = subprocess.check_output([ipfs_bin, "add", self.full_path()],
-											 stderr=subprocess.STDOUT)
-			except subprocess.CalledProcessError, e:
-				raise Exception("Error calling ipfs add: %s" % (e.output,))
-
-			print "output from ipfs: %s" % (output,)
-			if "added" in output:
-				line = output.strip()
-				hash_id = line.split()[1]
-				self.ipfs = hash_id
+			api = ipfsApi.Client('127.0.0.1', 5001)
+			response = api.add(self.full_path())
+			if 'Hash' in response:
+				self.ipfs = response['Hash']
 				self.save()
 			else:
-				raise Exception("couldn't parse output from ipfs add: %s" % (output,))
+				raise Exception("couldn't process response: %s" % (response,))
 		else:
 			raise Exception("ipfs_add couldn't add non-existent file: %s" %(self.full_path(),))
 
@@ -430,7 +420,7 @@ class Upload(SolrMixin, CreatorMixin, db.Document):
 		:return: string of ipfs download link
 		"""
 		host = app.config.get('IPFS_HTTP_GATEWAY_HOST')
-		return "http://%s/ipfs/%s/%s" % (host, self.ipfs, self.structured_file_name)
+		return "http://%s/ipfs/%s" % (host, self.ipfs)
 
 
 class TextUpload(Upload):
