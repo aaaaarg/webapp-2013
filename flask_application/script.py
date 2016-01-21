@@ -633,3 +633,27 @@ class AddToIpfsTest(Command):
 				print "Successfully added %s" % (upload.full_path(),)
 			except Exception, e:
 				print "Error adding %s: %s" % (upload.full_path(), e)
+
+
+class FixFilesMigration(Command):
+	"""Migrates old files into new structure"""
+	def run(self, **kwargs):
+		import csv
+		# get a handle on pre-2013 data
+		drupal_6_data_csv = '/Users/dddd/Downloads/drupal-6-files.csv'
+		with open(drupal_6_data_csv, 'rb') as f:
+			reader = csv.reader(f)
+			legacy_data = list(reader)
+		# and pre-2014 data
+		client = MongoClient()
+		db = client.aaaart
+		for old_thing in db.images.find(timeout=False):
+			for f in old_thing['files']:
+				sha1 = f['sha1'].encode('utf-8').strip() if 'sha1' in f else ''
+				existing = Upload.objects(sha1=sha1).first()
+				if existing:
+					if not f['uploader']:
+						print "The uploader is empty for: ", f['name']
+				else:
+					print f['name'],"doesn't seem to exist in 2014- database"
+
