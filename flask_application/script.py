@@ -639,21 +639,60 @@ class FixFilesMigration(Command):
 	"""Migrates old files into new structure"""
 	def run(self, **kwargs):
 		import csv
+		# for pre-2014 data
+                client = MongoClient()
+                db = client.aaaart
+		legacy_users = db.people
 		# get a handle on pre-2013 data
-		drupal_6_data_csv = '/lockers/hmmmmm/drupal-6-files.csv'
+		drupal_6_data_csv = os.path.join(app.config['UPLOADS_DIR'],'drupal-6-files.csv')
+		legacy_data_map = {}
 		with open(drupal_6_data_csv, 'rb') as f:
 			reader = csv.reader(f)
 			legacy_data = list(reader)
-		# and pre-2014 data
-		client = MongoClient()
-		db = client.aaaart
+			for d in legacy_data[1:]:
+                                parts = d[0].split(';')
+				if len(parts)>5:
+	                                file_size = parts[5]
+        	                        user_id = parts[1]
+                	                filename = parts[2]
+					try:
+						legacy_user = legacy_users.find_one({"grr_id":int(user_id)})
+						if legacy_user and '_id' in legacy_user:
+		                        	        legacy_data_map[int(file_size)] = (legacy_user['_id'], filename)
+					except:
+						print "skipping adding to legacy data map:", parts
+		print "legacy map has size: ",len(legacy_data_map)
+		empty_count = 0
+		fixed_count = 0
 		for old_thing in db.images.find(timeout=False):
 			for f in old_thing['files']:
-				sha1 = f['sha1'].encode('utf-8').strip() if 'sha1' in f else ''
-				existing = Upload.objects(sha1=sha1).first()
+				if not f['uploader']:
+					empty_count = empty_count + 1
+				else:
+					continue # its not empty so don't handle it
+				if not f['size'] in legacy_data_map:
+					continue # we don't have the old data either, so we can't handle it
+				try:
+					sha1 = f['sha1'].encode('utf-8').strip() if 'sha1' in f else None
+				except:
+					sha1 = None
+
+				existing = Upload.objects(sha1=sha1).first() if sha1 else None
 				if existing:
 					if not f['uploader']:
-						print "The uploader is empty for: ", f['name']
+						if f['size'] in legacy_data_map:
+							try:
+								fixed_count = fixed_count + 1
+								curr_user = User.objects.get(id=str(legacy_data_map[f['size']][0])) # curr user
+								print existing.structured_file_name,"should now be assigned to ",curr_user.email
+							except:
+								print "Can't associate %s with a user because user %s doesn't exist in new database" % (f['name'], str(legacy_data_map[f['size']][0]))
+								#print f
+						else:
+							print "can't find ",f['size']
+						#print "The uploader is empty for: ", f['name']
 				else:
 					print f['name'],"doesn't seem to exist in 2014- database"
-
+			if empty_count%1000==1:
+				print "There are %s bad files and this script fixed %s of them." % (empty_count, fixed_count) 
+		print "There were %s bad files and this script fixed %s of them." % (empty_count, fixed_count)
