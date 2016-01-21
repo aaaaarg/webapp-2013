@@ -640,7 +640,7 @@ class FixFilesMigration(Command):
 	def run(self, **kwargs):
 		import csv
 		# get a handle on pre-2013 data
-		drupal_6_data_csv = '/Users/dddd/Downloads/drupal-6-files.csv'
+		drupal_6_data_csv = '/lockers/hmmmmm/drupal-6-files.csv'
 		with open(drupal_6_data_csv, 'rb') as f:
 			reader = csv.reader(f)
 			legacy_data = list(reader)
