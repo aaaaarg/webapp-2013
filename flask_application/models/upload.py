@@ -1,3 +1,4 @@
+import json
 import os, hashlib, unicodedata, re
 import stdnum.isbn
 import subprocess
@@ -49,6 +50,7 @@ class Upload(SolrMixin, CreatorMixin, db.Document):
 	md5 = db.StringField(max_length=255)
 	# ipfs (InterPlanetary File System) hash id
 	ipfs = db.StringField(max_length=255)
+	ipfs_wrapped_dir_hash = db.StringField(max_length=255)
 
 	def delete(self, *args, **kwargs):
 		# first remove some references to this thing
@@ -400,12 +402,37 @@ class Upload(SolrMixin, CreatorMixin, db.Document):
 		"""
 		if os.path.exists(self.full_path()):
 			api = ipfsApi.Client('127.0.0.1', 5001)
-			response = api.add(self.full_path())
-			if 'Hash' in response:
-				self.ipfs = response['Hash']
+
+			# chdir so that we only pass the base filename to Client.add();
+			# if you pass in a full path, it loses the filename when it wraps it
+			# in a directory
+			origdir = os.getcwd()
+			os.chdir(os.path.dirname(self.full_path()))
+
+			error = None
+			try:
+				# "-w" option wraps the file in a directory so we can generate a nicer url.
+				# There doesn't seem to be a way to tell ipfs to use a different filename
+				# (it's be better to use structured_file_name) than disk filename
+				response = api.add(self.file_name, opts={'w': True})
+			except Exception, e:
+				error = e
+			finally:
+				os.chdir(origdir)
+
+			if not error:
+				# response isn't a python object, but a string. weird.
+				lines = [line for line in response.split("\n") if line]
+
+				for line in lines:
+					d = json.loads(line)
+					if d['Name'] == '':
+						self.ipfs_wrapped_dir_hash = d['Hash']
+					else:
+						self.ipfs = d['Hash']
 				self.save()
 			else:
-				raise Exception("couldn't process response: %s" % (response,))
+				raise Exception("error calling Client.add(): %s" % (error,))
 		else:
 			raise Exception("ipfs_add couldn't add non-existent file: %s" %(self.full_path(),))
 
@@ -420,7 +447,7 @@ class Upload(SolrMixin, CreatorMixin, db.Document):
 		:return: string of ipfs download link
 		"""
 		host = app.config.get('IPFS_HTTP_GATEWAY_HOST')
-		return "http://%s/ipfs/%s" % (host, self.ipfs)
+		return "http://%s/ipfs/%s/%s" % (host, self.ipfs_wrapped_dir_hash, self.file_name)
 
 
 class TextUpload(Upload):
