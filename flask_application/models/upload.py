@@ -411,10 +411,13 @@ class Upload(SolrMixin, CreatorMixin, db.Document):
 
 			error = None
 			try:
+				# encode to utf8 or urllib will raise error inside Client.add()
+				filename = self.file_name.encode('utf8')
+
 				# "-w" option wraps the file in a directory so we can generate a nicer url.
 				# There doesn't seem to be a way to tell ipfs to use a different filename
 				# (it's be better to use structured_file_name) than disk filename
-				response = api.add(self.file_name, opts={'w': True})
+				response = api.add(filename, opts={'w': True})
 			except Exception, e:
 				error = e
 			finally:
@@ -429,6 +432,11 @@ class Upload(SolrMixin, CreatorMixin, db.Document):
 					if d['Name'] == '':
 						self.ipfs_wrapped_dir_hash = d['Hash']
 					else:
+						# TODO: response mangles UTF8 filenames, causing
+						# d['Name'] != filename. so we avoid comparing and just assume
+						# it's the hash for the file, which works as long as we do one
+						# file at a time. Not sure if this is a bug in
+						# go-ipfs or in ipfsApi.
 						self.ipfs = d['Hash']
 				self.save()
 			else:

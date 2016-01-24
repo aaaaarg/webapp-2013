@@ -621,13 +621,25 @@ class BuildLibrary(Command):
 
 class AddToIpfsTest(Command):
 
-	def run(self):
+	option_list = (
+		Option('--upload', '-u', dest='upload_id'),
+		Option('--thing', '-t', dest='thing_id'),
+    )
 
-		test_uploads = Upload.objects.filter(file_name__istartswith="b")
+	def run(self, upload_id, thing_id):
+
+		if thing_id:
+			thing = Thing.objects.get(id=thing_id)
+			test_uploads = thing.files
+		elif upload_id:
+			test_uploads = Upload.objects.filter(id=upload_id)
+		else:
+			test_uploads = Upload.objects.filter(file_name__istartswith="b")
+			test_uploads = queryset_batch(test_uploads, 50)
 
 		print "Adding some test uploads to IPFS..."
 
-		for upload in queryset_batch(test_uploads, 50):
+		for upload in test_uploads:
 			try:
 				upload.ipfs_add()
 				print "Successfully added %s" % (upload.full_path(),)
