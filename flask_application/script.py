@@ -620,31 +620,78 @@ class BuildLibrary(Command):
 
 
 class AddToIpfsTest(Command):
+        option_list = (
+                Option('--do', '-d', dest='letter'),
+        )
+        def run(self, letter):
+                def char_range(c1, c2):
+                        """Generates the characters from `c1` to `c2`, inclusive."""
+                        for c in xrange(ord(c1), ord(c2)+1):
+                                yield chr(c)
+
+                if not letter:
+                        for letter in char_range('a','z'):
+                                self.do_letter(letter)
+                else:
+                        self.do_letter(letter)
+
+        def do_letter(self, letter):
+                print "--- Starting %s ---" % letter
+                test_uploads = Upload.objects.filter(file_name__istartswith=letter, ipfs__exists=False)
+                print "Adding some test uploads to IPFS..."
+
+                for upload in queryset_batch(test_uploads, 50):
+                        try:
+                                upload.ipfs_add()
+                                print "Successfully added %s" % (upload.full_path(),)
+                        except Exception, e:
+                                print "Error adding %s: %s" % (upload.full_path(), e)
+
+
+class AddToIpfsTest(Command):
 
 	option_list = (
 		Option('--upload', '-u', dest='upload_id'),
 		Option('--thing', '-t', dest='thing_id'),
+		Option('--letter', '-l', dest='letter'),
     )
 
-	def run(self, upload_id, thing_id):
+	def run(self, upload_id, thing_id, letter):
+
+		def char_range(c1, c2):
+		"""Generates the characters from `c1` to `c2`, inclusive."""
+			for c in xrange(ord(c1), ord(c2)+1):
+				yield chr(c)
 
 		if thing_id:
 			thing = Thing.objects.get(id=thing_id)
-			test_uploads = thing.files
+			uploads = thing.files
+			self.do_uploads(uploads)
 		elif upload_id:
-			test_uploads = Upload.objects.filter(id=upload_id)
+			uploads = Upload.objects.filter(id=upload_id)
+			self.do_uploads(uploads)
+		elif letter:
+			self.do_letter(letter)
 		else:
-			test_uploads = Upload.objects.filter(file_name__istartswith="b")
-			test_uploads = queryset_batch(test_uploads, 50)
+			for letter in char_range('a','z'):
+				self.do_letter(letter)
 
-		print "Adding some test uploads to IPFS..."
 
-		for upload in test_uploads:
-			try:
-				upload.ipfs_add()
-				print "Successfully added %s" % (upload.full_path(),)
-			except Exception, e:
-				print "Error adding %s: %s" % (upload.full_path(), e)
+		def do_uploads(self, uploads):
+			print "Adding some test uploads to IPFS..."
+			for upload in uploads:
+				try:
+					upload.ipfs_add()
+					print "Successfully added %s" % (upload.full_path(),)
+				except Exception, e:
+					print "Error adding %s: %s" % (upload.full_path(), e)
+
+
+		def do_letter(self, letter):
+			print "====== %s =====" % letter
+			uploads = Upload.objects.filter(file_name__istartswith=letter, ipfs__exists=False)
+			uploads = queryset_batch(uploads, 50)
+			self.do_uploads(uploads)
 
 
 class FixFilesMigration(Command):
