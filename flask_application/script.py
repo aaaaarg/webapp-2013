@@ -654,12 +654,12 @@ class AddToIpfsTest(Command):
 		Option('--upload', '-u', dest='upload_id'),
 		Option('--thing', '-t', dest='thing_id'),
 		Option('--letter', '-l', dest='letter'),
-    )
+		)
 
 	def run(self, upload_id, thing_id, letter):
 
 		def char_range(c1, c2):
-		"""Generates the characters from `c1` to `c2`, inclusive."""
+			"""Generates the characters from `c1` to `c2`, inclusive."""
 			for c in xrange(ord(c1), ord(c2)+1):
 				yield chr(c)
 
