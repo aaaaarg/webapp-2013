@@ -448,14 +448,16 @@ class Upload(SolrMixin, CreatorMixin, db.Document):
 		"""
 		:return: True if this upload can be downloaded via ipfs
 		"""
-		return bool(self.ipfs) and app.config.get("IPFS_ENABLED", False)
+		test_case = re.match("^[A-D]", self.file_name.upper()) is not None
+		return test_case and app.config.get("IPFS_ENABLED", False)
 
 	def ipfs_http_link(self):
 		"""
 		:return: string of ipfs download link
 		"""
 		host = app.config.get('IPFS_HTTP_GATEWAY_HOST')
-		return "http://%s/ipfs/%s/%s" % (host, self.ipfs_wrapped_dir_hash, self.file_name)
+		path = self.file_path[len(app.config.get('UPLOADS_SUBDIR')):]
+		return "http://%s/ipns/%s%s" % (host, app.config.get('IPNS_ROOT_HASH'), path)
 
 
 class TextUpload(Upload):

@@ -39,6 +39,7 @@ class Config(object):
     IPFS_ENABLED = True
     IPFS_BIN = '/opt/ipfs/ipfs'
     IPFS_HTTP_GATEWAY_HOST = 'gateway.ipfs.io'
+    IPNS_ROOT_HASH = ''
 
     # For showing on the front page
     INFO_BLOCK = '''
