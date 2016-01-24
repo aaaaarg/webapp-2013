@@ -677,21 +677,21 @@ class AddToIpfsTest(Command):
 				self.do_letter(letter)
 
 
-		def do_uploads(self, uploads):
-			print "Adding some test uploads to IPFS..."
-			for upload in uploads:
-				try:
-					upload.ipfs_add()
-					print "Successfully added %s" % (upload.full_path(),)
-				except Exception, e:
-					print "Error adding %s: %s" % (upload.full_path(), e)
+	def do_uploads(self, uploads):
+		print "Adding some test uploads to IPFS..."
+		for upload in uploads:
+			try:
+				upload.ipfs_add()
+				print "Successfully added %s" % (upload.full_path(),)
+			except Exception, e:
+				print "Error adding %s: %s" % (upload.full_path(), e)
 
 
-		def do_letter(self, letter):
-			print "====== %s =====" % letter
-			uploads = Upload.objects.filter(file_name__istartswith=letter, ipfs__exists=False)
-			uploads = queryset_batch(uploads, 50)
-			self.do_uploads(uploads)
+	def do_letter(self, letter):
+		print "====== %s =====" % letter
+		uploads = Upload.objects.filter(file_name__istartswith=letter, ipfs__exists=False)
+		uploads = queryset_batch(uploads, 50)
+		self.do_uploads(uploads)
 
 
 class FixFilesMigration(Command):
