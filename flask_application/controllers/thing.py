@@ -276,11 +276,40 @@ def calibre_commit(id):
 	from flask_application.helpers import opf2id, opf_date
 	thing = Thing.objects.get_or_404(id=id)
 	# first try and save the cover
-	cover = request.form['cover'] if 'cover' in request.form else None
+	cover = request.files['cover'] if 'cover' in request.files else None
 	cover_ext = request.form['cover_ext'] if 'cover_ext' in request.form else None # not used for now
 	if cover:
 		cover.save(compute_thing_file_path(thing, 'cover.jpg', makedirs=True))
 	
+	# now try metadata
+	opf = request.form['opf'] if 'opf' in request.form else None
+	if not opf:
+		return {'message': 'No opf was posted', 'data':{}, 'request':{}}
+	try:
+		metadata = Metadata.objects.get(thing=thing)
+	except:
+		metadata = Metadata(thing=thing)
+		metadata.reload()
+
+	success = metadata.set_opf(opf)
+	if success:
+		retval = {'message': '%s successfully updated' % thing.title, 'data':{}, 'request':{'opf': opf}}
+	else:
+		retval = {'message': '%s failed. A newer version seems to exist already.' % thing.title, 'data':{}, 'request':{'opf': opf}}
+	return jsonify(retval)
+
+
+@thing.route('/calibre/add', methods= ['POST'])
+def calibre_add():
+	"""
+	Creates a new Thing, via a different interface
+	"""
+	z = request.files['zip'] if 'zip' in request.files else None
+	if not z:
+		return {'message': 'Failed', 'data': {}, 'request': {}}
+	print z
+	return {}
+
 	# now try metadata
 	opf = request.form['opf'] if 'opf' in request.form else None
 	if not opf:

@@ -72,18 +72,24 @@
         {% if can_view_file_for_thing(thing) %}
         <div class="panel panel-default uploads-panel">
             <div class="panel-body">
+            {% if thing.takedown %}
+            <strong>{{ thing.takedown }}</strong>
+            {% else %}
+
             {{ uploads(thing.files, thing) }}
             {% if can_add_file_to_thing(thing) %}
             <div class="upload">
                 {{ uploader(upload_form, thing) }}
             </div>
             {% endif %}
+
+            {% endif %}
             </div>
         </div>
         {% endif %}
     </div>
     <div class="col-md-3">
-        {% if preview and preview_url %}
+        {% if preview and preview_url and not thing.takedown %}
         <div class="clearfix">
             <a href="{{ preview_url }}"><img align="left" src="{{ preview }}" hspace="20" vspace="20"></a>
         </div>

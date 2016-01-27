@@ -743,6 +743,8 @@ class FixFilesMigration(Command):
 							try:
 								fixed_count = fixed_count + 1
 								curr_user = User.objects.get(id=str(legacy_data_map[f['size']][0])) # curr user
+								existing.creator = curr_user
+								existing.save()
 								print existing.structured_file_name,"should now be assigned to ",curr_user.email
 							except:
 								print "Can't associate %s with a user because user %s doesn't exist in new database" % (f['name'], str(legacy_data_map[f['size']][0]))

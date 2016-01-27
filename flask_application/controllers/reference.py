@@ -218,6 +218,8 @@ def figleaf(md5, user_id=None):
 	if not u:
 		abort(404)
 	thing = Thing.objects.filter(files=u).first()
+	if thing.takedown:
+		return thing.takedown
 
 	preview = u.preview()
 	preview_url = url_for('reference.preview', filename=preview) if preview else False

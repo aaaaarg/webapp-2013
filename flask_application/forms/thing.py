@@ -18,5 +18,5 @@ ThingForm = model_form(Thing, base_class=BaseThingForm, field_args = {
     },
     'title' : {
         'validators' : [Required()]
-    }
+    },
 })

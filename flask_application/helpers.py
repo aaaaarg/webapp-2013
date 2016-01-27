@@ -96,6 +96,21 @@ def escapejs(val):
 def nl2br(val): 
     return val.replace('\n','<br>\n')
 
+def split_path(path):
+    allparts = []
+    while 1:
+        parts = os.path.split(path)
+        if parts[0] == path:  # sentinel for absolute paths
+            allparts.insert(0, parts[0])
+            break
+        elif parts[1] == path: # sentinel for relative paths
+            allparts.insert(0, parts[1])
+            break
+        else:
+            path = parts[0]
+            allparts.insert(0, parts[1])
+    return allparts
+
 def parse_pos(s):
     '''
     Position should be in one of the following formats:
@@ -226,6 +241,21 @@ def opf_date(opf_str):
         return None
     return None
 
+
+"""
+Calibre-style paths refer to database models.
+Returns a tuple (Maker, Thing, Upload) with as much as it can figure out.
+subdir/Author Name/Title of Thing/File name.ext returns (Maker, Thing, Upload)
+"""
+def path_to_model(path):
+    from flask_application import app
+    parts = split_path(path)
+    if parts[0]=='/':
+        parts = parts[1:]
+    if parts[0]==app.config['UPLOADS_SUBDIR']:
+        parts = parts[1:]
+    # @todo:
+    return (None, None, None)
 
 """
 Calibre names things in this way: Author Name/Title of Book/Title of Book.xyz

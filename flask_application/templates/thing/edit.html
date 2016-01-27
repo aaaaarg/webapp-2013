@@ -13,6 +13,9 @@
     {{render_field(form.makers_raw, size=1024, placeholder='Separate names with commas: Guy Davenport, Erik Reece (editor)')}}
     {{render_field(form.short_description, size=255, placeholder='Just a sentence or two')}}
     {{render_field(form.description, rows=10, **{"data-provide":"markdown"})}}
+    {% if current_user.has_role('admin') or current_user.has_role('editor') -%}
+    {{render_field(form.takedown, size=255, placeholder='If there has been a takedown notice write a sentence here')}}
+    {% endif %}
     <p><input class="btn btn-default" type="submit" value="Save"></p>
 </form>
 {% endblock %}
