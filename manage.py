@@ -16,7 +16,7 @@ sys.path.insert(0, os.getcwd())
 from flask_application import app
 from flask.ext.script import Manager, Server
 
-from flask_application.script import FixFilesMigration, Tweet, ESIndex, GetPath, ResetDB, PopulateDB, SolrReindex, FixMD5s, UploadSymlinks, IndexPDFText, ExtractISBN, BuildLibrary, AddToIpfsTest
+from flask_application.script import FixFilesMigration, Tweet, ESIndex, GetPath, ResetDB, PopulateDB, SolrReindex, FixMD5s, UploadSymlinks, IndexPDFText, ExtractISBN, BuildLibrary, AddToIpfsTest, ProcessIpfsAddOutput
 
 from flask.ext.security.script import (CreateUserCommand , AddRoleCommand,
         RemoveRoleCommand, ActivateUserCommand, DeactivateUserCommand)
@@ -48,6 +48,7 @@ manager.add_command('activate_user', ActivateUserCommand())
 manager.add_command('tweet', Tweet())
 
 manager.add_command('add_to_ipfs_test', AddToIpfsTest())
+manager.add_command('process_ipfs_add_output', ProcessIpfsAddOutput())
 
 manager.add_command('fix_files_migration', FixFilesMigration())
 

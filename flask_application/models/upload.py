@@ -449,7 +449,7 @@ class Upload(SolrMixin, CreatorMixin, db.Document):
 		:return: True if this upload can be downloaded via ipfs
 		"""
 		test_case = re.match("^[A-D]", self.file_name.upper()) is not None
-		return test_case and app.config.get("IPFS_ENABLED", False)
+		return bool(self.ipfs) and test_case and app.config.get("IPFS_ENABLED", False)
 
 	def ipfs_http_link(self):
 		"""

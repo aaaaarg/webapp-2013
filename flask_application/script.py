@@ -694,6 +694,47 @@ class AddToIpfsTest(Command):
 		self.do_uploads(uploads)
 
 
+class ProcessIpfsAddOutput(Command):
+	"""
+	Store the hashes from the output of "ipfs add -r" in the Upload records.
+	"""
+
+	option_list = (
+		Option(dest='filename'),
+	)
+
+	def run(self, filename):
+		if not os.path.exists(filename):
+			print(u"ERROR: file doesn't exist: %s" % (filename,))
+			return
+
+		with open(filename) as f:
+			for line in f:
+				self.process_line(line)
+
+	def process_line(self, line):
+		line = line.strip()
+		pieces = line.split(" ", 2)
+		if pieces[0] == "added":
+			hash = pieces[1]
+			path = pieces[2]
+			full_path = os.path.join(app.config.get('UPLOADS_DIR'), path)
+			if os.path.isfile(full_path):
+				u = None
+				try:
+					results = Upload.objects.filter(file_path=path, ipfs=None)
+					if results:
+						u = results[0]
+				except Upload.DoesNotExist, e:
+					print(u"WARNING: Couldn't find Upload model object for path=%s" % (path,))
+				if u:
+					print(u"Updating %s %s with hash %s" % (u.id, u.file_path, hash))
+					u.ipfs = hash
+					u.save()
+		else:
+			print(u"Couldn't parse line: %s" % (line,))
+
+
 class FixFilesMigration(Command):
 	"""Migrates old files into new structure"""
 	def run(self, **kwargs):
