@@ -3,7 +3,7 @@ import datetime
 from flask_application import app
 from flask_application.elastic import ES
 
-from flask.ext.security import current_user 
+from flask.ext.security import current_user
 from flask.ext.mongoengine import MongoEngine
 
 # Create db, which is used across all models

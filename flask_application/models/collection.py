@@ -2,7 +2,7 @@ import datetime
 from bson import ObjectId
 
 from flask import abort, url_for
-from flask.ext.security import current_user 
+from flask.ext.security import current_user
 
 from . import db, CreatorMixin, EditorsMixin, FollowersMixin, SolrMixin
 from .user import User
@@ -11,8 +11,8 @@ from .cache import Cache
 
 
 TYPES = (('private', 'Private: It should not appear in the list of collections. Only you (or people you invite) can add and remove items.'),
-    ('semi-public', 'Public: It should be visible in the list of collections. But only invited collaborators can change what is in it.'),
-    ('public', 'Shared: The list is visible and anyone at all can add to this list - only collaborators can remove things.'))
+         ('semi-public', 'Public: It should be visible in the list of collections. But only invited collaborators can change what is in it.'),
+         ('public', 'Shared: The list is visible and anyone at all can add to this list - only collaborators can remove things.'))
 
 
 class CollectedThing(CreatorMixin, db.EmbeddedDocument):
@@ -48,7 +48,6 @@ class Collection(SolrMixin, CreatorMixin, EditorsMixin, FollowersMixin, db.Dynam
     def type(self):
         return 'collection'
 
-
     def has_thing(self, thing):
         if thing is None:
             return False
@@ -56,7 +55,6 @@ class Collection(SolrMixin, CreatorMixin, EditorsMixin, FollowersMixin, db.Dynam
             if collected_thing.thing is not None and collected_thing.thing.id == thing.id:
                 return True
         return False
-
 
     def get_collected_thing(self, thing):
         if thing is None:
@@ -66,9 +64,8 @@ class Collection(SolrMixin, CreatorMixin, EditorsMixin, FollowersMixin, db.Dynam
                 return collected_thing
         return False
 
-
     def recent_things(self, days=5):
-        d=datetime.datetime.now()-datetime.timedelta(days=days)
+        d = datetime.datetime.now() - datetime.timedelta(days=days)
         for collected_thing in self.things:
             if collected_thing.created_at > d:
                 yield collected_thing
@@ -108,15 +105,16 @@ class Collection(SolrMixin, CreatorMixin, EditorsMixin, FollowersMixin, db.Dynam
         return False
 
     def build_solr(self):
-        if self.accessibility=='private':
+        if self.accessibility == 'private':
             return {}
-        searchable = ' '.join(["%s %s" % (ct.thing.title, ct.thing.format_makers_string()) for ct in self.things])
+        searchable = ' '.join(["%s %s" % (
+            ct.thing.title, ct.thing.format_makers_string()) for ct in self.things])
         return {
             'title': self.title,
             'short_description': self.short_description,
             'description': self.description,
             'searchable_text': searchable,
-            'things' : [str(ct.thing.id) for ct in self.things]
+            'things': [str(ct.thing.id) for ct in self.things]
         }
         """
         return {
@@ -128,7 +126,8 @@ class Collection(SolrMixin, CreatorMixin, EditorsMixin, FollowersMixin, db.Dynam
             'searchable_text': searchable,
             'things' : [ct.thing.id for ct in self.things]
         }  
-        """  
+        """
+
 
 class SuperCollection(Collection):
     """
@@ -148,12 +147,11 @@ class SuperCollection(Collection):
             root = root.supercollection
 
         def gather_children(c):
-            f = [] if not include_self and c.id==self.id else [c]
+            f = [] if not include_self and c.id == self.id else [c]
             for sc in c.subcollections:
                 f.extend(gather_children(sc))
             return f
         return gather_children(root)
-
 
     def set_subcollection_weights(self, weights):
         for sc in self.subcollections:
@@ -203,11 +201,12 @@ class CollectionIndex():
             self.letters = cached.value
         else:
             self.letters = self.compute_letters()
-            Cache(name=self._cache_name, value=self.letters).save() 
+            Cache(name=self._cache_name, value=self.letters).save()
 
     def rebuild_cache(self):
         letters = self.compute_letters()
-        Cache.objects(name=_cache_name).update(name=self._cache_name, value=letters)
+        Cache.objects(name=_cache_name).update(
+            name=self._cache_name, value=letters)
 
     def compute_letters(self):
         from string import ascii_lowercase
@@ -218,5 +217,5 @@ class CollectionIndex():
 
     def first_nonempty(self):
         for l, c in self.letters.iteritems():
-            if c>0:
+            if c > 0:
                 return l

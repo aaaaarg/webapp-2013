@@ -1,7 +1,8 @@
-import re, datetime
+import re
+import datetime
 
 from flask import url_for
-from flask.ext.security import current_user 
+from flask.ext.security import current_user
 
 from . import db, CreatorMixin, FollowersMixin, SolrMixin
 from .user import User
@@ -24,7 +25,7 @@ class Thing(SolrMixin, CreatorMixin, FollowersMixin, db.Document):
     """
     meta = {
         'ordering': ['title'],
-        'indexes': ['creator','makers']
+        'indexes': ['creator', 'makers']
     }
 
     title = db.StringField(max_length=255)
@@ -34,7 +35,8 @@ class Thing(SolrMixin, CreatorMixin, FollowersMixin, db.Document):
     description = db.StringField()
     modified_at = db.DateTimeField()
     files = db.ListField(db.ReferenceField(Upload))
-    # This field stores a reason. If it exists, we assume Thing should be taken down.
+    # This field stores a reason. If it exists, we assume Thing should be
+    # taken down.
     takedown = db.StringField(max_length=255)
 
     is_request = True
@@ -43,7 +45,7 @@ class Thing(SolrMixin, CreatorMixin, FollowersMixin, db.Document):
     def __init__(self, *args, **kwargs):
         super(Thing, self).__init__(*args, **kwargs)
         if self.modified_at is None:
-             self.modified_at = self.created_at
+            self.modified_at = self.created_at
         self._update_request_status()
         self.makers_display = self.format_makers_string()
 
@@ -52,7 +54,7 @@ class Thing(SolrMixin, CreatorMixin, FollowersMixin, db.Document):
         return 'thing'
 
     def _update_request_status(self):
-        self.is_request = False if len(self.files)>0 else True
+        self.is_request = False if len(self.files) > 0 else True
 
     def add_file(self, f, calibre_move=True):
         self.update(add_to_set__files=f)
@@ -93,7 +95,7 @@ class Thing(SolrMixin, CreatorMixin, FollowersMixin, db.Document):
     def update_makers_sorted(self):
         names = []
         for m in self.makers:
-            #names.append(m.maker.sort_by.encode('utf-8').strip())
+            # names.append(m.maker.sort_by.encode('utf-8').strip())
             n = m.maker.sort_by.strip()
             if not isinstance(n, unicode):
                 n = n.decode('utf-8')
@@ -118,7 +120,7 @@ class Thing(SolrMixin, CreatorMixin, FollowersMixin, db.Document):
                 n = raw_name
                 role = ""
             else:
-                (n, role) = match.group(1,2)
+                (n, role) = match.group(1, 2)
             name = Name()
             name.parse(n)
             m = Maker.objects(name=name)
@@ -139,13 +141,11 @@ class Thing(SolrMixin, CreatorMixin, FollowersMixin, db.Document):
         # otherwise...
         return self.title
 
-
     def get_maker_and_title(self):
         for m in self.makers:
             return (m.maker.display_name, self.title)
         # otherwise...
         return ('', self.title)
-
 
     def preview(self, w=50, h=72, c=20, filename=None, get_md5=False):
         """
@@ -154,7 +154,7 @@ class Thing(SolrMixin, CreatorMixin, FollowersMixin, db.Document):
         """
         for f in reversed(self.files):
             try:
-                p = f.preview(w,h,c,filename)
+                p = f.preview(w, h, c, filename)
                 if p:
                     if get_md5:
                         return f.md5
@@ -185,7 +185,8 @@ class Thing(SolrMixin, CreatorMixin, FollowersMixin, db.Document):
         qts = QueuedThing.objects(thing=self)
         for qt in qts:
             Queue.objects().update(pull__things=qt)
-            #qt.delete() # let's not delete in case people have written something
+            # qt.delete() # let's not delete in case people have written
+            # something
         super(Thing, self).delete(*args, **kwargs)
 
     def build_solr(self):
@@ -197,8 +198,8 @@ class Thing(SolrMixin, CreatorMixin, FollowersMixin, db.Document):
             'makers': [str(m.maker.id) for m in self.makers],
             'makers_string': self.format_makers_string(),
             'makers_sorted': self.makers_sorted,
-            'collections' : [str(c.id) for c in Collection.objects.filter(things__thing=self)],
-            'index_files' : 1,
+            'collections': [str(c.id) for c in Collection.objects.filter(things__thing=self)],
+            'index_files': 1,
         }
         """
         # for solr

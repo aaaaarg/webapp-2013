@@ -42,6 +42,7 @@ charset.add_charset('utf-8', charset.SHORTEST, None, 'utf-8')
 
 
 class FlaskMailUnicodeDecodeError(UnicodeDecodeError):
+
     def __init__(self, obj, *args):
         self.obj = obj
         UnicodeDecodeError.__init__(self, *args)
@@ -80,7 +81,7 @@ def force_text(s, encoding='utf-8', errors='strict'):
             raise FlaskMailUnicodeDecodeError(s, *e.args)
         else:
             s = ' '.join([force_text(arg, encoding, strings_only,
-                    errors) for arg in s])
+                                     errors) for arg in s])
     return s
 
 
@@ -154,8 +155,8 @@ class Connection(object):
         assert message.recipients, "No recipients have been added"
 
         assert message.sender, (
-                "The message does not specify a sender and a default sender "
-                "has not been configured")
+            "The message does not specify a sender and a default sender "
+            "has not been configured")
 
         if message.has_bad_headers():
             raise BadHeaderError
@@ -432,10 +433,12 @@ class _MailMixin(object):
         try:
             return Connection(app.extensions['mail'])
         except KeyError:
-            raise RuntimeError("The curent application was not configured with Flask-Mail")
+            raise RuntimeError(
+                "The curent application was not configured with Flask-Mail")
 
 
 class _Mail(_MailMixin):
+
     def __init__(self, server, username, password, port, use_tls, use_ssl,
                  default_sender, debug, max_emails, suppress):
         self.server = server

@@ -1,6 +1,7 @@
 #!/usr/bin/env python
 
-import sys, os
+import sys
+import os
 
 root_dir = os.path.normpath(os.path.abspath(os.path.dirname(__file__)))
 os.chdir(root_dir)
@@ -18,8 +19,8 @@ from flask.ext.script import Manager, Server
 
 from flask_application.script import FixFilesMigration, Tweet, ESIndex, GetPath, ResetDB, PopulateDB, SolrReindex, FixMD5s, UploadSymlinks, IndexPDFText, ExtractISBN, BuildLibrary, AddToIpfsTest, ProcessIpfsAddOutput
 
-from flask.ext.security.script import (CreateUserCommand , AddRoleCommand,
-        RemoveRoleCommand, ActivateUserCommand, DeactivateUserCommand)
+from flask.ext.security.script import (CreateUserCommand, AddRoleCommand,
+                                       RemoveRoleCommand, ActivateUserCommand, DeactivateUserCommand)
 
 manager = Manager(app)
 manager.add_command("runserver", Server())

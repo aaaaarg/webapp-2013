@@ -8,15 +8,15 @@ from ..models import Thing
 
 
 class BaseThingForm(Form):
-	# maker field
-	makers_raw = TextField(u'Maker(s)', validators = [Required()])
-	collection = HiddenField(u'Collection', default=None)
+    # maker field
+    makers_raw = TextField(u'Maker(s)', validators=[Required()])
+    collection = HiddenField(u'Collection', default=None)
 
-ThingForm = model_form(Thing, base_class=BaseThingForm, field_args = {
-    'short_description' : {
-        'validators' : [Required()]
+ThingForm = model_form(Thing, base_class=BaseThingForm, field_args={
+    'short_description': {
+        'validators': [Required()]
     },
-    'title' : {
-        'validators' : [Required()]
+    'title': {
+        'validators': [Required()]
     },
 })

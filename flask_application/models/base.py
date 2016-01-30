@@ -1,4 +1,6 @@
-import datetime, sys, traceback
+import datetime
+import sys
+import traceback
 
 from unidecode import unidecode
 from sunburnt.schema import SolrError
@@ -6,11 +8,13 @@ from sunburnt.schema import SolrError
 import elasticsearch.exceptions
 from flask_application import app, mail
 from flask.ext.mail import Message
-from flask.ext.security import current_user 
+from flask.ext.security import current_user
 
 from . import db, elastic, User
 
 # Gets a user object from the current user
+
+
 def current_user_obj():
     try:
         return User.objects(id=current_user.get_id()).first()
@@ -18,13 +22,16 @@ def current_user_obj():
         return None
 
 # Mixes in creation details for documents (user and date)
+
+
 class CreatorMixin(object):
     """
     Base document class for providing functionality to all models:
     creator, creation date
     """
     #meta = {'allow_inheritance': True}
-    # creator refers to the user who submitted this thing (maker is the author/ creator of the thing itself)
+    # creator refers to the user who submitted this thing (maker is the
+    # author/ creator of the thing itself)
     created_at = db.DateTimeField(default=datetime.datetime.now, required=True)
     creator = db.ReferenceField(User, default=current_user_obj)
 
@@ -65,7 +72,7 @@ class FollowersMixin(object):
 
     def has_follower(self, user):
         for u in self.followers:
-            if user==u:
+            if user == u:
                 return True
         return False
 
@@ -76,8 +83,8 @@ class FollowersMixin(object):
     # broadcasts a message to all followers
     def tell_followers(self, subject, content):
         msg = Message(subject,
-            sender=app.config['DEFAULT_MAIL_SENDER'],
-            recipients=[app.config['DEFAULT_MAIL_REPLY_TO']])
+                      sender=app.config['DEFAULT_MAIL_SENDER'],
+                      recipients=[app.config['DEFAULT_MAIL_REPLY_TO']])
         # add followers
         if 'SEND_NOTIFICATIONS' in app.config and app.config['SEND_NOTIFICATIONS']:
             for u in self.followers:
@@ -88,9 +95,11 @@ class FollowersMixin(object):
         try:
             mail.send(msg)
         except:
-            print 'Failed to tell followers:',content
+            print 'Failed to tell followers:', content
 
 # Mixes in editor fields
+
+
 class EditorsMixin(object):
     """
     List of users designated as editor
@@ -108,7 +117,7 @@ class EditorsMixin(object):
             user = current_user
         for u in self.editors:
             try:
-                if user.id==u.id:
+                if user.id == u.id:
                     return True
             except:
                 pass
@@ -130,14 +139,15 @@ class SolrMixin(object):
         if not d:
             # if the dict is empty, then it shouldn't be indexed
             return
-        elastic.index( self, d)
+        elastic.index(self, d)
 
     def delete_from_solr(self):
         try:
-            elastic.delete( self )
+            elastic.delete(self)
         except elasticsearch.exceptions.NotFoundError, e:
             # don't assume object was successfully indexed to begin with
-            app.logger.error("Couldn't delete missing document from Solr/ES, ignoring: " + str(e))
+            app.logger.error(
+                "Couldn't delete missing document from Solr/ES, ignoring: " + str(e))
 
     def build_solr(self):
         super(SolrMixin, self).build_solr(*args, **kwargs)

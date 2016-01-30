@@ -7,22 +7,21 @@ from wtforms.validators import Required
 from ..models import Queue, QueuedThing
 
 
-
-QueueForm = model_form(Queue, base_class=Form, field_args = {
-    'short_description' : {
-        'validators' : [Required()]
+QueueForm = model_form(Queue, base_class=Form, field_args={
+    'short_description': {
+        'validators': [Required()]
     },
-    'title' : {
-        'validators' : [Required()]
+    'title': {
+        'validators': [Required()]
     }
 })
 
 
-QueuedThingForm = model_form(QueuedThing, base_class=Form, field_args = {
-    'description' : {
-        'label' : 'Notes'
+QueuedThingForm = model_form(QueuedThing, base_class=Form, field_args={
+    'description': {
+        'label': 'Notes'
     },
-    'subtitle' : {
-        'label' : 'Alternate title'
+    'subtitle': {
+        'label': 'Alternate title'
     },
 })

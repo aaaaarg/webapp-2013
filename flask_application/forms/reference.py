@@ -7,6 +7,7 @@ from wtforms.validators import Required, URL
 
 from ..models import Annotation, Reference
 
+
 class TagListField(Field):
     widget = TextInput()
 
@@ -27,28 +28,25 @@ class BaseReferenceForm(Form):
     tags_proxy = TagListField(u'Tags')
 
 
-ReferenceForm = model_form(Reference, base_class=BaseReferenceForm, field_args = {
-    'pos' : {
-      'validators' : [Required()],
-      'label' : 'Position (vertical)'
+ReferenceForm = model_form(Reference, base_class=BaseReferenceForm, field_args={
+    'pos': {
+        'validators': [Required()],
+        'label': 'Position (vertical)'
     },
-    'pos_x' : {
-      'label' : 'Position (horizontal)'
+    'pos_x': {
+        'label': 'Position (horizontal)'
     },
-    'pos_end' : {
-      'label' : 'Position end (vertical)'
+    'pos_end': {
+        'label': 'Position end (vertical)'
     },
-    'pos_end_x' : {
-      'label' : 'Position end (horizontal))'
+    'pos_end_x': {
+        'label': 'Position end (horizontal))'
     },
-    'pos_end' : {
-      'label' : 'Position (end)'
+    'note': {
+        'label': 'A short note'
     },
-    'note' : {
-      'label' : 'A short note'
-    },
-    'ref_url' : {
-    	'validators' : [URL(), Required()],
-      'label' : 'Reference URL'
+    'ref_url': {
+        'validators': [URL(), Required()],
+        'label': 'Reference URL'
     },
 })

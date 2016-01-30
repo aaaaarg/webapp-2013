@@ -8,8 +8,8 @@ from ..models import Upload
 
 
 class BaseUploadForm(Form):
-	# maker field
-	files = FileField(u'Upload')
+    # maker field
+    files = FileField(u'Upload')
 
-UploadForm = model_form(Upload, base_class=BaseUploadForm, only=['short_description'])
-
+UploadForm = model_form(Upload, base_class=BaseUploadForm,
+                        only=['short_description'])

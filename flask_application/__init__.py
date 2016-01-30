@@ -32,12 +32,12 @@ logging.basicConfig(
 if not app.debug and not app.testing:
     import logging.handlers
     mail_handler = logging.handlers.SMTPHandler(
-                        app.config['MAIL_SERVER'],
-                        app.config['DEFAULT_MAIL_SENDER'],
-                        app.config['SYS_ADMINS'],
-                        '{0} error'.format(app.config['SITE_NAME'],
-                        ),
-                    )
+        app.config['MAIL_SERVER'],
+        app.config['DEFAULT_MAIL_SENDER'],
+        app.config['SYS_ADMINS'],
+        '{0} error'.format(app.config['SITE_NAME'],
+                           ),
+    )
     mail_handler.setFormatter(logging.Formatter('''
 Message type:       %(levelname)s
 Location:           %(pathname)s:%(lineno)d
@@ -80,9 +80,9 @@ tweeter = False
 try:
     do_tweets = app.config['TWITTER_ENABLED']
     tweeter = twitter.Api(consumer_key=app.config['TWITTER_KEY'],
-        consumer_secret=app.config['TWITTER_SECRET'],
-        access_token_key=app.config['TWITTER_TOKEN'],
-        access_token_secret=app.config['TWITTER_TOKEN_SECRET'])
+                          consumer_secret=app.config['TWITTER_SECRET'],
+                          access_token_key=app.config['TWITTER_TOKEN'],
+                          access_token_secret=app.config['TWITTER_TOKEN_SECRET'])
     if not api.VerifyCredentials():
         tweeter = False
 except:
@@ -91,6 +91,8 @@ except:
 # Memcache
 from werkzeug.contrib.cache import MemcachedCache
 app.cache = MemcachedCache(app.config['MEMCACHED_SERVERS'])
+
+
 def cache_fetch(key, value_function, timeout=None):
     '''Mimicking Rails.cache.fetch'''
     global app
@@ -115,7 +117,7 @@ Markdown(app)
 # Business Logic
 # http://flask.pocoo.org/docs/patterns/packages/
 # http://flask.pocoo.org/docs/blueprints/
-from flask_application.controllers import frontend, thing, maker, collection, queue, talk, user, upload, admin, reference, compiler#, metadata
+from flask_application.controllers import frontend, thing, maker, collection, queue, talk, user, upload, admin, reference, compiler  # , metadata
 app.register_blueprint(frontend.frontend)
 app.register_blueprint(thing.thing)
 app.register_blueprint(collection.collection)
@@ -126,8 +128,8 @@ app.register_blueprint(talk.talk)
 app.register_blueprint(user.user)
 app.register_blueprint(reference.reference)
 app.register_blueprint(compiler.compiler)
-#app.register_blueprint(metadata.metadata)
-#app.register_blueprint(admin.admin)
+# app.register_blueprint(metadata.metadata)
+# app.register_blueprint(admin.admin)
 
 # Setup Flask-Security
 from flask.ext.security import Security, MongoEngineUserDatastore, current_user
@@ -136,9 +138,11 @@ from flask_application.security_extras import ExtendedRegisterForm
 
 user_datastore = MongoEngineUserDatastore(db, User, Role)
 app.security = Security(app, user_datastore,
-         register_form=ExtendedRegisterForm)
+                        register_form=ExtendedRegisterForm)
 
 # Flask security lets us override how the mail is sent
+
+
 @app.security.send_mail_task
 def sendmail_with_sendmail(msg):
     if 'DEFAULT_MAIL_SENDER' in app.config:
@@ -148,8 +152,7 @@ def sendmail_with_sendmail(msg):
     mail.send(msg)
 
 #from flask_application.controllers.admin import admin
-#app.register_blueprint(admin)
+# app.register_blueprint(admin)
 
 # Info block
 app.jinja_env.globals['info_block'] = app.config['INFO_BLOCK']
-

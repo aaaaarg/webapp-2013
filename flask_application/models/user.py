@@ -3,12 +3,15 @@ from flask.ext.security import UserMixin, RoleMixin
 from . import db
 
 # Define models
+
+
 class Role(db.Document, RoleMixin):
     name = db.StringField(max_length=80, unique=True)
     description = db.StringField(max_length=255)
-    
+
     def __unicode__(self):
-        return self.name    
+        return self.name
+
 
 class User(db.Document, UserMixin):
     meta = {
@@ -25,9 +28,9 @@ class User(db.Document, UserMixin):
     invited = db.ListField(db.GenericReferenceField())
 
     def eq(self, user):
-    	if not self.is_anonymous() and self.get_id()==user.id:
-    		return True
-    	return False
+        if not self.is_anonymous() and self.get_id() == user.id:
+            return True
+        return False
 
     def add_invitation(self, user):
         self.update(add_to_set__invited=user)

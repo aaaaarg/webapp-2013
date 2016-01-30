@@ -2,7 +2,7 @@ import datetime
 from bson import ObjectId
 
 from flask import abort
-from flask.ext.security import current_user 
+from flask.ext.security import current_user
 
 from . import db, CreatorMixin, EditorsMixin, FollowersMixin, SolrMixin
 from .user import User
@@ -11,7 +11,7 @@ from .cache import Cache
 
 
 TYPES = (('private', 'Draft: Only you and site administrators can see the notes.'),
-    ('public', 'Published: Anyone can see the notes.'))
+         ('public', 'Published: Anyone can see the notes.'))
 
 
 class QueuedThing(CreatorMixin, db.Document):
@@ -25,7 +25,8 @@ class QueuedThing(CreatorMixin, db.Document):
     date_completed = db.DateTimeField()
     subtitle = db.StringField(max_length=255)
     description = db.StringField()
-    accessibility = db.StringField(max_length=16, choices=TYPES)    
+    accessibility = db.StringField(max_length=16, choices=TYPES)
+
 
 class Queue(CreatorMixin, EditorsMixin, FollowersMixin, db.Document):
     """
@@ -40,7 +41,8 @@ class Queue(CreatorMixin, EditorsMixin, FollowersMixin, db.Document):
     last_updated = db.DateTimeField()
 
     def add_thing(self, thing, short_description=''):
-        queued_thing = QueuedThing(thing=thing, short_description=short_description, weight=len(self.things)+1)
+        queued_thing = QueuedThing(
+            thing=thing, short_description=short_description, weight=len(self.things) + 1)
         queued_thing.save()
         self.update(add_to_set__things=queued_thing)
         self.last_updated = datetime.datetime.now
@@ -61,4 +63,3 @@ class Queue(CreatorMixin, EditorsMixin, FollowersMixin, db.Document):
         for qt in self.things:
             if str(qt.id) in weights:
                 qt.update(set__weight=weights[str(qt.id)])
-

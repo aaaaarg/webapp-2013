@@ -1,6 +1,6 @@
 import re
 
-from flask.ext.security import current_user 
+from flask.ext.security import current_user
 
 from nameparser import HumanName
 
@@ -31,16 +31,18 @@ class Name(db.EmbeddedDocument):
         self.suffix = parsed.suffix.encode('utf-8').strip()
 
     def formal_name(self):
-        n = "%s %s %s %s %s" % (self.title, self.first, self.middle, self.last, self.suffix)
-        return re.sub(' +', ' ' , n)
+        n = "%s %s %s %s %s" % (self.title, self.first,
+                                self.middle, self.last, self.suffix)
+        return re.sub(' +', ' ', n)
 
     def full_name(self):
         n = "%s %s %s %s" % (self.first, self.middle, self.last, self.suffix)
-        return re.sub(' +', ' ' , n)
+        return re.sub(' +', ' ', n)
 
     def sort_name(self):
-        n = "%s, %s, %s, %s, %s" % (self.last, self.first, self.middle, self.suffix, self.title)
-        return re.sub(' +', ' ' , n)
+        n = "%s, %s, %s, %s, %s" % (
+            self.last, self.first, self.middle, self.suffix, self.title)
+        return re.sub(' +', ' ', n)
 
 
 class Maker(SolrMixin, CreatorMixin, FollowersMixin, db.Document):
@@ -59,9 +61,8 @@ class Maker(SolrMixin, CreatorMixin, FollowersMixin, db.Document):
     def type(self):
         return 'maker'
 
-
     def format_name(self, role=None):
-        if role is None or role=="":
+        if role is None or role == "":
             return self.display_name
         else:
             return "%s (%s)" % (self.display_name, role)
@@ -72,18 +73,18 @@ class Maker(SolrMixin, CreatorMixin, FollowersMixin, db.Document):
             self.display_name = name.full_name()
         self.sort_by = name.sort_name()
 
-
     def build_solr(self):
         from .thing import Thing
         things = Thing.objects.filter(makers__maker=self)
-        # If the maker is not associated with any things, then don't index it 
-        if things.count()==0:
+        # If the maker is not associated with any things, then don't index it
+        if things.count() == 0:
             return {}
-        searchable = ' '.join(["%s %s" % (t.title, t.short_description) for t in things])
+        searchable = ' '.join(
+            ["%s %s" % (t.title, t.short_description) for t in things])
         return {
             'title': self.display_name,
             'searchable_text': searchable,
-            'things' : [str(t.id) for t in things]
+            'things': [str(t.id) for t in things]
         }
         """
         return {
@@ -93,7 +94,8 @@ class Maker(SolrMixin, CreatorMixin, FollowersMixin, db.Document):
             'searchable_text': searchable,
             'things' : [t.id for t in things]
         }   
-        """ 
+        """
+
 
 class MakerIndex():
     """
@@ -108,11 +110,12 @@ class MakerIndex():
             self.letters = cached.value
         else:
             self.letters = self.compute_letters()
-            Cache(name=self._cache_name, value=self.letters).save() 
+            Cache(name=self._cache_name, value=self.letters).save()
 
     def rebuild_cache(self):
         letters = self.compute_letters()
-        Cache.objects(name=_cache_name).update(name=self._cache_name, value=letters)
+        Cache.objects(name=_cache_name).update(
+            name=self._cache_name, value=letters)
 
     def compute_letters(self):
         from string import ascii_lowercase
@@ -123,5 +126,5 @@ class MakerIndex():
 
     def first_nonempty(self):
         for l, c in self.letters.iteritems():
-            if c>0:
+            if c > 0:
                 return l
