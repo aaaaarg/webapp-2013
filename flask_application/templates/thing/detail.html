@@ -69,7 +69,7 @@
         </div>
         {% endif %}
 
-        {% if can_view_file_for_thing(thing) %}
+        {% if can_view_file_for_thing(thing) or thing.takedown %}
         <div class="panel panel-default uploads-panel">
             <div class="panel-body">
             {% if thing.takedown %}
