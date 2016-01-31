@@ -740,22 +740,37 @@ class AddToIpfsTest(Command):
 
 
 class ProcessIpfsAddOutput(Command):
-    """
-    Store the hashes from the output of "ipfs add -r" in the Upload records.
-    """
+  """
+  Store the hashes from the output of "ipfs add -r" in the Upload records.
+  When a dumpfile is given it dumps all the hashes (one per line) into a file
+  """
 
-    option_list = (
-        Option(dest='filename'),
-    )
+  option_list = (
+    Option(dest='filename'),
+    Option('--dump', '-d', dest='dumpfile'),
+  )
 
-    def run(self, filename):
-        if not os.path.exists(filename):
-            print(u"ERROR: file doesn't exist: %s" % (filename,))
-            return
+  def run(self, filename, dumpfile=None):
+    if not os.path.exists(filename):
+      print(u"ERROR: file doesn't exist: %s" % (filename,))
+      return
 
-        with open(filename) as f:
-            for line in f:
-                self.process_line(line)
+    with open(filename) as f:
+      if dumpfile:
+        with open(dumpfile, 'w') as fo:
+          for line in f:
+            self.dump_line(line)
+      else:  
+        for line in f:
+          self.process_line(line)
+
+
+  def dump_line(self, line, f):
+    line = line.strip()
+    pieces = line.split(" ", 2)
+    if pieces[0] == "added":
+      hash = pieces[1]
+      f.write("%s\n" % hash)
 
     def process_line(self, line):
         line = line.strip()
