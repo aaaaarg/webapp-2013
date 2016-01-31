@@ -759,7 +759,7 @@ class ProcessIpfsAddOutput(Command):
       if dumpfile:
         with open(dumpfile, 'w') as fo:
           for line in f:
-            self.dump_line(line)
+            self.dump_line(line, fo)
       else:  
         for line in f:
           self.process_line(line)
