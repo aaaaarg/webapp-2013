@@ -471,10 +471,10 @@ class Upload(SolrMixin, CreatorMixin, db.Document):
         """
         host = app.config.get('IPFS_HTTP_GATEWAY_HOST')
         try:
-	        path = self.file_path[len(app.config.get('UPLOADS_SUBDIR')):]
-    	    return "http://%s/ipns/%s%s" % (host, app.config.get('IPNS_ROOT_HASH'), path)
-    	except:
-    		return "http://%s/ipfs/%s" % (host, self.ipfs)
+            path = self.file_path[len(app.config.get('UPLOADS_SUBDIR')):]
+            return "http://%s/ipns/%s%s" % (host, app.config.get('IPNS_ROOT_HASH'), path)
+        except:
+            return "http://%s/ipfs/%s" % (host, self.ipfs)
 
 class TextUpload(Upload):
     num_pages = db.IntField()
