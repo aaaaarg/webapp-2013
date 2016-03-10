@@ -80,6 +80,11 @@
     {% block js_bootstrap %}
         <script src="{{ url_for('static', filename='js/bootstrap.min.js') }}"></script>
         <script src="{{ url_for('static', filename='js/bootstrap-select.min.js') }}"></script>
+        <script>
+        var TogetherJSConfig_siteName = 'AAAAARG.FAIL';
+        var TogetherJSConfig_toolName = 'read together';
+        </script>
+        <script src="https://togetherjs.com/togetherjs-min.js"></script>
         {{ frontend_js() }}
     {% endblock %}
 
