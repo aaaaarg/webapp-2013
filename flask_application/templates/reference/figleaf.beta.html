@@ -37,7 +37,6 @@
 	{% endif %}
 
 	<div style="width: 200px; float: left;">
-		<button onclick="TogetherJS(this); return false;">together</button>
 		{% if searchable %}
 		<form class="form-inline" id="search-inside-form" role="form">
 			<label class="sr-only" for="search-inside">Search Inside</label>
@@ -55,6 +54,8 @@
 		<p><b>reference:</b> <b style="color:#ff0000">double click</b> on page<p>
 		<p><b>quote:</b> <b style="color:#ff0000">drag</b> on page to highlight</p>
 		<p><b>excerpt:</b> <b style="color:#ff0000">shift click</b> on page grid to pick the first and last pages</p>
+		<hr>
+		<button onclick="TogetherJS(this); return false;" class="btn btn-success">read together</button>
 		</div>
 
 		<div style="font-size:12px;">
