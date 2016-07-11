@@ -7,10 +7,12 @@
 
 {% block content %}
 
+{%- if current_user.is_authenticated() -%}
 <div class="alert alert-info">
     <a href="#" class="close" data-dismiss="alert">&times;</a>
     <a href="{{ url_for('frontend.research', query=query) }}">Click here for full text search</a>
 </div>
+{%- endif -%}
 
 <h2>{{title}}: {{query}}</h2>
 

@@ -41,6 +41,15 @@ def detail(id=None):
     maker = Maker.objects.get_or_404(id=id)
     threads = Thread.objects.filter(origin=maker)
     things = Thing.objects.filter(makers__maker=maker)
+    if request.is_xhr:
+        return jsonify({
+            'message' : 'Success',
+            'data' : {
+                'id' : str(maker.id),
+                'name' : maker.name.full_name(),
+                'things' : [ str(t.id) for t in things ]
+            }    
+        })
     return render_template('maker/detail.html',
                            title=maker.display_name,
                            maker=maker,

@@ -110,6 +110,23 @@ def detail(id):
     See a thing in more detail
     """
     thing = Thing.objects.get_or_404(id=id)
+    # xhr view
+    if request.is_xhr:
+        data = {
+            'message' : 'Success',
+            'data' : {
+                'id' : str(thing.id),
+                'title' : thing.title,
+                'short_description' : thing.short_description,
+                'description' : thing.description,
+                'makers' : { str(m.maker.id): m.maker.name.full_name() for m in thing.makers }
+            }    
+        }
+        if can_view_file_for_thing(thing):
+            data['data']['files'] = []
+            for f in thing.files:
+                data['data']['files'].append(url_for('upload.serve_upload', filename=f.structured_file_name, _external=True))
+        return jsonify(data)
     threads = Thread.objects.filter(origin=thing)
     # preview
     preview = thing.preview(filename="x200-0.jpg")
@@ -169,6 +186,14 @@ def add():
         form.populate_obj(thing)
         thing.parse_makers_string(form.makers_raw.data)
         thing.save()
+        # If there are already files to upload do it here
+        files = request.files
+        for key, file in files.iteritems():
+            um = UploadManager()
+            u = um.set_uploaded_file(file)
+            if thing:
+                thing.add_file(u)
+        #
         if form.collection.data:
             collection = Collection.objects(id=form.collection.data).first()
             if collection:

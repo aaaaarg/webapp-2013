@@ -36,6 +36,15 @@ es = Elasticsearch(['http://127.0.0.1:9200/', ])
 
 from twitter import TwitterError
 
+class SetPassword(Command):
+   option_list = (
+           Option('--id', '-i', dest='id'),
+           Option('--password', '-p', dest='pw'),
+   )
+   def run(self, id, pw):
+           u = User.objects.get(id=id)
+           u.password = encrypt_password(pw)
+           u.save()
 
 class Tweet(Command):
     option_list = (
@@ -794,7 +803,10 @@ class ProcessIpfsAddOutput(Command):
                     u.ipfs = hash
                     u.save()
         else:
-            print(u"Couldn't parse line: %s" % (line,))
+            try:
+                print(u"Couldn't parse line: %s" % (line,))
+            except:
+                print("Couldn't parse line and error in printing line")
 
 
 class FixFilesMigration(Command):

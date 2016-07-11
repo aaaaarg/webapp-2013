@@ -72,6 +72,15 @@ def detail(id):
     """
     collection = Collection.objects.get_or_404(id=id)
     threads = Thread.objects.filter(origin=collection)
+    if request.is_xhr:
+        return jsonify({
+            'message' : 'Success',
+            'data' : {
+                'id' : str(collection.id),
+                'title' : collection.title,
+                'things' : [ str(ct.thing.id) for ct in collection.things ]
+            }    
+        })
     return render_template('collection/detail.html',
                            collection=collection,
                            threads=threads)
@@ -211,6 +220,11 @@ def add():
         form.populate_obj(model)
         model.save()
         flash("Collection created")
+        if request.is_xhr:
+            return jsonify({
+                'message':'Success', 
+                'data':str(model.id)
+                })
         return redirect(url_for("collection.list"))
     return render_template('collection/edit.html',
                            title='Start a Collection',

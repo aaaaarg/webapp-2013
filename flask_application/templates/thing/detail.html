@@ -89,7 +89,7 @@
         {% endif %}
     </div>
     <div class="col-md-3">
-        {% if preview and preview_url and not thing.takedown %}
+        {% if preview and preview_url and can_view_file_for_thing(thing) and not thing.takedown %}
         <div class="clearfix">
             <a href="{{ preview_url }}"><img align="left" src="{{ preview }}" hspace="20" vspace="20"></a>
         </div>

@@ -78,6 +78,22 @@ def serve_preview(filename):
     return serve_upload(filename)
 
 
+@upload.route('/check/<md5>')
+@login_required
+def check_md5(md5):
+    u = Upload.objects(md5=md5).first()
+    if u:
+        thing = Thing.objects(files=u).first()
+    if thing:
+        return jsonify({
+            'message':'Success', 
+            'data':str(thing.id)
+        })
+    return jsonify({
+        'message':'None', 
+    })
+
+
 @upload.route('/recover/<path:filename>')
 @roles_accepted('admin', 'editor')
 def recover_broken_file(filename):

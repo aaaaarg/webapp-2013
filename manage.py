@@ -17,7 +17,7 @@ sys.path.insert(0, os.getcwd())
 from flask_application import app
 from flask.ext.script import Manager, Server
 
-from flask_application.script import FixFilesMigration, Tweet, ESIndex, GetPath, ResetDB, PopulateDB, SolrReindex, FixMD5s, UploadSymlinks, IndexPDFText, ExtractISBN, BuildLibrary, AddToIpfsTest, ProcessIpfsAddOutput
+from flask_application.script import FixFilesMigration, Tweet, ESIndex, GetPath, ResetDB, PopulateDB, SolrReindex, FixMD5s, UploadSymlinks, IndexPDFText, ExtractISBN, BuildLibrary, AddToIpfsTest, ProcessIpfsAddOutput, SetPassword
 
 from flask.ext.security.script import (CreateUserCommand, AddRoleCommand,
                                        RemoveRoleCommand, ActivateUserCommand, DeactivateUserCommand)
@@ -45,6 +45,7 @@ manager.add_command('add_role', AddRoleCommand())
 manager.add_command('remove_role', RemoveRoleCommand())
 manager.add_command('deactivate_user', DeactivateUserCommand())
 manager.add_command('activate_user', ActivateUserCommand())
+manager.add_command('set_password', SetPassword())
 
 manager.add_command('tweet', Tweet())
 
