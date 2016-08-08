@@ -236,16 +236,9 @@ def references(md5):
     #annotations = Reference.objects.filter(upload=u, ref_url__exists=True)
     annotations = Reference.objects.filter(upload=u).order_by('ref_pos')
     # create a list of referenced things
-    references = {}
-    editable = []
+    references = []
     for a in annotations:
-        if can_edit_reference(a):
-            editable.append(a)
-        if a.ref_thing and a.ref_pos and a.ref_url:
-            if not a.ref_upload.md5 in references:
-                references[a.ref_upload.md5] = {
-                    'md5': a.ref_upload.md5, 'pages': []}
-            references[a.ref_upload.md5]['pages'].append(a.ref_pos)
+        references.append({'pos':a.pos, 'ref':a.ref_upload.md5, 'ref_pos':a.ref_pos})
     return jsonify(references)
 
 
