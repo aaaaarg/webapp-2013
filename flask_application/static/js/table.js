@@ -234,7 +234,10 @@
 	/* Inserts annotations onto a page */
 	$.Strip.prototype.add_annotations = function(annotations) {
 		for (var i=0; i<annotations.length; i++) {
-			this.add_annotation(annotations[i]);
+			if (this.pages[annotations[i].page]) {
+				this.pages[annotations[i].page].appendChild(annotations[i].$el);
+			}
+			this.annotations[this.annotations.length] = annotations[i];
 		}
 	}	
 
@@ -250,7 +253,6 @@
 			for (var i=0; i<this.annotations.length; i++) {
 				if (this.annotations[i].page==page) {
 					this.pages[page].appendChild(this.annotations[i].$el);
-					console.log('adding reference');
 				}
 			}
 		}
