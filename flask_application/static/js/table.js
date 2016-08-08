@@ -16,7 +16,6 @@
   	this.pos = pos - this.page;
   	this.ref = ref;
   	this.build_element();
-  	console.log('created a reference at:'+pos);
   }
 
   /* Draws annotation on page */
@@ -251,6 +250,7 @@
 			for (var i=0; i<this.annotations.length; i++) {
 				if (this.annotations[i].page==page) {
 					this.pages[page].appendChild(this.annotations[i].$el);
+					console.log('adding reference');
 				}
 			}
 		}
