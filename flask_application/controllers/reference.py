@@ -243,9 +243,9 @@ def references(md5):
             editable.append(a)
         if a.ref_thing and a.ref_pos and a.ref_url:
             if not a.ref_thing in references:
-                references[a.ref_thing] = {
+                references[a.ref_thing.id] = {
                     'md5': a.ref_upload.md5, 'pages': []}
-            references[a.ref_thing]['pages'].append((a.ref_pos, a.id))
+            references[a.ref_thing.id]['pages'].append((a.ref_pos, a.id))
     return jsonify(references)
 
 
