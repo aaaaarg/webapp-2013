@@ -237,6 +237,7 @@ def references(md5):
     annotations = Reference.objects.filter(upload=u).order_by('ref_pos')
     # create a list of referenced things
     references = {}
+    editable = []
     for a in annotations:
         if can_edit_reference(a):
             editable.append(a)
