@@ -110,19 +110,21 @@
 	/* Highlight a set of pages */
 	$.Strip.prototype.highlight = function(pages) {	
 		this.clear_highlights();
-		for (var i=0; i<pages.length; i++) {
-			var page = pages[i];
-			var $h = document.createElement("div");
-			$h.style.position = 'absolute';
-	  	$h.style.zIndex = '19';
-	  	$h.style.width = SCANR.th_w;
-	    $h.style.height = SCANR.th_h;
-	    $h.style.backgroundColor = 'orange';
-	    $h.style.opacity = '0.5';
-	    $h.style.top = Math.floor(page/SCANR.n_cols)*SCANR.th_h;
-		  $h.style.left = (page%SCANR.n_cols)*SCANR.th_w;	
-	    this.$el.appendChild($h);
-	    this.highlights[i] = $h;
+		if (pages) {
+			for (var i=0; i<pages.length; i++) {
+				var page = pages[i];
+				var $h = document.createElement("div");
+				$h.style.position = 'absolute';
+		  	$h.style.zIndex = '19';
+		  	$h.style.width = SCANR.th_w;
+		    $h.style.height = SCANR.th_h;
+		    $h.style.backgroundColor = 'orange';
+		    $h.style.opacity = '0.5';
+		    $h.style.top = Math.floor(page/SCANR.n_cols)*SCANR.th_h;
+			  $h.style.left = (page%SCANR.n_cols)*SCANR.th_w;	
+		    this.$el.appendChild($h);
+		    this.highlights[i] = $h;
+			}
 		}
 	}
 
@@ -263,17 +265,17 @@
 		}
 	}
 
+	$.Table.prototype.clear_highlights = function() {
+		for (var i=0; i<this.strips.length; i++) {
+			this.strips[i].clear_highlights();
+		}
+	}
+
 	$.Table.prototype.goto = function(ref, page) {
 		for (var i=0; i<this.strips.length; i++) {
 			if (this.strips[i].$el.id==ref) {
 				this.strips[i].goto(page);
 			}
-		}
-	}
-
-	$.Table.prototype.clear_highlights = function() {
-		for (var i=0; i<this.strips.length; i++) {
-			this.strips[i].clear_highlights();
 		}
 	}
 

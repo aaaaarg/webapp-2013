@@ -68,10 +68,9 @@
 	$.Result.prototype._handle_click = function(ev) {
 		// This needs to be defined in the listener!
 		this.listener.add_strip(this.ref); 
-		// highlight pages
-		this.listener.highlight(this.ref, this.pages);
 		// go to the first page
 		if (this.pages.length>0) {
+			this.listener.highlight(this.ref, this.pages);
 			this.listener.goto(this.ref, this.pages[0]);
 		} else {
 			this.listener.goto(this.ref, 0);
