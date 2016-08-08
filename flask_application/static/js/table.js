@@ -169,6 +169,14 @@
 		document.dispatchEvent(e);
   }
 
+  $.Strip.prototype._handle_click_jump = function(ev) {
+  	var o = _el_offset(this.$el);
+  	var x = ev.clientX- o.left; 
+  	var y = ev.clientY- o.top;
+  	var page = SCANR.n_cols*Math.floor(y/SCANR.th_h) + Math.floor(x/SCANR.th_w);
+  	this.goto(page);
+  }
+
   /* Gets rid of everything */
 	$.Strip.prototype.remove = function() {
 		this.$el.style.display = 'none';
@@ -189,6 +197,8 @@
 		  h = $img.naturalHeight;
 		  self.num_pages = h*SCANR.n_cols/SCANR.th_h;
 			self.$el.appendChild($img);
+			self.$strip_img = $img;
+			$img.onclick = self._handle_click_jump.bind(self);
 			// load references after the strip image is loaded
 			self.txt = new Txt(self.ref);
 			self.txt.load_references(self);
