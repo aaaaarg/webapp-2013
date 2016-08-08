@@ -39,6 +39,7 @@
 
 	/**/
 	$.Txt = function(ref, base_path) {
+		this.ref = ref;
 		this.thumb_pattern = base_path + 'pages/%r.pdf/x%w-0.jpg';
 		this.thumb_url = this.thumb_pattern.replace('%w',SCANR.th_w).replace('%r', ref);
 		this.refs_url = base_path + 'ref/%r/all'.replace('%r', ref);
@@ -54,7 +55,6 @@
 				var a = new Annotation(obj.pos, obj.ref, Math.floor(obj.ref_pos));
 			  self.references[self.references.length] = a;
 			}
-			console.log(listener);
 			if (listener) {
 				listener.add_references(self.ref, self.references);
 			}

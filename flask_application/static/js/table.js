@@ -296,8 +296,8 @@
   /**/
 	$.Table = function(id, basepath, opts) {
 		this.basepath = basepath;
-		this.strip_pattern = this.basepath + '%r.pdf/%wx%hx%n.jpg';
-		this.page_pattern = this.basepath + '%r.pdf/x%w-%s.jpg';
+		this.strip_pattern = this.basepath + 'pages/%r.pdf/%wx%hx%n.jpg';
+		this.page_pattern = this.basepath + 'pages/%r.pdf/x%w-%s.jpg';
 
 		SCANR.n_cols = opts.n_cols || SCANR_DEFAULTS.n_cols,
     SCANR.th_w = opts.th_w || SCANR_DEFAULTS.th_w,
