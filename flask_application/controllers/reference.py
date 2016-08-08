@@ -245,7 +245,7 @@ def references(md5):
             if not a.ref_thing in references:
                 references[str(a.ref_thing.id)] = {
                     'md5': a.ref_upload.md5, 'pages': []}
-            references[str(a.ref_thing.id)]['pages'].append((a.ref_pos, a.id))
+            references[str(a.ref_thing.id)]['pages'].append((a.ref_pos, str(a.id)))
     return jsonify(references)
 
 
