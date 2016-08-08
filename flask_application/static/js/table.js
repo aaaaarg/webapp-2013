@@ -19,6 +19,7 @@
     this.$el.style.height = '100%';
     this.$el.style.zIndex = '10';
     // For paging
+    this.page_w = SCANR.page_w;
     this.curr_page = 0;
     this.page_base_pattern = page_base_pattern;
     this.setup_focus();
@@ -156,7 +157,7 @@
 			self.pages[page] = $img;
 		}
 		$img.style.display = 'none';
-		$img.src = this.page_base_pattern.replace('%s',page);
+		$img.src = this.page_base_pattern.replace('%s',page).replace('%w',this.page_w);
 	}
 
 	/* Close all pages */
@@ -212,6 +213,16 @@
 		}
 	}  	
 
+	/* Opens a page of the strip */
+	$.Strip.prototype.increase_size = function() {
+		this.page_w = this.page_w + 0.1*this.page_w;
+	}  
+
+	/* Opens a page of the strip */
+	$.Strip.prototype.decrease_size = function() {
+		this.page_w = this.page_w - 0.1*this.page_w;
+	}  
+
   /**/
 	$.Table = function(id, basepath, opts) {
 		this.basepath = basepath;
@@ -227,7 +238,7 @@
     this.strip_pattern = this.strip_pattern.replace('%w',SCANR.th_w);
     this.strip_pattern = this.strip_pattern.replace('%h',SCANR.th_h);
     this.strip_pattern = this.strip_pattern.replace('%n',SCANR.n_cols);
-    this.page_pattern = this.page_pattern.replace('%w',SCANR.page_w);
+    //this.page_pattern = this.page_pattern.replace('%w',SCANR.page_w);
 
     this.$el = document.getElementById(id);
     this.$el.style.position = "relative";
@@ -322,6 +333,14 @@
     		} else {
 	    		this.strips[cf].open();
 	    	}
+    	break;
+    	case 187:
+    		if (ev.shiftKey) {
+	    		this.strips[cf].increase_size();
+	    	}
+    	break;
+    	case 189:
+    		this.strips[cf].decrease_size();
     	break;
     	case 9: // tab
 	    	if (ev.shiftKey) {
