@@ -74,7 +74,7 @@
 				var a = new Annotation(obj.pos, obj.ref, Math.floor(obj.ref_pos));
 			  references[references.length] = a;
 			}
-			self.listener.add_references(references);
+			self.listener.add_references(self.ref, references);
 		}, function(status) { //error detection....
 		  console.log('error fetching references');
 		});
