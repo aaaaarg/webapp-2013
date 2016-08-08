@@ -238,7 +238,14 @@ def references(md5):
     # create a list of referenced things
     references = []
     for a in annotations:
-        references.append({'pos':a.pos, 'ref':a.ref_upload.md5, 'ref_pos':a.ref_pos})
+        try:
+            references.append({
+                'pos': a.pos, 
+                'ref': a.ref_upload.md5, 
+                'ref_pos': a.ref_pos
+            })
+        except:
+            pass
     return jsonify(references)
 
 
