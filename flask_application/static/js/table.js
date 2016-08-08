@@ -73,6 +73,8 @@
   	this.strip_url = this.strip_pattern.replace('%r',ref);
   	this.page_pattern = SCANR.basepath + 'pages/%r.pdf/x%w-%s.jpg';
 		this.page_base_pattern = this.page_pattern.replace('%r',ref);
+
+		this.ref = ref;
   	//
   	this.$el = document.createElement("div");
   	this.$el.id = ref;
@@ -93,7 +95,6 @@
   	// highlights
   	this.highlights = [];
   	// annotations
-  	this.txt = new Txt(ref);
   	this.annotations = [];
   }
 
@@ -118,6 +119,7 @@
 		  self.num_pages = h*SCANR.n_cols/SCANR.th_h;
 			self.$el.appendChild($img);
 			// load references after the strip image is loaded
+			self.txt = new Txt(ref);
 			self.txt.load_references(this);
 		}
 		$img.src = this.strip_url;
