@@ -456,9 +456,6 @@
 	$.Table.prototype._handle_annotation_click = function(ev) {
 		this.add_strip(ev.detail.ref);
 		this.goto(ev.detail.ref, ev.detail.target_page);
-		// Load the references for this
-		var t = new Txt(ev.detail.ref);
-		t.load_references(this);
 	}
 
 	$.Table.prototype._handle_keypress = function(ev) {
