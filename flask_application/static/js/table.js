@@ -395,7 +395,7 @@
 			this.goto(ev.detail.ref, 0);
 		}
 		// finally load references
-		ev.detail.txt.load_references(this.add_references);
+		ev.detail.txt.load_references(this.add_references.bind(this));
 
 	}
 
