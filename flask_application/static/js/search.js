@@ -119,7 +119,7 @@
   /* execute a search */
   $.Searcher.prototype.search = function(query) {
 		this.clear_results();
-		this.listener.clear_highlights();
+		//this.listener.clear_highlights();
 		this.searching("Searching...");
 		var self = this;
 		var url = buildUrl(this.search_url,{ 'q':this.$search.value });
