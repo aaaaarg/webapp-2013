@@ -236,10 +236,10 @@ def references(md5):
     #annotations = Reference.objects.filter(upload=u, ref_url__exists=True)
     annotations = Reference.objects.filter(upload=u).order_by('ref_pos')
     # create a list of referenced things
-    references = []
+    references = {'references':[]}
     for a in annotations:
         try:
-            references.append({
+            references['references'].append({
                 'pos': a.pos, 
                 'ref': a.ref_upload.md5, 
                 'ref_pos': a.ref_pos
