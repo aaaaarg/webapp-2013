@@ -142,6 +142,25 @@
 	  this.$marker.style.left = (page%SCANR.n_cols)*SCANR.th_w;	
 	}
 
+	/* Preloads a page */
+	$.Strip.prototype.preload = function(page) {	
+		var self = this;
+		if (this.pages[page]) {
+			this.pages[this.curr_page].style.display = 'none';
+			this.pages[page].style.display = 'block';
+			this.curr_page = page;
+			this.marker(page);
+			return;
+		}
+    var $img = document.createElement("img");
+    $img.onload = function(){
+			self.$focus.appendChild($img);
+			self.pages[page] = $img;
+		}
+		$img.style.display = 'none';
+		$img.src = this.page_base_pattern.replace('%s',page);
+	}
+
 	/* Opens a page of the strip */
 	$.Strip.prototype.goto = function(page) {
 		var self = this;
@@ -163,6 +182,8 @@
 			self.pages[page] = $img;
 			self.marker(page);
 			//self.$focus.display = 'block';
+			self.preload(page+1);
+			self.preload(page+2);
 		}
 		$img.src = this.page_base_pattern.replace('%s',page);
 	}  

@@ -107,7 +107,7 @@
 		this.listener.clear_highlights();
 		this.searching("Searching...");
 		var self = this;
-		var url = buildUrl(this.search_url,{'q':this.$search.value, 'n':SCANR.n_results});
+		var url = buildUrl(this.search_url,{ 'q':this.$search.value });
 		getJSON(url).then(function(data) {
 	    self.clear_results();
 	    for (var i=0; i<data.metadata.length; i++) {
