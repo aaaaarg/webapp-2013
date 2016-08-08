@@ -40,6 +40,23 @@
 	  return url;
 	}
 
+	var _el_offset = function( el, fixed ) {
+    // http://stackoverflow.com/questions/442404/dynamically-retrieve-html-element-x-y-position-with-javascript
+    var _x = 0;
+    var _y = 0;
+    while( el && !isNaN( el.offsetLeft ) && !isNaN( el.offsetTop ) ) {
+      _x += el.offsetLeft - el.scrollLeft;
+      _y += el.offsetTop - el.scrollTop;
+      if(!fixed) {
+          el = el.offsetParent;
+      }
+      else {
+          el = null;
+      }
+    }
+    return { top: _y, left: _x };
+	}
+
   /**/
   $.Annotation = function(pos, ref, target_page) {
   	this.page = Math.floor(pos);
@@ -125,7 +142,31 @@
   	this.annotations = [];
   	// Strip image
   	this.load_strip();
-  	
+  	// events
+  	this.drag = false;
+  	this.$focus.ondragstart = this._handle_drag_start.bind(this);
+  	this.$focus.onmouseup = this._handle_drag_end.bind(this);
+  }
+
+  $.Strip.prototype._handle_drag_start = function(ev) {
+  	var e = new CustomEvent('referencedragstart');
+		document.dispatchEvent(e);
+  	o = _el_offset(this.$focus);
+  	this.drag = { 
+  		left: (ev.clientX-o.left)/(this.$focus.offsetWidth), 
+  		top: (ev.clientY-o.top)/(this.$focus.offsetHeight) 
+  	};
+  	return false;
+  }
+
+  $.Strip.prototype._handle_drag_end = function(ev) {
+  	o = _el_offset(this.$focus);
+  	this.drag = { 
+  		left: (ev.clientX-o.left)/(this.$focus.offsetWidth), 
+  		top: (ev.clientY-o.top)/(this.$focus.offsetHeight) 
+  	};
+  	var e = new CustomEvent('referencedragend', { detail: this });
+		document.dispatchEvent(e);
   }
 
   /* Gets rid of everything */
@@ -150,7 +191,7 @@
 			self.$el.appendChild($img);
 			// load references after the strip image is loaded
 			self.txt = new Txt(self.ref);
-			self.txt.load_references(self);
+			//self.txt.load_references(self);
 		}
 		$img.src = this.strip_url;
 	}  
@@ -394,7 +435,9 @@
     this.$el.onkeypress = this._handle_keypress.bind(this);
     document.addEventListener("annotationclicked", this._handle_annotation_click.bind(this), false);
     document.addEventListener("searchresultclicked", this._handle_search_result_click.bind(this), false);
-
+    document.addEventListener("referencedragstart",this._handle_reference_drag_start.bind(this), false);
+		document.addEventListener("referencedragend",this._handle_reference_drag_end.bind(this), false);
+		
 	}
 
 	$.Table.prototype.add_strip = function(ref) {
@@ -450,6 +493,36 @@
 			this.goto(ev.detail.ref, ev.detail.pages[0]);
 		} else {
 			this.goto(ev.detail.ref, 0);
+		}
+	}
+
+	$.Table.prototype._handle_reference_drag_start = function(ev) {
+		for (var i=0; i<this.strips.length; i++) {
+			this.strips[i].drag = false;
+		}
+	}
+
+	$.Table.prototype._handle_reference_drag_end = function(ev) {
+		var terminus = ev.detail;
+		for (var i=0; i<this.strips.length; i++) {
+			if (this.strips[i].drag && this.strips[i].ref!=terminus.ref) {
+				if (confirm("You are about to create a reference from one text to another. Right now, there is no way to delete a reference, so if you did not mean to do it or you are just testing things out, please hit cancel. Are you sure you want to create this reference?") == true) {
+					var pos = this.strips[i].curr_page + this.strips[i].drag.top;
+					var ref_pos = terminus.curr_page + terminus.drag.top;
+					var a = new Annotation(pos, terminus.ref, terminus.curr_page);
+					this.strips[i].add_annotation(a);
+					// send the data
+					var url = buildUrl(SCANR.basepath + "/ref/a/"+this.strips[i].ref+"/"+pos+"/b/"+terminus.ref+"/"+ref_pos);
+					getJSON(url).then(function(data) {
+				    console.log(data);
+					}, function(status) { //error detection....
+					  console.log('failed to create reference');
+					});
+				}
+			}
+		}
+		for (var i=0; i<this.strips.length; i++) {
+			this.strips[i].drag = false;
 		}
 	}
 
