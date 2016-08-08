@@ -114,7 +114,7 @@
 	    	var obj = data.metadata[i];
 	    	var r = new Result(obj.ref, obj.title, obj.makers, self.base_path, self.listener);
 				r.pages = obj.pages;
-				self..add_result(r);
+				self.add_result(r);
 				self.listener.highlight(obj.ref, obj.pages);
 	    }
 		}, function(status) { //error detection....
