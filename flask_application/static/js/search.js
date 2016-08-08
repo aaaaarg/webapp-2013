@@ -54,6 +54,7 @@
 				var a = new Annotation(obj.pos, obj.ref, Math.floor(obj.ref_pos));
 			  self.references[self.references.length] = a;
 			}
+			console.log(listener);
 			if (listener) {
 				listener.add_references(self.ref, self.references);
 			}
