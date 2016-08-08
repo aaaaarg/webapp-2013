@@ -246,6 +246,14 @@
 		}
 	}
 
+	$.Table.prototype.goto = function(ref, page) {
+		for (var i=0; i<this.strips.length; i++) {
+			if (this.strips[i].$el.id==ref) {
+				this.strips[i].goto(page);
+			}
+		}
+	}
+
 	$.Table.prototype.clear_highlights = function() {
 		for (var i=0; i<this.strips.length; i++) {
 			this.strips[i].clear_highlights();

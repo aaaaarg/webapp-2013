@@ -71,6 +71,11 @@
 		// highlight pages
 		this.listener.highlight(this.ref, this.pages);
 		// go to the first page
+		if (this.pages.length>0) {
+			this.listener.goto(this.ref, this.pages[0]);
+		} else {
+			this.listener.goto(this.ref, 0);
+		}
 	}
 
 
