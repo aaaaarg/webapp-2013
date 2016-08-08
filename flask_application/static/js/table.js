@@ -187,7 +187,7 @@
 			//self.$focus.display = 'block';
 			self.preload(page+1);
 		}
-		$img.src = this.page_base_pattern.replace('%s',page);
+		$img.src = this.page_base_pattern.replace('%s',page).replace('%w',this.page_w);
 		self.pages[page] = $img;
 	}  
 
