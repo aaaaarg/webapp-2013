@@ -42,6 +42,7 @@
 		this.ref = ref;
 		this.pages = [];
 		this.thumb_pattern = base_path + 'pages/%r.pdf/x%w-0.jpg';
+		this.refs_url = base_path + 'ref/%r/all'.replace('%r', ref);
 		this.listener = listener;
 		this.$el = document.createElement("div");
 
@@ -64,6 +65,21 @@
 		$t.onclick = this._handle_click.bind(this);
 	}
 
+	$.Result.prototype.load_references = function() {
+		var self = this;
+		getJSON(this.refs_url).then(function(data) {
+			references = [];
+			for (var i=0; i<data.references.length; i++) {
+				var obj = data.references[i];
+				var a = new Annotation(obj.pos, obj.ref, Math.floor(obj.ref_pos));
+			  references[references.length] = a;
+			}
+			self.listener.add_references(references);
+		}, function(status) { //error detection....
+		  console.log('error fetching references');
+		});
+	}
+
 	/**/
 	$.Result.prototype._handle_click = function(ev) {
 		// This needs to be defined in the listener!
@@ -75,6 +91,8 @@
 		} else {
 			this.listener.goto(this.ref, 0);
 		}
+		// finally load references
+		this.load_references();
 	}
 
 

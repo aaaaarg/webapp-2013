@@ -10,6 +10,34 @@
   var SCANR = {}
 
   /**/
+  $.Annotation = function(pos, ref, target_page) {
+  	this.page = Math.floor(pos);
+  	this.target_page = target_page;
+  	this.pos = pos - this.page;
+  	this.ref = ref;
+  	this.build_element();
+  }
+
+  /* Draws annotation on page */
+	$.Annotation.prototype.build_element = function() {
+		this.$el = document.createElement("div");
+		this.$el.style.position = "absolute";
+		var p = Math.floor(this.pos*100);
+		this.$el.style.top = p+"%";
+		this.$el.style.right = "3px";
+		this.$el.style.width = "8px";
+		this.$el.style.height = "8px";
+		this.$el.style.border = '2px solid red';
+		this.$el.style.cursor = "pointer";
+		this.$el.onclick = this._handle_click.bind(this);
+	} 
+
+	$.Annotation.prototype._handle_click = function() {
+		var e = new CustomEvent('annotationclicked', { detail: this });
+		document.dispatchEvent(e);
+	}
+
+  /**/
   $.Strip = function(ref, strip_url, page_base_pattern) {
   	this.$el = document.createElement("div");
   	this.$el.id = ref;
@@ -29,13 +57,17 @@
   	this.strip_url = strip_url;
   	this.load_strip();
   	// highlights
-  	this.highlights = []
+  	this.highlights = [];
+  	// annotations
+  	this.annotations = [];
   }
 
   /* Gets rid of everything */
 	$.Strip.prototype.remove = function() {
 		this.$el.style.display = 'none';
 		this.pages = null;
+		this.highlights = null;
+		this.annotations = null;
 		this.$marker = null;
 		this.$focus = null;
 		this.$el = null;
@@ -145,51 +177,83 @@
 	  this.$marker.style.left = (page%SCANR.n_cols)*SCANR.th_w;	
 	}
 
+	/* Close all pages */
+	$.Strip.prototype.show_current = function() {
+		for (var i=0; i<this.pages.length; i++) {
+			if (i!=this.curr_page && this.pages[i]) {
+				this.pages[i].style.display = 'none';
+			}
+		}
+		this.pages[this.curr_page].style.display = 'block';
+		this.marker(this.curr_page);
+	}	
+
 	/* Preloads a page */
 	$.Strip.prototype.preload = function(page) {	
 		var self = this;
 		if (this.pages[page]) {
 			return;
 		}
-    var $img = document.createElement("img");
+		var $wrapper = document.createElement("div");
+    $wrapper.style.display = 'none';
+		var $img = document.createElement("img");
     $img.onload = function(){
-			self.$focus.appendChild($img);
-			self.pages[page] = $img;
+    	$wrapper.appendChild($img);
+			self.$focus.appendChild($wrapper);
+			self.pages[page] = $wrapper;
+			self.annotate_page(page);
 		}
-		$img.style.display = 'none';
 		$img.src = this.page_base_pattern.replace('%s',page).replace('%w',this.page_w);
 	}
-
-	/* Close all pages */
-	$.Strip.prototype.show_only = function(page) {
-		for (var i=0; i<this.pages.length; i++) {
-			if (i!=page) {
-				this.pages[i].style.display = 'none';
-			}
-		}
-		this.pages[page].style.display = 'block';
-		this.curr_page = page;
-		this.marker(page);
-	}	
 
 	/* Opens a page of the strip */
 	$.Strip.prototype.goto = function(page) {
 		var self = this;
 		if (this.pages[page]) {
-			this.show_only(page);
+			this.curr_page = page;
+			this.show_current();
+			self.preload(page+1);
 			return;
 		}
+		var $wrapper = document.createElement("div");
     var $img = document.createElement("img");
     $img.onload = function(){
-			self.$focus.appendChild($img);
+    	$wrapper.appendChild($img);
+    	self.$focus.appendChild($wrapper);
+			self.pages[page] = $wrapper;
+    	self.curr_page = page;
+			self.show_current();
 			self.$focus.style.display = 'block';
-			self.show_only(page);
+			self.annotate_page(page);
 			//self.$focus.display = 'block';
 			self.preload(page+1);
 		}
 		$img.src = this.page_base_pattern.replace('%s',page).replace('%w',this.page_w);
-		self.pages[page] = $img;
 	}  
+
+	/* Inserts annotations onto a page */
+	$.Strip.prototype.add_annotations = function(annotations) {
+		for (var i=0; i<annotations.length; i++) {
+			this.add_annotation(annotations[i]);
+		}
+	}	
+
+	/* Inserts annotations onto a page */
+	$.Strip.prototype.add_annotation = function(a) {
+		this.annotations[this.annotations.length] = a;
+		this.annotate_page(a.page);
+	}	
+
+	/* Inserts annotations onto a page */
+	$.Strip.prototype.annotate_page = function(page) {
+		if (this.pages[page]) {
+			for (var i=0; i<this.annotations.length; i++) {
+				if (this.annotations[i].page==page) {
+					this.pages[page].appendChild(this.annotations[i].$el);
+				}
+			}
+		}
+	}	
 
 		/* Opens a page of the strip */
 	$.Strip.prototype.prev = function() {
@@ -215,12 +279,12 @@
 
 	/* Opens a page of the strip */
 	$.Strip.prototype.increase_size = function() {
-		this.page_w = this.page_w + this.page_w/10;
+		this.page_w = this.page_w + Math.round(this.page_w/10);
 	}  
 
 	/* Opens a page of the strip */
 	$.Strip.prototype.decrease_size = function() {
-		this.page_w = this.page_w - this.page_w/10;
+		this.page_w = this.page_w - Math.round(this.page_w/10);
 	}  
 
   /**/
@@ -255,6 +319,7 @@
 
     // events
     this.$el.onkeypress = this._handle_keypress.bind(this);
+    document.addEventListener("annotationclicked", this._handle_annotation_click.bind(this), false);
 
 	}
 
@@ -273,6 +338,14 @@
 		this.$el.appendChild(s.$el);
 		this.focus_strip = this.strips.length-1;
 		this.change_focus(cf, this.focus_strip);
+	}
+
+	$.Table.prototype.add_references = function(ref, annotations) {
+		for (var i=0; i<this.strips.length; i++) {
+			if (this.strips[i].$el.id==ref) {
+				this.strips[i].add_annotations(annotations);
+			}
+		}
 	}
 
 	$.Table.prototype.highlight = function(ref, pages) {
@@ -302,6 +375,11 @@
 	    	this.strips[from].deactivate();
     	}
     	this.strips[to].activate();
+	}
+
+	$.Table.prototype._handle_annotation_click = function(ev) {
+		this.add_strip(ev.detail.ref);
+		this.goto(ev.detail.ref, ev.detail.target_page);
 	}
 
 	$.Table.prototype._handle_keypress = function(ev) {
@@ -334,14 +412,6 @@
 	    		this.strips[cf].open();
 	    	}
     	break;
-    	case 187:
-    		if (ev.shiftKey) {
-	    		this.strips[cf].increase_size();
-	    	}
-    	break;
-    	case 189:
-    		this.strips[cf].decrease_size();
-    	break;
     	case 9: // tab
 	    	if (ev.shiftKey) {
 	    		this.focus_strip = cf + 1;
@@ -364,6 +434,16 @@
 		    		this.focus_strip = this.strips.length - 1;
 		    	}
 		    }
+    	break;
+    }
+    switch (ev.charCode) {
+    	case 43:
+    		if (ev.shiftKey) {
+	    		this.strips[cf].increase_size();
+	    	}
+    	break;
+    	case 45:
+    		this.strips[cf].decrease_size();
     	break;
     }
     return false;
