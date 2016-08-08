@@ -233,7 +233,6 @@
 
 	/* Inserts annotations onto a page */
 	$.Strip.prototype.add_annotations = function(annotations) {
-		console.log(annotations);
 		for (var i=0; i<annotations.length; i++) {
 			if (this.pages[annotations[i].page]) {
 				this.pages[annotations[i].page].appendChild(annotations[i].$el);
@@ -345,6 +344,8 @@
 	}
 
 	$.Table.prototype.add_references = function(ref, annotations) {
+		console.log(ref);
+		console.log(annotations);
 		for (var i=0; i<this.strips.length; i++) {
 			if (this.strips[i].$el.id==ref) {
 				this.strips[i].add_annotations(annotations);
