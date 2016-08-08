@@ -272,6 +272,58 @@ def research(filter_type=None, filter_id=None):
         filter_id=filter_id
     )
 
+@frontend.route('/refsearch')
+def search_references():
+    """ Searches texts which are referenceable, first by title then fulltext """
+    results = {'metadata':[], 'fulltext':[]}
+    query = request.args.get('q', "")
+    num = request.args.get('n', 10)
+    if query == "":
+        return jsonify(results)
+    # first search metadata
+    results_md = elastic.search('thing',
+        query={'title^3,short_description,description,makers_string': query},
+        start=0,
+        num=num*2)
+    for id, score, result in results_md:
+        try:
+            t = Thing.objects.get(id=id)
+            md5 = t.preview(get_md5=True)
+            if md5:
+                results['metadata'].append({
+                    'ref': md5,
+                    'title': t.title,
+                    'makers': ', '.join([m.maker.name.full_name() for m in t.makers])[:75]
+                })
+        except:
+            pass
+    results_ft = elastic.grouped_search('page',
+        query={'searchable_text': query},
+        group_field='md5',
+        bucket_size=6,
+        highlight='searchable_text',
+        fields=['page', 'md5', 'thing'],
+        start=0,
+        num=num,
+        min_size={'searchable_text': 100})
+    for md5, num_hits, top_hits in results_ft:
+            thing_id = None
+            pages = []
+            for pid, hit in top_hits:
+                thing_id = hit['thing']
+                pages.append(hit['page'] - 1)
+            try:
+                t = Thing.objects.get(id=thing_id)
+                results['fulltext'].append({
+                    'ref': md5,
+                    'title': t.title,
+                    'makers': ', '.join([m.maker.name.full_name() for m in thing.makers])[:75],
+                    'pages': pages
+                })
+            except:
+                pass
+    # return the results as json
+    return jsonify(results)
 
 @frontend.route('/deepsearch')
 def deepsearch():
