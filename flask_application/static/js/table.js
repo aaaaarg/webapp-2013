@@ -65,7 +65,7 @@
 	}
 
   /**/
-  $.Strip = function(ref, strip_url, page_base_pattern) {
+  $.Strip = function(ref) {
   	this.strip_pattern = SCANR.basepath + 'pages/%r.pdf/%wx%hx%n.jpg';
     this.strip_pattern = this.strip_pattern.replace('%w',SCANR.th_w);
     this.strip_pattern = this.strip_pattern.replace('%h',SCANR.th_h);
