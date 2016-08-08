@@ -191,7 +191,7 @@
 			self.$el.appendChild($img);
 			// load references after the strip image is loaded
 			self.txt = new Txt(self.ref);
-			//self.txt.load_references(self);
+			self.txt.load_references(self);
 		}
 		$img.src = this.strip_url;
 	}  
