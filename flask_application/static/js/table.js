@@ -233,6 +233,9 @@
 
 	/* Inserts annotations onto a page */
 	$.Strip.prototype.add_annotations = function(annotations) {
+		if (this.annotations.length>0) {
+			return false; // don't add if there are already annotations
+		}
 		for (var i=0; i<annotations.length; i++) {
 			if (this.pages[annotations[i].page]) {
 				this.pages[annotations[i].page].appendChild(annotations[i].$el);
@@ -309,7 +312,7 @@
 
     this.$el = document.getElementById(id);
     this.$el.style.position = "relative";
-    this.$el.style.width = '100%';
+    this.$el.style.width = '10000px';
     this.$el.style.height = '100%';
     this.$el.style.border = '1px solid black';
     this.$el.style.overflow = 'auto';
@@ -323,6 +326,7 @@
     // events
     this.$el.onkeypress = this._handle_keypress.bind(this);
     document.addEventListener("annotationclicked", this._handle_annotation_click.bind(this), false);
+    document.addEventListener("searchresultclicked", this._handle_search_result_click.bind(this), false);
 
 	}
 
@@ -378,6 +382,21 @@
 	    	this.strips[from].deactivate();
     	}
     	this.strips[to].activate();
+	}
+
+	$.Table.prototype._handle_search_result_click = function(ev) {
+		// This needs to be defined in the listener!
+		this.add_strip(ev.detail.ref); 
+		// go to the first page
+		if (ev.detail.pages.length>0) {
+			this.highlight(ev.detail.ref, ev.detail.pages);
+			this.goto(ev.detail.ref, ev.detail.pages[0]);
+		} else {
+			this.goto(ev.detail.ref, 0);
+		}
+		// finally load references
+		ev.detail.txt.load_references(this.add_references);
+
 	}
 
 	$.Table.prototype._handle_annotation_click = function(ev) {
@@ -453,3 +472,5 @@
   }
 
 })(window);
+
+

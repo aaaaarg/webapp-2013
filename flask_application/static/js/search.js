@@ -38,12 +38,35 @@
 	}
 
 	/**/
-	$.Result = function(ref, title, author, base_path, listener) {
+	$.Txt = function(ref, base_path) {
+		this.thumb_pattern = base_path + 'pages/%r.pdf/x%w-0.jpg';
+		this.thumb_url = this.thumb_pattern.replace('%w',SCANR.th_w).replace('%r', ref);
+		this.refs_url = base_path + 'ref/%r/all'.replace('%r', ref);
+		this.references = [];
+	}	
+
+	/* Gets all references for a text */
+	$.Txt.prototype.load_references = function(callback) {
+		var self = this;
+		getJSON(this.refs_url).then(function(data) {
+			for (var i=0; i<data.references.length; i++) {
+				var obj = data.references[i];
+				var a = new Annotation(obj.pos, obj.ref, Math.floor(obj.ref_pos));
+			  this.references[this.references.length] = a;
+			}
+			callback(self.ref, references);
+		}, function(status) { //error detection....
+		  console.log('error fetching references');
+		});
+	}
+
+	/**/
+	$.Result = function(ref, title, author, base_path) {
 		this.ref = ref;
+		this.txt = new Txt(ref, base_path);
 		this.pages = [];
 		this.thumb_pattern = base_path + 'pages/%r.pdf/x%w-0.jpg';
 		this.refs_url = base_path + 'ref/%r/all'.replace('%r', ref);
-		this.listener = listener;
 		this.$el = document.createElement("div");
 
 		var $i = document.createElement("img");
@@ -65,43 +88,18 @@
 		$t.onclick = this._handle_click.bind(this);
 	}
 
-	$.Result.prototype.load_references = function() {
-		var self = this;
-		getJSON(this.refs_url).then(function(data) {
-			references = [];
-			for (var i=0; i<data.references.length; i++) {
-				var obj = data.references[i];
-				var a = new Annotation(obj.pos, obj.ref, Math.floor(obj.ref_pos));
-			  references[references.length] = a;
-			}
-			self.listener.add_references(self.ref, references);
-		}, function(status) { //error detection....
-		  console.log('error fetching references');
-		});
-	}
-
 	/**/
 	$.Result.prototype._handle_click = function(ev) {
-		// This needs to be defined in the listener!
-		this.listener.add_strip(this.ref); 
-		// go to the first page
-		if (this.pages.length>0) {
-			this.listener.highlight(this.ref, this.pages);
-			this.listener.goto(this.ref, this.pages[0]);
-		} else {
-			this.listener.goto(this.ref, 0);
-		}
-		// finally load references
-		this.load_references();
+		var e = new CustomEvent('searchresultclicked', { detail: this });
+		document.dispatchEvent(e);
 	}
 
 
 	/**/
-	$.Searcher = function(search_id, results_id, button_id, base_path, result_listener, opts) {
+	$.Searcher = function(search_id, results_id, button_id, base_path, opts) {
 		this.base_path = base_path;
 		this.search_url = base_path + 'refsearch';
-		this.listener = result_listener;
-
+		
 		SCANR.n_results = opts.n_results || SCANR_DEFAULTS.n_results,
     SCANR.th_w = opts.th_w || SCANR_DEFAULTS.th_w,
     SCANR.th_h = opts.th_h || SCANR_DEFAULTS.th_h;
@@ -129,15 +127,15 @@
 	    self.clear_results();
 	    for (var i=0; i<data.metadata.length; i++) {
 	    	var obj = data.metadata[i];
-	    	var r = new Result(obj.ref, obj.title, obj.makers, self.base_path, self.listener);
+	    	var r = new Result(obj.ref, obj.title, obj.makers, self.base_path);
 				self.add_result(r);
 	    }
 	    for (var i=0; i<data.metadata.length; i++) {
 	    	var obj = data.metadata[i];
-	    	var r = new Result(obj.ref, obj.title, obj.makers, self.base_path, self.listener);
+	    	var r = new Result(obj.ref, obj.title, obj.makers, self.base_path);
 				r.pages = obj.pages;
 				self.add_result(r);
-				self.listener.highlight(obj.ref, obj.pages);
+				//self.listener.highlight(obj.ref, obj.pages);
 	    }
 		}, function(status) { //error detection....
 		  self.clear_results();
