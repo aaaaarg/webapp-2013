@@ -159,14 +159,23 @@
 		$img.src = this.page_base_pattern.replace('%s',page);
 	}
 
+	/* Close all pages */
+	$.Strip.prototype.show_only = function(page) {
+		for (var i=0; i<this.pages.length; i++) {
+			if (i!=page) {
+				this.pages[i].style.display = 'none';
+			}
+		}
+		this.pages[page].style.display = 'block';
+		this.curr_page = page;
+		this.marker(page);
+	}	
+
 	/* Opens a page of the strip */
 	$.Strip.prototype.goto = function(page) {
 		var self = this;
 		if (this.pages[page]) {
-			this.pages[this.curr_page].style.display = 'none';
-			this.pages[page].style.display = 'block';
-			this.curr_page = page;
-			this.marker(page);
+			this.show_only(page);
 			return;
 		}
     var $img = document.createElement("img");
@@ -174,14 +183,11 @@
 			if (self.curr_page>=0 && self.pages.length>0) {
 				self.pages[self.curr_page].style.display = 'none';
 			}
-			self.curr_page = page;
 			self.$focus.appendChild($img);
 			self.$focus.style.display = 'block';
-			self.pages[page] = $img;
-			self.marker(page);
+			this.show_only(page);
 			//self.$focus.display = 'block';
 			self.preload(page+1);
-			self.preload(page+2);
 		}
 		$img.src = this.page_base_pattern.replace('%s',page);
 	}  
@@ -230,6 +236,9 @@
     this.$el.style.width = '100%';
     this.$el.style.height = '100%';
     this.$el.style.border = '1px solid black';
+    this.$el.style.overflow = 'auto';
+    this.$el.style.whiteSpace = 'nowrap';
+    this.$el.style.float = 'left';
 
     // every text is called a strip
     focus_strip = -1;
