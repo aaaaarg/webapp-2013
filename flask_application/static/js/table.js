@@ -180,14 +180,11 @@
 		}
     var $img = document.createElement("img");
     $img.onload = function(){
-			if (self.curr_page>=0 && self.pages.length>0) {
-				self.pages[self.curr_page].style.display = 'none';
-			}
 			self.$focus.appendChild($img);
 			self.$focus.style.display = 'block';
 			this.show_only(page);
 			//self.$focus.display = 'block';
-			self.preload(page+1);
+			//self.preload(page+1);
 		}
 		$img.src = this.page_base_pattern.replace('%s',page);
 	}  
