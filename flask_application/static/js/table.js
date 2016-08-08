@@ -348,9 +348,6 @@
 	}
 
 	$.Table.prototype.add_references = function(ref, annotations) {
-		console.log(this);
-		console.log(ref);
-		
 		for (var i=0; i<this.strips.length; i++) {
 			if (this.strips[i].$el.id==ref) {
 				this.strips[i].add_annotations(annotations);
@@ -398,7 +395,7 @@
 			this.goto(ev.detail.ref, 0);
 		}
 		// finally load references
-		ev.detail.txt.load_references(this.add_references.bind(this));
+		ev.detail.txt.load_references(this);
 
 	}
 

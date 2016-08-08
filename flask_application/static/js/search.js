@@ -46,7 +46,7 @@
 	}	
 
 	/* Gets all references for a text */
-	$.Txt.prototype.load_references = function(callback) {
+	$.Txt.prototype.load_references = function(listener) {
 		var self = this;
 		getJSON(this.refs_url).then(function(data) {
 			for (var i=0; i<data.references.length; i++) {
@@ -54,7 +54,9 @@
 				var a = new Annotation(obj.pos, obj.ref, Math.floor(obj.ref_pos));
 			  self.references[self.references.length] = a;
 			}
-			callback(self.ref, self.references);
+			if (listener) {
+				listener.add_references(self.ref, self.references);
+			}
 		}, function(status) { //error detection....
 		  console.log('error fetching references');
 		});
@@ -118,6 +120,9 @@
 
   /* execute a search */
   $.Searcher.prototype.search = function(query) {
+  	if (this.$search.value=='') {
+  		return false;
+  	}
 		this.clear_results();
 		//this.listener.clear_highlights();
 		this.searching("Searching...");
