@@ -52,9 +52,9 @@
 			for (var i=0; i<data.references.length; i++) {
 				var obj = data.references[i];
 				var a = new Annotation(obj.pos, obj.ref, Math.floor(obj.ref_pos));
-			  this.references[this.references.length] = a;
+			  self.references[self.references.length] = a;
 			}
-			callback(self.ref, references);
+			callback(self.ref, self.references);
 		}, function(status) { //error detection....
 		  console.log('error fetching references');
 		});
