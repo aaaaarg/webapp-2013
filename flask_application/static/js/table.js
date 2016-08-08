@@ -1,7 +1,7 @@
 (function($) {
 	/* */
 	var SCANR_DEFAULTS = {
-		basepath: 'http://aaaaarg.fail',
+		basepath: 'http://aaaaarg.fail/',
 		n_cols: 5,
 		th_w: 5,
 		th_h: 8,
@@ -9,6 +9,36 @@
 		page_h: 1000,
   }
   var SCANR = {}
+
+  var getJSON = function(url) {
+	  return new Promise(function(resolve, reject) {
+	    var xhr = new XMLHttpRequest();
+	    xhr.open('get', url, true);
+	    xhr.responseType = 'json';
+	    xhr.onload = function() {
+	      var status = xhr.status;
+	      if (status == 200) {
+	        resolve(xhr.response);
+	      } else {
+	        reject(status);
+	      }
+	    };
+	    xhr.send();
+	  });
+	};
+
+	var buildUrl = function(url, parameters){
+	  var qs = "";
+	  for(var key in parameters) {
+	    var value = parameters[key];
+	    qs += encodeURIComponent(key) + "=" + encodeURIComponent(value) + "&";
+	  }
+	  if (qs.length > 0){
+	    qs = qs.substring(0, qs.length-1); //chop off last "&"
+	    url = url + "?" + qs;
+	  }
+	  return url;
+	}
 
   /**/
   $.Annotation = function(pos, ref, target_page) {
@@ -119,8 +149,8 @@
 		  self.num_pages = h*SCANR.n_cols/SCANR.th_h;
 			self.$el.appendChild($img);
 			// load references after the strip image is loaded
-			self.txt = new Txt(ref);
-			self.txt.load_references(this);
+			self.txt = new Txt(self.ref);
+			self.txt.load_references(self);
 		}
 		$img.src = this.strip_url;
 	}  
