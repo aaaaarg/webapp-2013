@@ -146,10 +146,6 @@
 	$.Strip.prototype.preload = function(page) {	
 		var self = this;
 		if (this.pages[page]) {
-			this.pages[this.curr_page].style.display = 'none';
-			this.pages[page].style.display = 'block';
-			this.curr_page = page;
-			this.marker(page);
 			return;
 		}
     var $img = document.createElement("img");
