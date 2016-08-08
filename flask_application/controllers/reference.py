@@ -225,6 +225,29 @@ def search_inside(md5):
     return jsonify(search_results)
 
 
+@reference.route('/ref/<string:md5>/all')
+def references(md5):
+    """
+    The filename here is the structured filename
+    """
+    u = Upload.objects.filter(md5=md5).first()
+    if not u:
+        abort(404)
+    #annotations = Reference.objects.filter(upload=u, ref_url__exists=True)
+    annotations = Reference.objects.filter(upload=u).order_by('ref_pos')
+    # create a list of referenced things
+    references = {}
+    for a in annotations:
+        if can_edit_reference(a):
+            editable.append(a)
+        if a.ref_thing and a.ref_pos and a.ref_url:
+            if not a.ref_thing in references:
+                references[a.ref_thing] = {
+                    'md5': a.ref_upload.md5, 'pages': []}
+            references[a.ref_thing]['pages'].append((a.ref_pos, a.id))
+    return jsonify(references)
+
+
 @reference.route('/ref/<string:md5>')
 @reference.route('/ref/<string:md5>/<user_id>')
 def figleaf(md5, user_id=None):
