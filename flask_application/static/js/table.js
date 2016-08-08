@@ -89,13 +89,13 @@
     this.setup_focus();
     this.pages = [];
     this.num_pages = 0;
-    // Strip image
-  	this.strip_url = strip_url;
-  	this.load_strip();
-  	// highlights
+    // highlights
   	this.highlights = [];
   	// annotations
   	this.annotations = [];
+  	// Strip image
+  	this.load_strip();
+  	
   }
 
   /* Gets rid of everything */
