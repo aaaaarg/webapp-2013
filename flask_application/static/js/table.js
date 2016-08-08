@@ -118,7 +118,7 @@
 		  self.num_pages = h*SCANR.n_cols/SCANR.th_h;
 			self.$el.appendChild($img);
 			// load references after the strip image is loaded
-			self.load_references();
+			self.txt.load_references(this);
 		}
 		$img.src = this.strip_url;
 	}  
@@ -268,6 +268,11 @@
 		$img.src = this.page_base_pattern.replace('%s',page).replace('%w',this.page_w);
 	}  
 
+	/* Callback handler for Txt references.. just passes off to func below */
+	$.Strip.prototype.add_references = function(ref, annotations) {
+		this.add_annotations(annotations);
+	}
+
 	/* Inserts annotations onto a page */
 	$.Strip.prototype.add_annotations = function(annotations) {
 		if (this.annotations.length>0) {
@@ -375,14 +380,6 @@
 		this.change_focus(cf, this.focus_strip);
 	}
 
-	$.Table.prototype.add_references = function(ref, annotations) {
-		for (var i=0; i<this.strips.length; i++) {
-			if (this.strips[i].$el.id==ref) {
-				this.strips[i].add_annotations(annotations);
-			}
-		}
-	}
-
 	$.Table.prototype.highlight = function(ref, pages) {
 		for (var i=0; i<this.strips.length; i++) {
 			if (this.strips[i].$el.id==ref) {
@@ -422,8 +419,6 @@
 		} else {
 			this.goto(ev.detail.ref, 0);
 		}
-		// finally load references
-		ev.detail.txt.load_references(this);
 	}
 
 	$.Table.prototype._handle_annotation_click = function(ev) {
