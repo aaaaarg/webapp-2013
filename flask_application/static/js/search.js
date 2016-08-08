@@ -108,13 +108,13 @@
 	    for (var i=0; i<data.metadata.length; i++) {
 	    	var obj = data.metadata[i];
 	    	var r = new Result(obj.ref, obj.title, obj.makers, self.base_path, self.listener);
-				this.add_result(r);
+				self.add_result(r);
 	    }
 	    for (var i=0; i<data.metadata.length; i++) {
 	    	var obj = data.metadata[i];
 	    	var r = new Result(obj.ref, obj.title, obj.makers, self.base_path, self.listener);
 				r.pages = obj.pages;
-				this.add_result(r);
+				self..add_result(r);
 				self.listener.highlight(obj.ref, obj.pages);
 	    }
 		}, function(status) { //error detection....
