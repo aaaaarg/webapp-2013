@@ -215,12 +215,12 @@
 
 	/* Opens a page of the strip */
 	$.Strip.prototype.increase_size = function() {
-		this.page_w = this.page_w + 0.1*this.page_w;
+		this.page_w = this.page_w + this.page_w/10;
 	}  
 
 	/* Opens a page of the strip */
 	$.Strip.prototype.decrease_size = function() {
-		this.page_w = this.page_w - 0.1*this.page_w;
+		this.page_w = this.page_w - this.page_w/10;
 	}  
 
   /**/
