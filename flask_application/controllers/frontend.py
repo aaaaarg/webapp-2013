@@ -317,7 +317,7 @@ def search_references():
                 results['fulltext'].append({
                     'ref': md5,
                     'title': t.title,
-                    'makers': ', '.join([m.maker.name.full_name() for m in thing.makers])[:75],
+                    'makers': ', '.join([m.maker.name.full_name() for m in t.makers])[:75],
                     'pages': pages
                 })
             except:
