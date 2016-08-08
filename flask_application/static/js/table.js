@@ -182,12 +182,12 @@
     $img.onload = function(){
 			self.$focus.appendChild($img);
 			self.$focus.style.display = 'block';
-			self.pages[page] = $img;
 			self.show_only(page);
 			//self.$focus.display = 'block';
 			self.preload(page+1);
 		}
 		$img.src = this.page_base_pattern.replace('%s',page);
+		self.pages[page] = $img;
 	}  
 
 		/* Opens a page of the strip */
