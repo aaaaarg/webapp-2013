@@ -1,0 +1,42 @@
+<html>
+  <head>
+    <title>poylectic</title>
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css" integrity="sha384-BVYiiSIFeK1dGmJRAkycuHAHRg32OmUcww7on3RYdg4Va+PmSTsz/K68vbdEjh4u" crossorigin="anonymous">
+  </head>
+
+<body>
+  <!-- controls -->
+  <div id="controls" class="container">
+    <form>
+      <fieldset>
+        <div class="form-inline">
+          <input class="form-control" name="query" id="query" placeholder="Search ..." type="text">    
+          <div class="btn-group">
+            <button type="button" class="btn btn-primary dropdown-toggle" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false" id="search-button">
+              Go <span class="caret"></span>
+            </button>
+            <ul class="dropdown-menu list-group" id="search-results" style="width:600px;">
+              <!-- results will go here -->
+              
+            </ul>
+          </div>   
+        </div>
+      </fieldset>
+    </form>
+  </div>
+  <!-- reading surface -->
+  <div id="table" tabindex="1"></div>
+
+  <!-- includes -->
+  <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.12.4/jquery.min.js"></script>
+  <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js" integrity="sha384-Tc5IQib027qvyjSMfHjOMaLkfuWVxZxUPnCJA7l2mCWNIpG9mGCD8wGNIcPD7Txa" crossorigin="anonymous"></script>
+  <script src="search.js"></script>
+  <script src="table.js"></script>
+  <script>
+  $(document).ready(function() {
+    var table = new Table('table','http://aaaaarg.fail/pages/',{});
+    var searcher = new Searcher('query','search-results', 'search-button', 'http://aaaaarg.fail/', table, {});
+  }); 
+  </script>
+</body>
+</html>
