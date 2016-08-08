@@ -1,6 +1,7 @@
 (function($) {
 	/* */
 	var SCANR_DEFAULTS = {
+		basepath: 'http://aaaaarg.fail',
 		n_cols: 5,
 		th_w: 5,
 		th_h: 8,
@@ -37,8 +38,42 @@
 		document.dispatchEvent(e);
 	}
 
+	/**/
+	$.Txt = function(ref) {
+		this.ref = ref;
+		this.thumb_pattern = SCANR.basepath + 'pages/%r.pdf/x%w-0.jpg';
+		this.thumb_url = this.thumb_pattern.replace('%w',SCANR.th_w).replace('%r', ref);
+		this.refs_url = SCANR.basepath + 'ref/%r/all'.replace('%r', ref);
+		this.references = [];
+	}	
+
+	/* Gets all references for a text */
+	$.Txt.prototype.load_references = function(listener) {
+		var self = this;
+		getJSON(this.refs_url).then(function(data) {
+			for (var i=0; i<data.references.length; i++) {
+				var obj = data.references[i];
+				var a = new Annotation(obj.pos, obj.ref, Math.floor(obj.ref_pos));
+			  self.references[self.references.length] = a;
+			}
+			if (listener) {
+				listener.add_references(self.ref, self.references);
+			}
+		}, function(status) { //error detection....
+		  console.log('error fetching references');
+		});
+	}
+
   /**/
   $.Strip = function(ref, strip_url, page_base_pattern) {
+  	this.strip_pattern = SCANR.basepath + 'pages/%r.pdf/%wx%hx%n.jpg';
+    this.strip_pattern = this.strip_pattern.replace('%w',SCANR.th_w);
+    this.strip_pattern = this.strip_pattern.replace('%h',SCANR.th_h);
+    this.strip_pattern = this.strip_pattern.replace('%n',SCANR.n_cols);
+  	this.strip_url = this.strip_pattern.replace('%r',ref);
+  	this.page_pattern = SCANR.basepath + 'pages/%r.pdf/x%w-%s.jpg';
+		this.page_base_pattern = this.page_pattern.replace('%r',ref);
+  	//
   	this.$el = document.createElement("div");
   	this.$el.id = ref;
   	this.$el.style.position = "relative";
@@ -49,7 +84,6 @@
     // For paging
     this.page_w = SCANR.page_w;
     this.curr_page = 0;
-    this.page_base_pattern = page_base_pattern;
     this.setup_focus();
     this.pages = [];
     this.num_pages = 0;
@@ -59,6 +93,7 @@
   	// highlights
   	this.highlights = [];
   	// annotations
+  	this.txt = new Txt(ref);
   	this.annotations = [];
   }
 
@@ -82,6 +117,8 @@
 		  h = $img.naturalHeight;
 		  self.num_pages = h*SCANR.n_cols/SCANR.th_h;
 			self.$el.appendChild($img);
+			// load references after the strip image is loaded
+			self.load_references();
 		}
 		$img.src = this.strip_url;
 	}  
@@ -294,21 +331,14 @@
 	}  
 
   /**/
-	$.Table = function(id, basepath, opts) {
-		this.basepath = basepath;
-		this.strip_pattern = this.basepath + 'pages/%r.pdf/%wx%hx%n.jpg';
-		this.page_pattern = this.basepath + 'pages/%r.pdf/x%w-%s.jpg';
-
+	$.Table = function(id, opts) {
+		
+		SCANR.basepath = opts.basepath || SCANR_DEFAULTS.basepath,
 		SCANR.n_cols = opts.n_cols || SCANR_DEFAULTS.n_cols,
     SCANR.th_w = opts.th_w || SCANR_DEFAULTS.th_w,
     SCANR.th_h = opts.th_h || SCANR_DEFAULTS.th_h,
     SCANR.page_w = opts.page_w || SCANR_DEFAULTS.page_w,
     SCANR.page_h = opts.page_h || SCANR_DEFAULTS.page_h,
-
-    this.strip_pattern = this.strip_pattern.replace('%w',SCANR.th_w);
-    this.strip_pattern = this.strip_pattern.replace('%h',SCANR.th_h);
-    this.strip_pattern = this.strip_pattern.replace('%n',SCANR.n_cols);
-    //this.page_pattern = this.page_pattern.replace('%w',SCANR.page_w);
 
     this.$el = document.getElementById(id);
     this.$el.style.position = "relative";
@@ -332,15 +362,13 @@
 
 	$.Table.prototype.add_strip = function(ref) {
 		var cf = this.focus_strip;
-		var url = this.strip_pattern.replace('%r',ref);
-		var pp = this.page_pattern.replace('%r',ref);
 		for (var i=0; i<this.strips.length; i++) {
 			if (this.strips[i].$el.id==ref) {
 				this.change_focus(cf, i);
 				return true;
 			}
 		}
-		var s = new Strip(ref, url, pp);
+		var s = new Strip(ref);
 		this.strips[this.strips.length] = s;
 		this.$el.appendChild(s.$el);
 		this.focus_strip = this.strips.length-1;
@@ -402,7 +430,7 @@
 		this.add_strip(ev.detail.ref);
 		this.goto(ev.detail.ref, ev.detail.target_page);
 		// Load the references for this
-		var t = new Txt(ev.detail.ref, this.basepath);
+		var t = new Txt(ev.detail.ref);
 		t.load_references(this);
 	}
 

@@ -1,6 +1,7 @@
 (function($) {
 	/* */
 	var SCANR_DEFAULTS = {
+		basepath: 'http://aaaaarg.fail',
 		n_results: 10,
 		th_w: 40,
 		th_h: 50,
@@ -38,38 +39,11 @@
 	}
 
 	/**/
-	$.Txt = function(ref, base_path) {
+	$.Result = function(ref, title, author) {
 		this.ref = ref;
-		this.thumb_pattern = base_path + 'pages/%r.pdf/x%w-0.jpg';
-		this.thumb_url = this.thumb_pattern.replace('%w',SCANR.th_w).replace('%r', ref);
-		this.refs_url = base_path + 'ref/%r/all'.replace('%r', ref);
-		this.references = [];
-	}	
-
-	/* Gets all references for a text */
-	$.Txt.prototype.load_references = function(listener) {
-		var self = this;
-		getJSON(this.refs_url).then(function(data) {
-			for (var i=0; i<data.references.length; i++) {
-				var obj = data.references[i];
-				var a = new Annotation(obj.pos, obj.ref, Math.floor(obj.ref_pos));
-			  self.references[self.references.length] = a;
-			}
-			if (listener) {
-				listener.add_references(self.ref, self.references);
-			}
-		}, function(status) { //error detection....
-		  console.log('error fetching references');
-		});
-	}
-
-	/**/
-	$.Result = function(ref, title, author, base_path) {
-		this.ref = ref;
-		this.txt = new Txt(ref, base_path);
 		this.pages = [];
-		this.thumb_pattern = base_path + 'pages/%r.pdf/x%w-0.jpg';
-		this.refs_url = base_path + 'ref/%r/all'.replace('%r', ref);
+		this.thumb_pattern = SCANR.basepath + 'pages/%r.pdf/x%w-0.jpg';
+		this.refs_url = SCANR.basepath + 'ref/%r/all'.replace('%r', ref);
 		this.$el = document.createElement("div");
 
 		var $i = document.createElement("img");
@@ -99,13 +73,14 @@
 
 
 	/**/
-	$.Searcher = function(search_id, results_id, button_id, base_path, opts) {
-		this.base_path = base_path;
-		this.search_url = base_path + 'refsearch';
-		
+	$.Searcher = function(search_id, results_id, button_id, opts) {		
+		SCANR.basepath = opts.basepath || SCANR_DEFAULTS.basepath,
 		SCANR.n_results = opts.n_results || SCANR_DEFAULTS.n_results,
     SCANR.th_w = opts.th_w || SCANR_DEFAULTS.th_w,
     SCANR.th_h = opts.th_h || SCANR_DEFAULTS.th_h;
+
+		this.base_path = SCANR.basepath;
+		this.search_url = SCANR.basepath + 'refsearch';
 
     this.$search = document.getElementById(search_id);
     this.$results = document.getElementById(results_id);
@@ -133,12 +108,12 @@
 	    self.clear_results();
 	    for (var i=0; i<data.metadata.length; i++) {
 	    	var obj = data.metadata[i];
-	    	var r = new Result(obj.ref, obj.title, obj.makers, self.base_path);
+	    	var r = new Result(obj.ref, obj.title, obj.makers);
 				self.add_result(r);
 	    }
 	    for (var i=0; i<data.metadata.length; i++) {
 	    	var obj = data.metadata[i];
-	    	var r = new Result(obj.ref, obj.title, obj.makers, self.base_path);
+	    	var r = new Result(obj.ref, obj.title, obj.makers);
 				r.pages = obj.pages;
 				self.add_result(r);
 				//self.listener.highlight(obj.ref, obj.pages);
