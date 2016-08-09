@@ -291,7 +291,7 @@
 	/* Searches inside */
 	$.Strip.prototype.search_inside = function(query) {
 		var self = this;
-		var url = buildUrl(this.search_inside_url, {'query': query});
+		var url = buildUrl(this.txt.search_inside_url, {'query': query});
 		getJSON(url).then(function(data) {
 			var query1 = data['0'];
 			var pages = [];
