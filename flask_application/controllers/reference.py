@@ -233,10 +233,15 @@ def references(md5):
     u = Upload.objects.filter(md5=md5).first()
     if not u:
         abort(404)
+    # first, is this searchable?
+    is_searchable = False
+    count = elastic.count('page', filter={'md5': md5})
+    if count > 0:
+        is_searchable = True
     #annotations = Reference.objects.filter(upload=u, ref_url__exists=True)
     annotations = Reference.objects.filter(upload=u).order_by('ref_pos')
     # create a list of referenced things
-    references = {'references':[]}
+    references = {'references':[], 'searchable': is_searchable}
     for a in annotations:
         try:
             references['references'].append({
