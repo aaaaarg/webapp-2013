@@ -311,7 +311,6 @@
 	/* Highlight a set of pages */
 	$.Strip.prototype.highlight = function(pages) {	
 		this.clear_highlights();
-		console.log(pages);
 		if (pages) {
 			for (var i=0; i<pages.length; i++) {
 				var page = pages[i];
@@ -485,6 +484,7 @@
     this.$el.style.overflow = 'auto';
     this.$el.style.whiteSpace = 'nowrap';
     this.$el.style.float = 'left';
+    this.$el.style.marginLeft = '10px';
     this.$el.tabIndex = 0;
 
     this.$search_box = document.getElementById(search_box);
