@@ -46,7 +46,7 @@
           var tmparr2 = tmparr[1].split("-");
           if (tmparr2.length==2) {
             table.add_strip(tmparr2[0]);
-            table.goto(tmparr2[0], tmparr2[1]);  
+            table.goto(tmparr2[0], parseInt(tmparr2[1]));  
           } else {
             table.add_strip(tmparr[1]); 
           }
