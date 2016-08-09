@@ -134,6 +134,7 @@
 		this.page_base_pattern = this.page_pattern.replace('%r',ref);
 
 		this.ref = ref;
+		this.active = false;
   	//
   	this.$el = document.createElement("div");
   	this.$el.id = ref;
@@ -251,6 +252,7 @@
 
 	/* Simply opens the strip */
 	$.Strip.prototype.open = function() {
+		this.active = true;
 		if (this.pages.length>0) {
 			this.$focus.style.display = 'block';
 		} else {
@@ -260,6 +262,7 @@
 
 	/* Closes the focus for strip */
 	$.Strip.prototype.close = function() {
+		this.active = false;
 		this.$focus.style.display = 'none';
 	}
 
@@ -270,12 +273,14 @@
 
 	/* Denotes that a strip is 'active' */
 	$.Strip.prototype.activate = function() {
+		this.active = true;
 		this.$el.style.opacity = 1;
 		this.$el.style.borderTop = '5px solid yellow';
 	}
 
 	/* Denotes that a strip is 'active' */
 	$.Strip.prototype.deactivate = function() {
+		this.active = false;
 		this.$el.style.opacity = 0.6;
 		this.$el.style.borderTop = 'none';
 	}
@@ -291,6 +296,9 @@
 	/* Searches inside */
 	$.Strip.prototype.search_inside = function(query) {
 		var self = this;
+		if (!this.txt) {
+			return;
+		}
 		var url = buildUrl(this.txt.search_inside_url, {'query': query});
 		getJSON(url).then(function(data) {
 			var query1 = data['0'];
@@ -377,6 +385,7 @@
 	/* Opens a page of the strip */
 	$.Strip.prototype.goto = function(page) {
 		var self = this;
+		this.active = true;
 		if (this.pages[page]) {
 			this.curr_page = page;
 			this.show_current();
@@ -467,7 +476,7 @@
 	}  
 
   /**/
-	$.Table = function(id, search_box, search_button, opts) {
+	$.Table = function(id, search_box, search_button, save_button, opts) {
 		
 		SCANR.basepath = opts.basepath || SCANR_DEFAULTS.basepath,
 		SCANR.n_cols = opts.n_cols || SCANR_DEFAULTS.n_cols,
@@ -489,7 +498,8 @@
 
     this.$search_box = document.getElementById(search_box);
     this.$search_button = document.getElementById(search_button);
-
+    this.$save_button = document.getElementById(save_button);
+    
     // every text is called a strip
     focus_strip = -1;
     this.strips = [];
@@ -502,6 +512,7 @@
 		document.addEventListener("referencedragend",this._handle_reference_drag_end.bind(this), false);
 		document.addEventListener("announcesearchable",this.check_searchability.bind(this), false);
 		this.$search_button.onclick = this._handle_search_inside.bind(this);
+		this.$save_button.onclick = this._handle_save.bind(this);
 	}
 
 	$.Table.prototype.add_strip = function(ref) {
@@ -568,6 +579,21 @@
 		this.$search_button.style.display = 'none';
 	}
 
+	/* Search inside any text that allows it */
+	$.Table.prototype.save = function() {
+		var params = {}
+		for (var i=0; i<this.strips.length; i++) {
+			if (this.strips[i].active) {
+				var results = this.strips[i].search_inside(query);
+				params[i] = this.strips[i].ref + '-' + this.strips[i].curr_page;
+			} else {
+				params[i] = this.strips[i].ref;
+			}
+		}
+		var url = buildUrl(window.location.href, params);
+		window.prompt("This is a bookmark which you can return to or share.",url);
+	}
+
 	$.Table.prototype._handle_search_result_click = function(ev) {
 		// This needs to be defined in the listener!
 		this.add_strip(ev.detail.ref); 
@@ -629,6 +655,10 @@
   		return false;
   	}
 		this.search_inside(this.$search_box.value);
+	}
+
+	$.Table.prototype._handle_save = function() {
+		this.save();
 	}
 
 	$.Table.prototype._handle_keypress = function(ev) {
