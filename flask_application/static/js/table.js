@@ -75,7 +75,7 @@
 		this.$el.style.right = "3px";
 		this.$el.style.width = "8px";
 		this.$el.style.height = "8px";
-		this.$el.style.border = '2px solid red';
+		this.$el.style.border = '2px solid blue';
 		this.$el.style.cursor = "pointer";
 		this.$el.onclick = this._handle_click.bind(this);
 	} 
@@ -88,11 +88,19 @@
 	/**/
 	$.Txt = function(ref) {
 		this.ref = ref;
+		this.searchable = false;
+		this.search_inside_pattern = SCANR.basepath + '/ref/%r/search-inside';
+		this.search_inside_url = this.search_inside_pattern.replace('%r', ref);
 		this.thumb_pattern = SCANR.basepath + 'pages/%r.pdf/x%w-0.jpg';
 		this.thumb_url = this.thumb_pattern.replace('%w',SCANR.th_w).replace('%r', ref);
 		this.refs_url = SCANR.basepath + 'ref/%r/all'.replace('%r', ref);
 		this.references = [];
 	}	
+
+	$.Txt.prototype.announce_searchable = function() {
+		var e = new CustomEvent('announcesearchable', { detail: this });
+		document.dispatchEvent(e);
+	}
 
 	/* Gets all references for a text */
 	$.Txt.prototype.load_references = function(listener) {
@@ -103,11 +111,35 @@
 				var a = new Annotation(obj.pos, obj.ref, Math.floor(obj.ref_pos));
 			  self.references[self.references.length] = a;
 			}
+			if (data.searchable) {
+				self.searchable = true;
+				self.announce_searchable();
+			}
 			if (listener) {
 				listener.add_references(self.ref, self.references);
 			}
 		}, function(status) { //error detection....
 		  console.log('error fetching references');
+		});
+	}
+
+	/* Searches inside */
+	$.Txt.prototype.search_inside = function(query) {
+		var self = this;
+		var url = buildUrl(this.search_inside_url, {'query': query});
+		getJSON(url).then(function(data) {
+			var query1 = data['0'];
+			var pages = [];
+			for (var page in query1) {
+		    if (query1.hasOwnProperty(page)) {
+		    	//query1[page] = score
+		    	pages[pages.length] = page;
+		    }
+		  }
+		  return pages;
+		}, function(status) { //error detection....
+		  console.log('error fetching references');
+		  return [];
 		});
 	}
 
@@ -161,10 +193,18 @@
 
   $.Strip.prototype._handle_drag_end = function(ev) {
   	o = _el_offset(this.$focus);
+  	pd = this.drag;
   	this.drag = { 
   		left: (ev.clientX-o.left)/(this.$focus.offsetWidth), 
   		top: (ev.clientY-o.top)/(this.$focus.offsetHeight) 
   	};
+  	if (pd) {
+  	 	if (pd.left < this.drag.left) {
+	  		this.drag['dragged_toward'] = 'right';
+	  	} else {
+	  		this.drag['dragged_toward'] = 'left';
+	  	}
+  	}
   	var e = new CustomEvent('referencedragend', { detail: this });
 		document.dispatchEvent(e);
   }
@@ -195,9 +235,10 @@
 		$img.onload = function(){
 			w = $img.naturalWidth;
 		  h = $img.naturalHeight;
-		  self.num_pages = h*SCANR.n_cols/SCANR.th_h;
-			self.$el.appendChild($img);
+		  self.$el.appendChild($img);
 			self.$strip_img = $img;
+			self.num_pages = h*SCANR.n_cols/SCANR.th_h;
+		  self.prime_pages();
 			$img.onclick = self._handle_click_jump.bind(self);
 			// load references after the strip image is loaded
 			self.txt = new Txt(self.ref);
@@ -205,6 +246,13 @@
 		}
 		$img.src = this.strip_url;
 	}  
+
+	/* Creates initial array of pages */
+	$.Strip.prototype.prime_pages = function() {
+		for (var i=0; i<self.num_pages; i++) {
+			self.pages[i] = false;
+		}
+	}	
 
 	/* Opens a page of the strip */
 	$.Strip.prototype.setup_focus = function() {
@@ -316,11 +364,11 @@
 		}
 		var $wrapper = document.createElement("div");
     $wrapper.style.display = 'none';
+    this.pages[page] = $wrapper;
 		var $img = document.createElement("img");
     $img.onload = function(){
     	$wrapper.appendChild($img);
 			self.$focus.appendChild($wrapper);
-			self.pages[page] = $wrapper;
 			self.annotate_page(page);
 		}
 		$img.src = this.page_base_pattern.replace('%s',page).replace('%w',this.page_w);
@@ -336,11 +384,11 @@
 			return;
 		}
 		var $wrapper = document.createElement("div");
+		this.pages[page] = $wrapper;
     var $img = document.createElement("img");
     $img.onload = function(){
     	$wrapper.appendChild($img);
     	self.$focus.appendChild($wrapper);
-			self.pages[page] = $wrapper;
     	self.curr_page = page;
 			self.show_current();
 			self.$focus.style.display = 'block';
@@ -419,7 +467,7 @@
 	}  
 
   /**/
-	$.Table = function(id, opts) {
+	$.Table = function(id, search_box, search_button, opts) {
 		
 		SCANR.basepath = opts.basepath || SCANR_DEFAULTS.basepath,
 		SCANR.n_cols = opts.n_cols || SCANR_DEFAULTS.n_cols,
@@ -436,18 +484,23 @@
     this.$el.style.overflow = 'auto';
     this.$el.style.whiteSpace = 'nowrap';
     this.$el.style.float = 'left';
+    this.$el.tabIndex = 0;
+
+    this.$search_box = document.getElementById(search_box);
+    this.$search_button = document.getElementById(search_button);
 
     // every text is called a strip
     focus_strip = -1;
     this.strips = [];
 
     // events
-    this.$el.onkeypress = this._handle_keypress.bind(this);
+    this.$el.onkeydown = this._handle_keypress.bind(this);
     document.addEventListener("annotationclicked", this._handle_annotation_click.bind(this), false);
     document.addEventListener("searchresultclicked", this._handle_search_result_click.bind(this), false);
     document.addEventListener("referencedragstart",this._handle_reference_drag_start.bind(this), false);
 		document.addEventListener("referencedragend",this._handle_reference_drag_end.bind(this), false);
-		
+		document.addEventListener("announcesearchable",this.check_searchability.bind(this), false);
+		this.$search_button.onclick = this._handle_search_inside.bind(this);
 	}
 
 	$.Table.prototype.add_strip = function(ref) {
@@ -494,6 +547,27 @@
     	this.strips[to].activate();
 	}
 
+	/* Search inside any text that allows it */
+	$.Table.prototype.search_inside = function(query) {
+		this.clear_highlights();
+		for (var i=0; i<this.strips.length; i++) {
+			if (this.strips[i].txt.searchable) {
+				var results = this.strips[i].txt.search_inside(query);
+				this.strips[i].highlight(results);
+			}
+		}
+	}
+
+	$.Table.prototype.check_searchability = function() {
+		for (var i=0; i<this.strips.length; i++) {
+			if (this.strips[i].txt.searchable) {
+				this.$search_button.style.display = 'block';
+				return;
+			}
+		}
+		this.$search_button.style.display = 'none';
+	}
+
 	$.Table.prototype._handle_search_result_click = function(ev) {
 		// This needs to be defined in the listener!
 		this.add_strip(ev.detail.ref); 
@@ -515,19 +589,28 @@
 	$.Table.prototype._handle_reference_drag_end = function(ev) {
 		var terminus = ev.detail;
 		for (var i=0; i<this.strips.length; i++) {
-			if (this.strips[i].drag && this.strips[i].ref!=terminus.ref) {
-				if (confirm("You are about to create a reference from one text to another. Right now, there is no way to delete a reference, so if you did not mean to do it or you are just testing things out, please hit cancel. Are you sure you want to create this reference?") == true) {
-					var pos = this.strips[i].curr_page + this.strips[i].drag.top;
-					var ref_pos = terminus.curr_page + terminus.drag.top;
-					var a = new Annotation(pos, terminus.ref, terminus.curr_page);
-					this.strips[i].add_annotation(a);
-					// send the data
-					var url = buildUrl(SCANR.basepath + "/ref/a/"+this.strips[i].ref+"/"+pos+"/b/"+terminus.ref+"/"+ref_pos);
-					getJSON(url).then(function(data) {
-				    console.log(data);
-					}, function(status) { //error detection....
-					  console.log('failed to create reference');
-					});
+			if (this.strips[i].drag) {
+				if (this.strips[i].ref!=terminus.ref) {
+					if (confirm("You are about to create a reference from one text to another. Right now, there is no way to delete a reference, so if you did not mean to do it or you are just testing things out, please hit cancel. Are you sure you want to create this reference?") == true) {
+						var pos = this.strips[i].curr_page + this.strips[i].drag.top;
+						var ref_pos = terminus.curr_page + terminus.drag.top;
+						var a = new Annotation(pos, terminus.ref, terminus.curr_page);
+						this.strips[i].add_annotation(a);
+						// send the data
+						var url = buildUrl(SCANR.basepath + "/ref/a/"+this.strips[i].ref+"/"+pos+"/b/"+terminus.ref+"/"+ref_pos);
+						getJSON(url).then(function(data) {
+					    console.log(data);
+						}, function(status) { //error detection....
+						  console.log('failed to create reference');
+						});
+					}
+				} else if (terminus.drag['dragged_toward']) {
+					// same image
+					if (terminus.drag['dragged_toward']=='right') {
+						terminus.prev();
+					} else {
+						terminus.next();
+					}
 				}
 			}
 		}
@@ -539,6 +622,13 @@
 	$.Table.prototype._handle_annotation_click = function(ev) {
 		this.add_strip(ev.detail.ref);
 		this.goto(ev.detail.ref, ev.detail.target_page);
+	}
+
+	$.Table.prototype._handle_search_inside = function() {
+		if (this.$search_box.value=='') {
+  		return false;
+  	}
+		this.search_inside(this.$search_box.value);
 	}
 
 	$.Table.prototype._handle_keypress = function(ev) {
@@ -556,13 +646,29 @@
     var number_started
     switch (ev.keyCode) {
     	case 37:
-    		this.strips[cf].prev();
+    		if (ev.shiftKey) {
+    			this.focus_strip = cf - 1;
+    			if (this.focus_strip<0) {
+		    		this.focus_strip = this.strips.length - 1;
+		    	}
+		    	this.change_focus(cf, this.focus_strip);
+    		} else {
+	    		this.strips[cf].prev();
+	    	}
     	break;
     	case 38: // up
     		this.strips[cf].close();
     	break;
     	case 39:
-    		this.strips[cf].next();
+    		if (ev.shiftKey) {
+    			this.focus_strip = cf + 1;
+		    	if (this.focus_strip>=this.strips.length) {
+		    		this.focus_strip = 0;
+		    	}
+		    	this.change_focus(cf, this.focus_strip);
+    		} else {
+	    		this.strips[cf].next();
+	    	}
     	break;
     	case 40: // dn
     		if (this.strips[cf].opened()) {
@@ -571,20 +677,6 @@
 	    		this.strips[cf].open();
 	    	}
     	break;
-    	case 9: // tab
-	    	if (ev.shiftKey) {
-	    		this.focus_strip = cf + 1;
-	    	} else {
-	    		this.focus_strip = cf - 1;
-	    	}
-	    	if (this.focus_strip<0) {
-	    		this.focus_strip = this.strips.length - 1;
-	    	}
-	    	if (this.focus_strip>=this.strips.length) {
-	    		this.focus_strip = 0;
-	    	}
-	    	this.change_focus(cf, this.focus_strip);
-    	break;
     	case 8: // delete
 	    	if (ev.shiftKey) {
 		    	this.strips[cf].remove();
@@ -592,6 +684,7 @@
 		    	if (this.focus_strip>=this.strips.length) {
 		    		this.focus_strip = this.strips.length - 1;
 		    	}
+		    	this.check_searchability();
 		    }
     	break;
     }

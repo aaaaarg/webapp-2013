@@ -6,26 +6,29 @@
 
 <body>
   <!-- controls -->
-  <div id="controls" class="container">
-    <form>
+  <div id="controls" class="container row">
+    <form class="col-xs-12">
       <fieldset>
         <div class="form-inline">
-          <input class="form-control" name="query" id="query" placeholder="Search ..." type="text">    
+          <input class="form-control" size="40" name="query" id="query" placeholder="What do you want to find?" type="text">    
           <div class="btn-group">
             <button type="button" class="btn btn-primary dropdown-toggle" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false" id="search-button">
-              Go <span class="caret"></span>
+              search for a text <span class="caret"></span>
             </button>
             <ul class="dropdown-menu list-group" id="search-results" style="width:600px;">
               <!-- results will go here -->
               
             </ul>
+            <button type="button" class="btn btn-info dropdown-toggle" id="search-inside-button" style="display:none;">
+              search below
+            </button>
           </div>   
         </div>
       </fieldset>
     </form>
   </div>
   <!-- reading surface -->
-  <div id="table" tabindex="1"></div>
+  <div id="table" style="background-color:#efefef;"></div>
 
   <!-- includes -->
   <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.12.4/jquery.min.js"></script>
@@ -35,8 +38,9 @@
   <script>
   $(document).ready(function() {
     var searcher = new Searcher('query','search-results', 'search-button', 'http://aaaaarg.fail/', {});
-    var table = new Table('table','http://aaaaarg.fail/',{});
+    var table = new Table('table','http://aaaaarg.fail/','query', 'search-inside-button', {});
     //table.add_strip('8e1f45af7887bec113bff71f38073fd6');
+    //table.add_strip('15c312c259342170ba8b7bf5d409c8f6');
   }); 
   </script>
 </body>
