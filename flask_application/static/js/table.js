@@ -123,27 +123,6 @@
 		});
 	}
 
-	/* Searches inside */
-	$.Txt.prototype.search_inside = function(query, callback) {
-		var self = this;
-		var url = buildUrl(this.search_inside_url, {'query': query});
-		getJSON(url).then(function(data) {
-			var query1 = data['0'];
-			var pages = [];
-			for (var page in query1) {
-		    if (query1.hasOwnProperty(page)) {
-		    	//query1[page] = score
-		    	pages[pages.length] = parseInt(page);
-		    }
-		  }
-		  console.log(pages);
-		  callback(pages);
-		}, function(status) { //error detection....
-		  console.log('error fetching references');
-		  return [];
-		});
-	}
-
   /**/
   $.Strip = function(ref) {
   	this.strip_pattern = SCANR.basepath + 'pages/%r.pdf/%wx%hx%n.jpg';
@@ -307,6 +286,26 @@
 			this.highlights[i].style.display = 'none';
 		}
 		this.highlights = [];
+	}
+
+	/* Searches inside */
+	$.Strip.prototype.search_inside = function(query) {
+		var self = this;
+		var url = buildUrl(this.search_inside_url, {'query': query});
+		getJSON(url).then(function(data) {
+			var query1 = data['0'];
+			var pages = [];
+			for (var page in query1) {
+		    if (query1.hasOwnProperty(page)) {
+		    	//query1[page] = score
+		    	pages[pages.length] = parseInt(page);
+		    }
+		  }
+		  self.highlight(pages);
+		}, function(status) { //error detection....
+		  console.log('error fetching references');
+		  return [];
+		});
 	}
 
 	/* Highlight a set of pages */
@@ -554,7 +553,7 @@
 		this.clear_highlights();
 		for (var i=0; i<this.strips.length; i++) {
 			if (this.strips[i].txt.searchable) {
-				var results = this.strips[i].txt.search_inside(query, this.strips[i].highlight);
+				var results = this.strips[i].search_inside(query);
 			}
 		}
 	}
