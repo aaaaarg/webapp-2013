@@ -124,7 +124,7 @@
 	}
 
 	/* Searches inside */
-	$.Txt.prototype.search_inside = function(query) {
+	$.Txt.prototype.search_inside = function(query, callback) {
 		var self = this;
 		var url = buildUrl(this.search_inside_url, {'query': query});
 		getJSON(url).then(function(data) {
@@ -136,7 +136,7 @@
 		    	pages[pages.length] = page;
 		    }
 		  }
-		  return pages;
+		  callback(pages);
 		}, function(status) { //error detection....
 		  console.log('error fetching references');
 		  return [];
@@ -552,9 +552,7 @@
 		this.clear_highlights();
 		for (var i=0; i<this.strips.length; i++) {
 			if (this.strips[i].txt.searchable) {
-				var results = this.strips[i].txt.search_inside(query);
-				console.log(results);
-				this.strips[i].highlight(results);
+				var results = this.strips[i].txt.search_inside(query, this.strips[i].highlight);
 			}
 		}
 	}
