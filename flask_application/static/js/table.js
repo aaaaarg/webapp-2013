@@ -128,14 +128,18 @@
 		var self = this;
 		var url = buildUrl(this.search_inside_url, {'query': query});
 		getJSON(url).then(function(data) {
+			console.log(data);
 			var query1 = data['0'];
+			console.log(query1);
 			var pages = [];
 			for (var page in query1) {
 		    if (query1.hasOwnProperty(page)) {
 		    	//query1[page] = score
+		    	console.log(page);
 		    	pages[pages.length] = page;
 		    }
 		  }
+		  console.log(pages);
 		  callback(pages);
 		}, function(status) { //error detection....
 		  console.log('error fetching references');
