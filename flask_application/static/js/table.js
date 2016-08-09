@@ -3,8 +3,8 @@
 	var SCANR_DEFAULTS = {
 		basepath: 'http://aaaaarg.fail/',
 		n_cols: 5,
-		th_w: 5,
-		th_h: 8,
+		th_w: 10,
+		th_h: 16,
 		page_w: 600,
 		page_h: 1000,
   }
@@ -553,6 +553,7 @@
 		for (var i=0; i<this.strips.length; i++) {
 			if (this.strips[i].txt.searchable) {
 				var results = this.strips[i].txt.search_inside(query);
+				console.log(results);
 				this.strips[i].highlight(results);
 			}
 		}
