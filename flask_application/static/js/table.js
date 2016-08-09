@@ -136,6 +136,7 @@
 		    	pages[pages.length] = parseInt(page);
 		    }
 		  }
+		  console.log(pages);
 		  callback(pages);
 		}, function(status) { //error detection....
 		  console.log('error fetching references');
@@ -311,6 +312,7 @@
 	/* Highlight a set of pages */
 	$.Strip.prototype.highlight = function(pages) {	
 		this.clear_highlights();
+		console.log(pages);
 		if (pages) {
 			for (var i=0; i<pages.length; i++) {
 				var page = pages[i];
