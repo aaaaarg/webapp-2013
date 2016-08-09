@@ -13,6 +13,8 @@
           <button type="button" class="btn btn-default" id="save-button">
               bookmark
           </button>
+          <!-- Button HTML (to Trigger Modal) -->
+          <a href="#myModal" class="btn btn-default" data-toggle="modal">?</a>
           <input class="form-control" size="40" name="query" id="query" placeholder="What do you want to find?" type="text">    
           <div class="btn-group">
             <button type="button" class="btn btn-primary dropdown-toggle" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false" id="search-button">
@@ -30,6 +32,34 @@
       </fieldset>
     </form>
   </div>
+  
+  <!-- Modal HTML -->
+  <div id="myModal" class="modal fade">
+      <div class="modal-dialog">
+          <div class="modal-content">
+              <div class="modal-header">
+                  <button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;</button>
+                  <h4 class="modal-title">Help</h4>
+              </div>
+              <div class="modal-body">
+                <ul>
+                  <li>add texts to the area below by typing something and then clicking "search for a text" button</li>
+                  <li>click or tab into the lower part</li>
+                  <li>use <b>shift+right/left</b> arrow to move between texts</li>
+                  <li>when focused on a particular text (it will be yellow at the top) use <b>right</b>/<b>left</b> keys to move between pages</li>
+                  <li>or click on a tiny page thumbnail in the mosaic</li>
+                  <li><b>up</b> key will close a text
+                  <li><b>shift+delete</b> will remove text from the bottom part</li> 
+                  <li>if you are logged in you can drag from a point in a page to a point in another page and it <em>should</em> create a reference link.</li>
+                  <li>"bookmark" will give a url that you can use later or share</li>
+                </ul>
+              </div>
+              <div class="modal-footer">
+                  <button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
+              </div>
+          </div>
+      </div>
+  </div>  
   <!-- reading surface -->
   <div id="table" style="background-color:#efefef;"></div>
 
