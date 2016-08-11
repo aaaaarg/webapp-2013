@@ -1,6 +1,6 @@
 <html>
   <head>
-    <title>poylectic</title>
+    <title>spineless</title>
     <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css" integrity="sha384-BVYiiSIFeK1dGmJRAkycuHAHRg32OmUcww7on3RYdg4Va+PmSTsz/K68vbdEjh4u" crossorigin="anonymous">
   </head>
 
@@ -88,8 +88,8 @@
   }
 
   $(document).ready(function() {
-    var searcher = new Searcher('query','search-results', 'search-button', {});
-    var table = new Table('table','query', 'search-inside-button', 'save-button', {});
+    var searcher = new Searcher('query','search-results', 'search-button', {basepath: 'http://aaaaarg.fail/'});
+    var table = new Table('table','query', 'search-inside-button', 'save-button', {basepath: 'http://aaaaarg.fail/'});
     //table.add_strip('8e1f45af7887bec113bff71f38073fd6');
     //table.add_strip('15c312c259342170ba8b7bf5d409c8f6');
     loadFromUrl(table);
