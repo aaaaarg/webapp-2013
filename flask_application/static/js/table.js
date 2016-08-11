@@ -1,7 +1,7 @@
 (function($) {
 	/* */
 	var SCANR_DEFAULTS = {
-		basepath: 'http://aaaaarg.fail/',
+		basepath: '',
 		n_cols: 5,
 		th_w: 10,
 		th_h: 16,
@@ -143,6 +143,7 @@
   	this.$el.style.paddingRight = "10px";
     this.$el.style.height = '100%';
     this.$el.style.zIndex = '10';
+    this.$el.tabIndex = -1; // tab will skip it but can be focused
     // For paging
     this.page_w = SCANR.page_w;
     this.curr_page = 0;
@@ -276,6 +277,7 @@
 		this.active = true;
 		this.$el.style.opacity = 1;
 		this.$el.style.borderTop = '5px solid yellow';
+		this.$el.focus();
 	}
 
 	/* Denotes that a strip is 'active' */
@@ -557,6 +559,7 @@
 	    	this.strips[from].deactivate();
     	}
     	this.strips[to].activate();
+
 	}
 
 	/* Search inside any text that allows it */
@@ -583,7 +586,7 @@
 	$.Table.prototype.save = function() {
 		var params = {}
 		for (var i=0; i<this.strips.length; i++) {
-			if (this.strips[i].active) {
+			if (this.strips[i].opened()) {
 				var results = this.strips[i].search_inside(query);
 				params[i] = this.strips[i].ref + '-' + this.strips[i].curr_page;
 			} else {
@@ -713,6 +716,9 @@
 		    	this.strips.splice(cf,1);
 		    	if (this.focus_strip>=this.strips.length) {
 		    		this.focus_strip = this.strips.length - 1;
+		    	}
+		    	if (this.focus_strip>=0) {
+		    		this.strips[this.focus_strip].activate();
 		    	}
 		    	this.check_searchability();
 		    }
