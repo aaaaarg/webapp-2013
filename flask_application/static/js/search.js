@@ -66,6 +66,15 @@
 	}
 
 	/**/
+	$.Result.prototype.set_pages = function(pages) {
+		this.pages = pages;
+		var $p = document.createElement("span");
+		$p.innerText = " [found inside]";
+		$p.style.color = '#CCCCCC';
+		this.$el.appendChild($p);
+	}
+
+	/**/
 	$.Result.prototype._handle_click = function(ev) {
 		var e = new CustomEvent('searchresultclicked', { detail: this });
 		document.dispatchEvent(e);
@@ -123,16 +132,20 @@
 		var url = buildUrl(this.search_url,{ 'q':this.$search.value });
 		getJSON(url).then(function(data) {
 	    self.clear_results();
+	    var already = [];
 	    for (var i=0; i<data.metadata.length; i++) {
 	    	var obj = data.metadata[i];
 	    	var r = new Result(obj.ref, obj.title, obj.makers);
 				self.add_result(r);
+				already[obj.ref] = obj.ref;
 	    }
-	    for (var i=0; i<data.metadata.length; i++) {
-	    	var obj = data.metadata[i];
-	    	var r = new Result(obj.ref, obj.title, obj.makers);
-				r.pages = obj.pages;
-				self.add_result(r);
+	    for (var i=0; i<data.fulltext.length; i++) {
+	    	var obj = data.fulltext[i];
+	    	if (!already[obj.ref]) {
+		    	var r = new Result(obj.ref, obj.title, obj.makers);
+					r.set_pages(obj.pages);
+					self.add_result(r);
+				}
 				//self.listener.highlight(obj.ref, obj.pages);
 	    }
 		}, function(status) { //error detection....

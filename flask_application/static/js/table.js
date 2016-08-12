@@ -58,10 +58,13 @@
 	}
 
   /**/
-  $.Annotation = function(pos, ref, target_page) {
-  	this.page = Math.floor(pos);
-  	this.target_page = target_page;
-  	this.pos = pos - this.page;
+  $.Annotation = function(pos_x, pos_y, ref, target_pos) {
+  	this.page = Math.floor(pos_y);
+  	this.target_page = Math.floor(target_pos);
+  	this.target_pos = target_pos;
+  	this.target_pos_y = target_pos - this.target_page;
+  	this.pos_y = pos_y - this.page;
+  	this.pos_x = pos_x;
   	this.ref = ref;
   	this.build_element();
   }
@@ -70,12 +73,17 @@
 	$.Annotation.prototype.build_element = function() {
 		this.$el = document.createElement("div");
 		this.$el.style.position = "absolute";
-		var p = Math.floor(this.pos*100);
+		var p = Math.floor(this.pos_y*100);
 		this.$el.style.top = p+"%";
-		this.$el.style.right = "3px";
+		if (this.pos_x>0 && this.pos_x<1) {
+			var px = Math.floor(this.pos_x*100);
+			this.$el.style.left = px-1+"%";
+		} else {
+			this.$el.style.right = "3px";
+		}
 		this.$el.style.width = "8px";
 		this.$el.style.height = "8px";
-		this.$el.style.border = '2px solid blue';
+		this.$el.style.borderBottom = '4px solid #f09';
 		this.$el.style.cursor = "pointer";
 		this.$el.onclick = this._handle_click.bind(this);
 	} 
@@ -108,7 +116,7 @@
 		getJSON(this.refs_url).then(function(data) {
 			for (var i=0; i<data.references.length; i++) {
 				var obj = data.references[i];
-				var a = new Annotation(obj.pos, obj.ref, Math.floor(obj.ref_pos));
+				var a = new Annotation(obj.pos_x, obj.pos, obj.ref, obj.ref_pos);
 			  self.references[self.references.length] = a;
 			}
 			if (data.searchable) {
@@ -385,12 +393,27 @@
 	}
 
 	/* Opens a page of the strip */
-	$.Strip.prototype.goto = function(page) {
+	$.Strip.prototype.point_to = function(pos) {
+		if (pos>0 && pos<1) {
+			var $pointer = document.createElement("div");
+			$pointer.style.position = "absolute";
+			var p = Math.floor(pos*100);
+			$pointer.style.top = p+"%";
+			$pointer.className = "ref-to";
+			this.pages[this.curr_page].appendChild($pointer);
+		}
+	}
+
+	/* Opens a page of the strip */
+	$.Strip.prototype.goto = function(p) {
 		var self = this;
+		var page = Math.floor(p);
+		var pos = p - page; // it's possible to send in a non-whole number, a position
 		this.active = true;
 		if (this.pages[page]) {
 			this.curr_page = page;
 			this.show_current();
+			this.point_to(pos);
 			self.preload(page+1);
 			return;
 		}
@@ -402,6 +425,7 @@
     	self.$focus.appendChild($wrapper);
     	self.curr_page = page;
 			self.show_current();
+			self.point_to(pos);
 			self.$focus.style.display = 'block';
 			self.annotate_page(page);
 			//self.$focus.display = 'block';
@@ -621,12 +645,14 @@
 			if (this.strips[i].drag) {
 				if (this.strips[i].ref!=terminus.ref) {
 					if (confirm("You are about to create a reference from one text to another. Right now, there is no way to delete a reference, so if you did not mean to do it or you are just testing things out, please hit cancel. Are you sure you want to create this reference?") == true) {
-						var pos = this.strips[i].curr_page + this.strips[i].drag.top;
-						var ref_pos = terminus.curr_page + terminus.drag.top;
-						var a = new Annotation(pos, terminus.ref, terminus.curr_page);
+						var pos_y = this.strips[i].curr_page + this.strips[i].drag.top;
+						var pos_x = this.strips[i].drag.left;
+						var ref_pos_y = terminus.curr_page + terminus.drag.top;
+						var ref_pos_x = terminus.drag.left;
+						var a = new Annotation(pos_x, pos_y, terminus.ref, ref_pos_y);
 						this.strips[i].add_annotation(a);
 						// send the data
-						var url = buildUrl(SCANR.basepath + "/ref/a/"+this.strips[i].ref+"/"+pos+"/b/"+terminus.ref+"/"+ref_pos);
+						var url = buildUrl(SCANR.basepath + "/ref/a/"+this.strips[i].ref+"/"+pos_x+","+pos_y+"/b/"+terminus.ref+"/"+ref_pos_x+","+ref_pos_y);
 						getJSON(url).then(function(data) {
 					    console.log(data);
 						}, function(status) { //error detection....
@@ -650,7 +676,8 @@
 
 	$.Table.prototype._handle_annotation_click = function(ev) {
 		this.add_strip(ev.detail.ref);
-		this.goto(ev.detail.ref, ev.detail.target_page);
+		console.log(ev.detail);
+		this.goto(ev.detail.ref, ev.detail.target_pos);
 	}
 
 	$.Table.prototype._handle_search_inside = function() {
