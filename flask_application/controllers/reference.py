@@ -390,7 +390,7 @@ def create_reference2(md5, pos, ref_md5, ref_pos):
     if not ua or not ub:
         abort(404)
     # Create the reference
-    r = Reference(upload=ua, pos=pos, ref_upload=ub, ref_pos=ref_pos)
+    r = Reference(upload=ua, raw_pos=pos, ref_upload=ub, raw_ref_pos=ref_pos)
     try:
         r.ref_thing = Thing.objects.filter(files=r.ref_upload).first()
     except:

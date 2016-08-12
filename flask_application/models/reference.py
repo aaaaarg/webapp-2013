@@ -63,6 +63,8 @@ class Reference(Annotation):
         super(Reference, self).__init__(*args, **kwargs)
         if self.ref_url:
             self._parse_url()
+        if 'raw_ref_pos' in kwargs:
+            self.parse_ref_pos(kwargs['raw_ref_pos'])
 
     def save(self, *args, **kwargs):
         if self.ref_url:
