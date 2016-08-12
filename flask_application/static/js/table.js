@@ -583,7 +583,7 @@
 	    	this.strips[from].deactivate();
     	}
     	this.strips[to].activate();
-
+    	this.focus_strip = to;
 	}
 
 	/* Search inside any text that allows it */
@@ -676,7 +676,6 @@
 
 	$.Table.prototype._handle_annotation_click = function(ev) {
 		this.add_strip(ev.detail.ref);
-		console.log(ev.detail);
 		this.goto(ev.detail.ref, ev.detail.target_pos);
 	}
 
