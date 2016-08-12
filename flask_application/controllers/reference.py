@@ -245,6 +245,7 @@ def references(md5):
     for a in annotations:
         try:
             references['references'].append({
+                'pos_x': a.pos_x, 
                 'pos': a.pos, 
                 'ref': a.ref_upload.md5, 
                 'ref_pos': a.ref_pos
