@@ -379,7 +379,7 @@ def create_reference(md5, pos):
     return url
 
 
-@reference.route('/ref/a/<string:md5>/<float:pos>/b/<string:ref_md5>/<float:ref_pos>')
+@reference.route('/ref/a/<string:md5>/<string:pos>/b/<string:ref_md5>/<string:ref_pos>')
 @login_required
 def create_reference2(md5, pos, ref_md5, ref_pos):
     """
@@ -390,13 +390,13 @@ def create_reference2(md5, pos, ref_md5, ref_pos):
     if not ua or not ub:
         abort(404)
     # Create the reference
-    r = Reference(upload=ua, raw_pos=pos, ref_upload=ub, raw_ref_pos=ref_pos)
     try:
+        r = Reference(upload=ua, raw_pos=pos, ref_upload=ub, raw_ref_pos=ref_pos)
         r.ref_thing = Thing.objects.filter(files=r.ref_upload).first()
+        r.save()
+        return jsonify({'success': True})
     except:
-        pass
-    r.save()
-    return jsonify({'success': True})
+        return jsonify({'failed': True})
 
 
 @reference.route('/ann/<string:md5>/add/<string:pos>')
