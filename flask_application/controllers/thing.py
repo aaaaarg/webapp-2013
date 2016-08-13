@@ -134,6 +134,8 @@ def detail(id):
         preview = url_for('reference.preview', filename=preview)
     preview_url = url_for('reference.figleaf', md5=thing.preview(
         get_md5=True)) if preview else False
+    # try new reader
+    preview_url = '/static/reader.htm?0=%s-0' % thing.preview(get_md5=True) if preview_url else False
     # contributors
     contributors = [thing.creator]
     for f in thing.files:
