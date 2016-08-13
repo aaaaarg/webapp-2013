@@ -51,7 +51,8 @@
 				{% endif %}
 			  {% endif %}
 	      {% if file.md5 and file.mimetype=="application/pdf" %}
-	       <small><a href="{{url_for('reference.figleaf', md5=file.md5)}}">(preview)</a></small>
+	       <!-- <small><a href="{{url_for('reference.figleaf', md5=file.md5)}}">(preview)</a></small> -->
+         <small><a href="http://aaaaarg.fail/static/reader.htm?0={{file.md5)}}-0">(preview)</a></small>
 	      {% endif %}
 	      </td>
 	      <td>{{file.short_description}}</td>
