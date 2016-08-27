@@ -3,6 +3,11 @@ Grrrr
 
 A platform for collective archives.
 
+Docker
+------
+
+To get up and running using docker, see [readme-docker.md](readme-docker.md).
+
 Prerequisites
 -------------
 

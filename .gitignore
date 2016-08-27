@@ -21,3 +21,4 @@ flask_application/static/ftr.htm
 flask_application/static/hashes.txt
 flask_application/static/js/welcome.js
 flask_application/static/takedowns.htm
+data/

@@ -1,0 +1,7 @@
+
+MONGODB_USERNAME=
+MONGODB_PASSWORD=
+MONGODB_DBNAME=testing
+
+# for flask app
+DEV=yes

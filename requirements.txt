@@ -43,3 +43,4 @@ pdfminer==20140328
 elasticsearch==1.6.0
 python-stdnum==1.0
 ipfs-api==0.2.2
+xmltodict==0.10.2
