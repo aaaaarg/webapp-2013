@@ -82,6 +82,9 @@ class FollowersMixin(object):
 
     # broadcasts a message to all followers
     def tell_followers(self, subject, content):
+        # should create blacklist here, but for now just commenting out
+        pass
+        """
         msg = Message(subject,
                       sender=app.config['DEFAULT_MAIL_SENDER'],
                       recipients=[app.config['DEFAULT_MAIL_REPLY_TO']])
@@ -96,6 +99,7 @@ class FollowersMixin(object):
             mail.send(msg)
         except:
             print 'Failed to tell followers:', content
+        """
 
 # Mixes in editor fields
 
