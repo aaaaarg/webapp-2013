@@ -2,6 +2,8 @@ from flask.ext.security import current_user
 
 
 def can_add_thing():
+    if current_user.has_role('spammer'):
+        return False
     return current_user.is_authenticated()
 
 
@@ -15,10 +17,14 @@ def can_delete_thing(thing):
 
 
 def can_view_file_for_thing(thing):
+    if current_user.has_role('restricted'):
+        return False
     return current_user.is_authenticated()
 
 
 def can_add_file_to_thing(thing):
+    if current_user.has_role('spammer'):
+        return False
     return current_user.has_role('admin') or current_user.has_role('editor') or current_user.has_role('contributor')
 
 
