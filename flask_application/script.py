@@ -42,7 +42,10 @@ class SetPassword(Command):
            Option('--password', '-p', dest='pw'),
    )
    def run(self, id, pw):
-           u = User.objects.get(id=id)
+           if '@' in id:
+                u = User.objects.get(email=id)
+           else:
+                u = User.objects.get(id=id)
            u.password = encrypt_password(pw)
            u.save()
 
