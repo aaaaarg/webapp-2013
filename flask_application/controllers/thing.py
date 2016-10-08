@@ -179,6 +179,8 @@ def add():
     """
     Add a new thing
     """
+    if current_user.has_role('spammer'):
+        abort(403)
     m = request.args.get('maker', '')
     c = request.args.get('collection', None)
     form = ThingForm(formdata=request.form, makers_raw=m,
