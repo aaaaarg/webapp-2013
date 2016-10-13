@@ -38,9 +38,12 @@ def format_collection_link(collection, separator=" - "):
     """
     link = render_template('collection/link.html',
                            collection=collection)
-    if 'supercollection' in collection:
-        link = "%s%s%s" % (format_collection_link(
-            collection.supercollection, separator), separator, link)
+    try:
+        if 'supercollection' in collection:
+            link = "%s%s%s" % (format_collection_link(
+                collection.supercollection, separator), separator, link)
+    except:
+        pass
     return link
 
 
