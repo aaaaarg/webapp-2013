@@ -165,7 +165,7 @@ class SuperCollection(Collection):
         """
         # collection, user, include_supercollections
         def check(c, u, s):
-            if Collection.has_editor(c, u):
+            if super(SuperCollection, self).has_editor(u):
                 return True
             elif s and c.supercollection:
                 return check(c.supercollection, u, s)
