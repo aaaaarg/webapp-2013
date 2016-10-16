@@ -167,7 +167,7 @@ class SuperCollection(Collection):
         def check(c, u, s):
             if super(SuperCollection, self).has_editor(u):
                 return True
-            elif s and if hasattr(c, 'supercollection'):
+            elif s and hasattr(c, 'supercollection'):
                 return check(c.supercollection, u, s)
             return False
 
