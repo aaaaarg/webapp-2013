@@ -3,6 +3,7 @@ import datetime
 
 from flask import url_for
 from flask.ext.security import current_user
+import isbnlib
 
 from . import db, CreatorMixin, FollowersMixin, SolrMixin
 from .user import User
@@ -148,6 +149,21 @@ class Thing(SolrMixin, CreatorMixin, FollowersMixin, db.Document):
             return (m.maker.display_name, self.title)
         # otherwise...
         return ('', self.title)
+
+    def get_imported_data(self):
+        if self.imported_data:
+            return self.imported_data
+        elif self.identifier:
+            parts = self.identifier.split(':')
+            if len(parts)==2 and parts[0].strip().lower()=='isbn':
+                isbn = parts[1]
+                try:
+                    data = isbnlib.meta(isbn)
+                    self.update(set__imported_data=data)
+                    return data
+                except:
+                    return {}
+        return {}
 
     def preview(self, w=50, h=72, c=20, filename=None, get_md5=False):
         """

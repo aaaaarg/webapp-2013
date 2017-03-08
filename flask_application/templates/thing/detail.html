@@ -106,6 +106,16 @@
         {{ show_threads_list(threads) }}
         <small class="text-muted">COLLECTIONS</small>
         <div class="ajax-content-loader" data-url="{{ url_for('collection.list_for_thing', thing_id=thing.id) }}">Loading...</div>
+        <div class="metadata">
+        {% if metadata %}
+        {% for k, v in metadata.iteritems() %}
+        {% if k in ['Year'] or current_user.is_authenticated() %}
+        <dt>{{ k }}</dt>
+        <dd>{{ v }}</dd>
+        {% endif %}
+        {% endfor %}
+        {% endif %}
+        </div>
     </div>
 </div>
 

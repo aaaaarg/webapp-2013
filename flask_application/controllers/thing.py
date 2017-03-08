@@ -145,6 +145,7 @@ def detail(id):
     uf = UploadForm()
     return render_template('thing/detail.html',
                            thing=thing,
+                           metadata=thing.get_imported_data(),
                            contributors=contributors,
                            preview=preview,
                            preview_url=preview_url,

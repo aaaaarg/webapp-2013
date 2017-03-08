@@ -178,3 +178,10 @@ div.section-select {
 	top: 0px;
 	left: 0px;
 }
+
+div.metadata {
+	background-color: #EFEFEF;
+	font-size: 0.8em;
+	font-family: monospace;
+	padding: 8px;
+}
