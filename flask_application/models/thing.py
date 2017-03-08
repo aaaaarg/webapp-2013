@@ -35,6 +35,8 @@ class Thing(SolrMixin, CreatorMixin, FollowersMixin, db.Document):
     description = db.StringField()
     modified_at = db.DateTimeField()
     files = db.ListField(db.ReferenceField(Upload))
+    identifier = db.StringField(max_length=255)
+    imported_data = db.DictField()
     # This field stores a reason. If it exists, we assume Thing should be
     # taken down.
     takedown = db.StringField(max_length=255)
