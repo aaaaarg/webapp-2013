@@ -158,7 +158,7 @@ class Thing(SolrMixin, CreatorMixin, FollowersMixin, db.Document):
             if len(parts)==2 and parts[0].strip().lower()=='isbn':
                 isbn = parts[1]
                 try:
-                    data = isbnlib.meta(isbn)
+                    data = isbnlib.meta(isbn, 'openl')
                     self.update(set__imported_data=data)
                     return data
                 except:
