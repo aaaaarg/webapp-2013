@@ -17,7 +17,7 @@ from io import BytesIO
 
 # using open library api
 from olclient.openlibrary import OpenLibrary
-open_library = OpenLibrary()
+# open_library = OpenLibrary()
 
 
 
@@ -402,6 +402,7 @@ def ol_metadata(olid):
         return ret
     # do the work
     if olid:
+        '''
         work = open_library.Work.get(olid)
         editions = work.editions
         md = obj_to_dict(work, ['_editions', 'created', 'last_modified'])
@@ -414,5 +415,6 @@ def ol_metadata(olid):
                 ed['authors'].append(ad)
             md['editions'].append(ed)
         return md
+        '''
     # catch all
     return {}
