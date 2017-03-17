@@ -17,7 +17,7 @@ sys.path.insert(0, os.getcwd())
 from flask_application import app
 from flask.ext.script import Manager, Server
 
-from flask_application.script import FixFilesMigration, Tweet, ESIndex, GetPath, ResetDB, PopulateDB, SolrReindex, FixMD5s, UploadSymlinks, IndexPDFText, ExtractISBN, BuildLibrary, AddToIpfsTest, ProcessIpfsAddOutput, SetPassword
+from flask_application.script import ImportMetadata, FixFilesMigration, Tweet, ESIndex, GetPath, ResetDB, PopulateDB, SolrReindex, FixMD5s, UploadSymlinks, IndexPDFText, ExtractISBN, BuildLibrary, AddToIpfsTest, ProcessIpfsAddOutput, SetPassword
 
 from flask.ext.security.script import (CreateUserCommand, AddRoleCommand,
                                        RemoveRoleCommand, ActivateUserCommand, DeactivateUserCommand)
@@ -30,6 +30,8 @@ manager.add_command("populate_db", PopulateDB())
 
 manager.add_command("solr_reindex", SolrReindex())
 manager.add_command("es_index", ESIndex())
+
+manager.add_command("import_metadata", ImportMetadata())
 
 manager.add_command("get_path", GetPath())
 

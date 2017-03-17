@@ -150,19 +150,46 @@ class Thing(SolrMixin, CreatorMixin, FollowersMixin, db.Document):
         # otherwise...
         return ('', self.title)
 
+    @property
+    def identifiers(self):
+        try:
+            identifiers = {}
+            if self.identifier:
+                groups = self.identifier.split(';')
+                for group in groups:
+                    parts = group.split(':')
+                    if len(parts)==2:
+                        ids = parts[1].split(',')
+                        identifiers[parts[0].strip().lower()] = ids
+            return identifiers
+        except:
+            return {}
+
     def get_imported_data(self):
         if self.imported_data:
             return self.imported_data
         elif self.identifier:
-            parts = self.identifier.split(':')
-            if len(parts)==2 and parts[0].strip().lower()=='isbn':
-                isbn = parts[1]
-                try:
-                    data = isbnlib.meta(isbn, 'openl')
+            from flask_application.helpers import ol_metadata
+            ids = self.identifiers
+            '''
+            if 'olid' in ids and len(ids['olid']):
+                data = ol_metadata(ids['olid'][0])
+                if data:
+                    import pprint
+                    pprint.pprint(data)
                     self.update(set__imported_data=data)
                     return data
-                except:
-                    return {}
+            '''
+            if 'isbn' in ids:
+                stop_looking = False
+                for isbn in ids['isbn']:
+                    try:
+                        data = isbnlib.meta(isbn)
+                        if data:
+                            self.update(set__imported_data=data)
+                            return data
+                    except:
+                        pass
         return {}
 
     def preview(self, w=50, h=72, c=20, filename=None, get_md5=False):

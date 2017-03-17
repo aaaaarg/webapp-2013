@@ -15,6 +15,11 @@ from zipfile import ZipFile
 import urllib2
 from io import BytesIO
 
+# using open library api
+from olclient.openlibrary import OpenLibrary
+open_library = OpenLibrary()
+
+
 
 # opf writing
 DC = "http://purl.org/dc/elements/1.1/"
@@ -385,3 +390,29 @@ def queryset_batch(queryset, batch_size=50):
         for t in queryset.skip(batch * batch_size).limit(batch_size):
             yield t
             keep_going = True
+
+def ol_metadata(olid):
+    # There are lots of objects returned, so we need to transform into dicts
+    def obj_to_dict(obj, exclusions=[]):
+        d = obj.__dict__
+        ret = {}
+        for key in d:
+            if key not in exclusions and d[key]:
+                ret[key] = d[key]
+        return ret
+    # do the work
+    if olid:
+        work = open_library.Work.get(olid)
+        editions = work.editions
+        md = obj_to_dict(work, ['_editions', 'created', 'last_modified'])
+        md['editions'] = []
+        for edition in editions:
+            ed = obj_to_dict(edition, ['authors', 'created', 'last_modified'])
+            ed['authors'] = []
+            for author in edition.authors:
+                ad = obj_to_dict(author)
+                ed['authors'].append(ad)
+            md['editions'].append(ed)
+        return md
+    # catch all
+    return {}

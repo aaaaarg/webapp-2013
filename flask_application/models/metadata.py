@@ -23,6 +23,7 @@ class Metadata(db.Document):
     thing = db.ReferenceField(Thing)
     modified_at = db.DateTimeField(default=datetime.datetime.utcnow)
     opf = db.StringField()
+    ol = db.DictField()
     version = db.IntField(default=1)
 
     def __init__(self, *args, **kwargs):
@@ -63,3 +64,7 @@ class Metadata(db.Document):
                     # @todo: this one is tricky
                     return v
         return False
+
+    def set_ol(self, data):
+        if data:
+            self.update(set__ol=data)

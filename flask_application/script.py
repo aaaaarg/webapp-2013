@@ -28,7 +28,7 @@ from pdfminer.psparser import PSEOF
 # other pdf extraction!
 from flask_application.pdf_extract import Pdf
 # opf writing
-from flask_application.helpers import thing2opf, opf2id, opf_date, queryset_batch
+from flask_application.helpers import thing2opf, opf2id, opf_date, queryset_batch, ol_metadata
 
 # elasticsearch
 from elasticsearch import Elasticsearch
@@ -48,6 +48,48 @@ class SetPassword(Command):
                 u = User.objects.get(id=id)
            u.password = encrypt_password(pw)
            u.save()
+
+
+class ImportMetadata(Command):
+    def update(self, thing_id, identifiers, metadata):
+        try:
+            t = Thing.objects.filter(id=thing_id).first()
+            if t.identifier:
+                identifiers = t.identifier + ';' + identifiers
+                t.update(set__identifier=identifiers)
+            if metadata:
+                try:
+                    m = Metadata.objects.get(thing=thing)
+                except:
+                    m = Metadata(thing=thing)
+                    m.reload()
+                m.set_ol(metadata)
+        except:
+            print "Skipping ",thing_id," - ",identifiers
+
+
+    def run(self):
+        # try with data file
+        import csv
+        from pprint import pprint
+
+        fp = 'flask_application/static/csv/ol_ids.csv'
+
+        with open(fp,'r') as f:
+            reader = csv.reader(f, delimiter=',', quotechar='"')
+            for row in reader:
+                if len(row)==3:
+                    thing_id = row[0]
+                    ol_id = row[1].replace('/works/','')
+                    isbn = row[2].split(',')[:5]
+                    olid_str = "olid:"+ol_id if ol_id else ''
+                    isbn_str = "isbn:"+','.join(isbn) if isbn else ''
+                    id_str = olid_str + ';' + isbn_str if olid_str or isbn_str else ''
+                    data = ol_metadata(ol_id)
+                    self.update(thing_id,id_str, data)
+                else:
+                    print "bad row: ", row
+
 
 class Tweet(Command):
     option_list = (

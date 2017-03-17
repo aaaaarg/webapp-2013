@@ -15,6 +15,8 @@ uploads
 environment/
 venv/
 venv2/
+openlibrary-client
+openlibrary-client/
 flask_application/script.py.old          
 flask_application/static/contact.htm
 flask_application/static/ftr.htm
