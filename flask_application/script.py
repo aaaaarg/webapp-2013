@@ -72,7 +72,10 @@ class ImportMetadata(Command):
             for row in reader:
                 if len(row)==3 and row[0]!='thing_id':
                     thing_id = row[0].strip()
-                    thing = Thing.objects.get(id=thing_id)
+                    try:
+                        thing = Thing.objects.get(id=thing_id)
+                    except:
+                        thing = False
                     if thing:
                         ol_id = row[1].replace('/works/','')
                         isbn = row[2].split(',')[:5]
