@@ -213,8 +213,11 @@ def thing2opf(thing, path=None):
         ('{%s}title' % DC, thing.title, {}),
         ('{%s}date' % DC, d.strftime('%Y-%m-%dT%H:%M:%S+00:00'), {}),
     ]
-    if thing.description:
-        meta.append(('{%s}description' % DC, thing.description, {}))
+    try:
+        if thing.description:
+            meta.append(('{%s}description' % DC, thing.description, {}))
+    except:
+        pass
     makers = [(m.maker.display_name, m.maker.sort_by) for m in thing.makers]
     for display, sort_by in makers:
         meta.append(('{%s}creator' % DC, display, {'{%s}file-as' %
