@@ -51,11 +51,10 @@ class SetPassword(Command):
 
 
 class ImportMetadata(Command):
-    def update(self, thing_id, identifiers, metadata):
-        try:
-            t = Thing.objects.filter(id=thing_id).first()
-            if t:
-                t.update(set__identifier=identifiers)
+    def update(self, thing, identifiers, metadata):
+        #try:
+        if thing:
+            thing.update(set__identifier=identifiers)
             if metadata:
                 try:
                     m = Metadata.objects.get(thing=thing)
@@ -63,13 +62,14 @@ class ImportMetadata(Command):
                     m = Metadata(thing=thing)
                     m.reload()
                 m.set_ol(metadata)
-        except:
-            print "Skipping ",thing_id," - ",identifiers
+        #except:
+        #    print "Skipping ",thing_id," - ",identifiers
 
 
     def run(self):
         # try with data file
         import csv
+        import bson
         from pprint import pprint
 
         fp = 'flask_application/static/csv/ol_ids.csv'
@@ -77,15 +77,19 @@ class ImportMetadata(Command):
         with open(fp,'r') as f:
             reader = csv.reader(f, delimiter=',', quotechar='"')
             for row in reader:
-                if len(row)==3:
-                    thing_id = row[0]
-                    ol_id = row[1].replace('/works/','')
-                    isbn = row[2].split(',')[:5]
-                    olid_str = "olid:"+ol_id if ol_id else ''
-                    isbn_str = "isbn:"+','.join(isbn) if isbn else ''
-                    id_str = olid_str + ';' + isbn_str if olid_str or isbn_str else ''
-                    data = ol_metadata(ol_id)
-                    self.update(thing_id,id_str, data)
+                if len(row)==3 and row[0]!='thing_id':
+                    thing_id = row[0].strip()
+                    thing = Thing.objects.get(id=thing_id)
+                    if thing:
+                        ol_id = row[1].replace('/works/','')
+                        isbn = row[2].split(',')[:5]
+                        olid_str = "olid:"+ol_id if ol_id else ''
+                        isbn_str = "isbn:"+','.join(isbn) if isbn else ''
+                        id_str = olid_str + ';' + isbn_str if olid_str or isbn_str else ''
+                        data = ol_metadata(ol_id)
+                        self.update(thing,id_str, data)
+                    else:
+                        print "Skipping unfound thing:", thing_id
                 else:
                     print "bad row: ", row
 
