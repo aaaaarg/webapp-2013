@@ -51,19 +51,12 @@ class SetPassword(Command):
 
 
 class ImportMetadata(Command):
-    def update(self, thing, identifiers, metadata):
-        #try:
+    def update(self, thing, metadata, identifiers, data):
         if thing:
             thing.update(set__identifier=identifiers)
-            if metadata:
-                try:
-                    m = Metadata.objects.get(thing=thing)
-                except:
-                    m = Metadata(thing=thing)
-                    m.reload()
-                m.set_ol(metadata)
-        #except:
-        #    print "Skipping ",thing_id," - ",identifiers
+        if metadata and data:
+            metadata.set_ol(data)
+            print "Metadata updated! ",thing.id
 
 
     def run(self):
@@ -86,8 +79,19 @@ class ImportMetadata(Command):
                         olid_str = "olid:"+ol_id if ol_id else ''
                         isbn_str = "isbn:"+','.join(isbn) if isbn else ''
                         id_str = olid_str + ';' + isbn_str if olid_str or isbn_str else ''
-                        data = ol_metadata(ol_id)
-                        self.update(thing,id_str, data)
+                        try:
+                            m = Metadata.objects.get(thing=thing)
+                        except:
+                            m = Metadata(thing=thing)
+                            m.reload()
+                        # check if we've already got metadata
+                        if not m.ol:
+                            data = ol_metadata(ol_id)
+                        else:
+                            data = False
+                            print "Metadata already exists:",thing_id
+                        # upate the thing
+                        self.update(thing, m, id_str, data)
                     else:
                         print "Skipping unfound thing:", thing_id
                 else:

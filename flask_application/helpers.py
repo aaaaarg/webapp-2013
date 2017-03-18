@@ -406,7 +406,10 @@ def ol_metadata(olid):
     # do the work
     if olid:
         work = open_library.Work.get(olid)
-        editions = work.editions
+        try:
+            editions = work.editions
+        except:
+            editions = []
         md = obj_to_dict(work, ['_editions', 'created', 'last_modified'])
         md['editions'] = []
         for edition in editions:
