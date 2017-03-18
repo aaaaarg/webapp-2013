@@ -188,7 +188,10 @@ def write_opf(meta_info, primary_id=None, path=None):
     metadata = etree.SubElement(root, 'metadata')
     for key, text, attrs in meta_info:
         el = etree.SubElement(metadata, key, attrs)
-        el.text = text
+        try:
+            el.text = text
+        except:
+            pass
 
     guide = etree.SubElement(root, 'guide')
     el = etree.SubElement(guide, 'reference', {
