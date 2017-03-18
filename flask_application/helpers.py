@@ -216,12 +216,12 @@ def thing2opf(thing, path=None):
     try:
         if thing.description:
             meta.append(('{%s}description' % DC, thing.description, {}))
+        makers = [(m.maker.display_name, m.maker.sort_by) for m in thing.makers]
+        for display, sort_by in makers:
+            meta.append(('{%s}creator' % DC, display, {'{%s}file-as' %
+                                                       OPF: sort_by, '{%s}role' % OPF: 'aut'}))
     except:
         pass
-    makers = [(m.maker.display_name, m.maker.sort_by) for m in thing.makers]
-    for display, sort_by in makers:
-        meta.append(('{%s}creator' % DC, display, {'{%s}file-as' %
-                                                   OPF: sort_by, '{%s}role' % OPF: 'aut'}))
     return write_opf(meta, None, path)
 
 
