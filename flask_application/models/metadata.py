@@ -67,4 +67,7 @@ class Metadata(db.Document):
 
     def set_ol(self, data):
         if data:
-            self.update(set__ol=data)
+            try:
+                self.update(set__ol=data)
+            except:
+                print "Couldn't update metadata: ",data
