@@ -16,8 +16,11 @@ import urllib2
 from io import BytesIO
 
 # using open library api
+from flask_application import app
 from olclient.openlibrary import OpenLibrary
-# open_library = OpenLibrary()
+from collections import namedtuple
+Credentials = namedtuple('Credentials', ['username', 'password'])
+open_library = OpenLibrary(credentials = Credentials(app.config['OL_USERNAME'], app.config['OL_PASSWORD']))
 
 
 
@@ -402,7 +405,6 @@ def ol_metadata(olid):
         return ret
     # do the work
     if olid:
-        '''
         work = open_library.Work.get(olid)
         editions = work.editions
         md = obj_to_dict(work, ['_editions', 'created', 'last_modified'])
@@ -415,6 +417,5 @@ def ol_metadata(olid):
                 ed['authors'].append(ad)
             md['editions'].append(ed)
         return md
-        '''
     # catch all
     return {}

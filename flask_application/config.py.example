@@ -46,6 +46,10 @@ class Config(object):
     piddle paddle puddle
     '''
 
+    OL_USERNAME = 'user'
+    OL_PASSWORD = 'pass'
+
+
 class ProductionConfig(Config):
     DEBUG = False
     TESTING = False
