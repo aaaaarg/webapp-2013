@@ -54,8 +54,7 @@ class ImportMetadata(Command):
     def update(self, thing_id, identifiers, metadata):
         try:
             t = Thing.objects.filter(id=thing_id).first()
-            if t.identifier:
-                identifiers = t.identifier + ';' + identifiers
+            if t:
                 t.update(set__identifier=identifiers)
             if metadata:
                 try:
