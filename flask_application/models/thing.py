@@ -5,6 +5,8 @@ from flask import url_for
 from flask.ext.security import current_user
 import isbnlib
 
+from flask_application.helpers import get_metadata_from_identifiers
+
 from . import db, CreatorMixin, FollowersMixin, SolrMixin
 from .user import User
 from .maker import Maker, Name
@@ -166,30 +168,23 @@ class Thing(SolrMixin, CreatorMixin, FollowersMixin, db.Document):
             return {}
 
     def get_imported_data(self):
-        if self.imported_data:
-            return self.imported_data
-        elif self.identifier:
-            from flask_application.helpers import ol_metadata
-            ids = self.identifiers
-            '''
-            if 'olid' in ids and len(ids['olid']):
-                data = ol_metadata(ids['olid'][0])
-                if data:
-                    import pprint
-                    pprint.pprint(data)
-                    self.update(set__imported_data=data)
-                    return data
-            '''
-            if 'isbn' in ids:
-                stop_looking = False
-                for isbn in ids['isbn']:
-                    try:
-                        data = isbnlib.meta(isbn)
-                        if data:
-                            self.update(set__imported_data=data)
-                            return data
-                    except:
-                        pass
+        from .metadata import Metadata
+        # try from open library metadata first
+        try:
+            m = Metadata.objects.get(thing=self)
+            if m and m.ol:
+                return m.ol
+        except:
+            m = False
+        # Try and fetch the data somehow
+        if self.identifier:
+            data = get_metadata_from_identifiers(self.identifiers)
+            if data and not m:
+                m = Metadata(thing=self)
+                m.reload()
+            if data:
+                m.set_ol(data)
+                return data
         return {}
 
     def preview(self, w=50, h=72, c=20, filename=None, get_md5=False):

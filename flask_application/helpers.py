@@ -15,6 +15,8 @@ from zipfile import ZipFile
 import urllib2
 from io import BytesIO
 
+import isbnlib
+
 # using open library api
 from flask_application import app
 from olclient.openlibrary import OpenLibrary
@@ -416,9 +418,30 @@ def ol_metadata(olid):
             ed = obj_to_dict(edition, ['authors', 'created', 'last_modified'])
             ed['authors'] = []
             for author in edition.authors:
-                ad = obj_to_dict(author)
+                ad = obj_to_dict(author, ['created', 'last_modified'])
                 ed['authors'].append(ad)
             md['editions'].append(ed)
         return md
     # catch all
+    return {}
+
+
+def get_metadata_from_identifiers(ids):
+    '''
+    Identifiers will be something like: "olid:123456;isbn:1234567890,4321432143"
+    '''
+    if 'olid' in ids and len(ids['olid']):
+        data = ol_metadata(ids['olid'][0])
+        if data:
+            return data
+    if 'isbn' in ids:
+        stop_looking = False
+        for isbn in ids['isbn']:
+            if isbn:
+                try:
+                    data = isbnlib.meta(isbn)
+                    if data:
+                        return data
+                except:
+                    pass
     return {}

@@ -33,6 +33,27 @@
 {% endmacro %}
 
 
+{% macro print_arbitrary_metadata(data) %}
+<ul>
+{% for k, v in data.iteritems() %}
+<li>
+  {% if k in ['editions','authors','table_of_contents'] %}
+    <strong>{{ k }}</strong>
+    {% for d in v %}
+    <div class="{{ k }}">
+    {{ print_arbitrary_metadata(d) }}
+    </div>
+    {% endfor %}
+  {% else %}
+  <strong>{{ k }}</strong>
+  <p>{{ v }}</p>
+  {% endif %}
+</li>
+{% endfor %}
+</ul>
+{% endmacro %}
+
+
 {% macro sort_thing_js() %}
 <script>
 	// Ajax for adding things to queues

@@ -185,3 +185,8 @@ div.metadata {
 	font-family: monospace;
 	padding: 8px;
 }
+
+div.metadata ul, div.metadata ul li { list-style: none; list-style-type: none; }
+div.metadata ul { margin-top: 0px; }
+div.metadata div.editions { border-bottom: 1px solid #CCC;}
+div.metadata div.editions div.table_of_contents { border-bottom: 1px dashed #CCC;}
