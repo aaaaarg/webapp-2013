@@ -34,7 +34,7 @@
             {{render_field(form.makers_raw, size=1024, placeholder='Separate names with commas: Guy Davenport, Erik Reece (editor)')}}
             {{render_field(form.short_description, size=255, placeholder='Just a sentence or two')}}
             {{render_field(form.description, rows=10, **{"data-provide":"markdown"})}}
-            {{render_field(form.identifier, size=255, placeholder='Please help improve AAAARG metadata by including an ISBN, DOI, ISSN, etc. if you can, for example: "isbn:9333492240,9333492240110;olid:/works/OL15201060W"')}}
+            {{render_field(form.identifier, size=255, placeholder='Please help improve AAAARG metadata by including an ISBN, DOI, ISSN, etc. if you can, for example: "isbn:9333492240,9333492240110;olid:OL15201060W"')}}
 
             <p><button class="btn btn-primary" type="submit">Save</p>
         </form>
