@@ -402,7 +402,14 @@ def queryset_batch(queryset, batch_size=50):
             yield t
             keep_going = True
 
-def ol_metadata(olid):
+def ol_metadata(olid = False, isbn = False):
+    # Cleaning empty values
+    def clean_empty(d):
+        if not isinstance(d, (dict, list)):
+            return d
+        if isinstance(d, list):
+            return [v for v in (clean_empty(v) for v in d) if v]
+        return {k: v for k, v in ((k, clean_empty(v)) for k, v in d.items()) if v}
     # There are lots of objects returned, so we need to transform into dicts
     def obj_to_dict(obj, exclusions=[]):
         d = obj.__dict__
@@ -410,7 +417,7 @@ def ol_metadata(olid):
         for key in d:
             if key not in exclusions and d[key]:
                 ret[key] = d[key]
-        return ret
+        return clean_empty(ret)
     # do the work
     if olid:
         work = open_library.Work.get(olid)
@@ -428,6 +435,15 @@ def ol_metadata(olid):
                 ed['authors'].append(ad)
             md['editions'].append(ed)
         return md
+    elif isbn:
+        edition = open_library.Edition.get(isbn=isbn)
+        if edition:
+            ed = obj_to_dict(edition, ['authors', 'created', 'last_modified'])
+            ed['authors'] = []
+            for author in edition.authors:
+                ad = obj_to_dict(author, ['created', 'last_modified'])
+                ed['authors'].append(ad)
+            return ed
     # catch all
     return {}
 
@@ -445,7 +461,8 @@ def get_metadata_from_identifiers(ids):
         for isbn in ids['isbn']:
             if isbn:
                 try:
-                    data = isbnlib.meta(isbn)
+                    #data = isbnlib.meta(isbn)
+                    data = ol_metadata(isbn=isbn)
                     if data:
                         return data
                 except:
